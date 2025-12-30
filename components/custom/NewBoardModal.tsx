@@ -45,31 +45,15 @@ export default function NewBoardModal({ isOpen, onClose }: NewBoardModalProps) {
         const payload = res?.data || res
         const list = payload?.meetings || payload || []
 
-        // Only keep meetings that have action items. Call getMeeting for each to fetch `actionItems`.
-        const withActions = await Promise.all(list.map(async (m: any) => {
-          try {
-            const detail = await api.getMeeting(m._id)
-            const d = detail?.data || detail || {}
-            const actionItems = d.actionItems || d?.data?.actionItems || []
-            if (!actionItems || actionItems.length === 0) return null
+        // Backend now provides `actionItemCount` and `hasBoard` for each meeting
+        // Keep only meetings that have action items and do not already have a board
+        const filtered = (list || []).filter((m: any) => {
+          const actionCount = m.actionItemCount || (m.actionItems && m.actionItems.length) || 0
+          const hasBoard = !!m.hasBoard
+          return actionCount > 0 && !hasBoard
+        })
 
-            // Check if a board already exists for this meeting
-            try {
-              const bres = await api.getBoards({ meetingId: m._id })
-              const bpayload = bres?.data || bres || {}
-              const hasBoard = (bpayload.count && bpayload.count > 0) || (Array.isArray(bpayload) && bpayload.length > 0) || (bpayload.data && bpayload.data.length > 0)
-              if (hasBoard) return null
-            } catch (err) {
-              // ignore board check errors and fall back to excluding if uncertain
-            }
-
-            return m
-          } catch (err) {
-            return null
-          }
-        }))
-
-        setMeetings(withActions.filter(Boolean) as any)
+        setMeetings(filtered)
       } catch (err) {
         console.error(err)
       }

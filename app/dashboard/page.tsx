@@ -23,6 +23,7 @@ import useListParams from "@/hooks/use-list-params"
 import ListToolbar from "@/components/custom/ListToolbar"
 import { normalizeMeetingsResponse } from "@/lib/meetings"
 import { useRouter } from "next/navigation"
+import { ApiError } from "@/lib/api"
 
 const quickActions = [
   {
@@ -71,6 +72,7 @@ export default function Page() {
   const [isRealtimeMeetingOpen, setIsRealtimeMeetingOpen] = useState(false)
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [isLoadingMeetings, setIsLoadingMeetings] = useState(true)
+  const [llmError, setLlmError] = useState<string | null>(null)
   const [totalPages, setTotalPages] = useState(1)
 
   const controls = useListParams({ defaultPageSize: 10 })
@@ -98,9 +100,21 @@ export default function Page() {
         const { meetings: meetingsList, pagination } = normalizeMeetingsResponse(response, controls.pageSize)
         setMeetings(meetingsList)
         setTotalPages(pagination.totalPages || 1)
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching meetings:", error)
         setMeetings([])
+        // Surface LLM / OpenRouter rate-limit to user with friendly message
+        if (error instanceof ApiError) {
+          if (error.status === 429) {
+            setLlmError('AI service rate-limited. Coba lagi sebentar atau tambahkan API key di Settings.');
+          } else if (error.diagnostics && error.diagnostics.fallback) {
+            setLlmError('AI service fallback occured. Hasil mungkin terbatas. Coba lagi atau periksa konfigurasi API.');
+          } else {
+            setLlmError(null);
+          }
+        } else {
+          setLlmError(null);
+        }
       } finally {
         setIsLoadingMeetings(false)
         controls.setIsFetching(false)
@@ -137,7 +151,7 @@ export default function Page() {
       minute: '2-digit'
     }),
     title: meeting.title || "Untitled Meeting",
-    description: meeting.summarySnippet || meeting.description || "Meeting sedang diproses...",
+    description: meeting.description || "Meeting sedang diproses...",
     type: meeting.type || "online",
     status: meeting.status
   })
@@ -231,6 +245,12 @@ export default function Page() {
                   </div>
                 ) : (
                   <>
+                    {/* LLM / OpenRouter error banner */}
+                      {llmError && (
+                        <div className="mb-4 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800">
+                          <strong>AI Service:</strong> {llmError}
+                        </div>
+                      )}
                     <div className="grid gap-4 md:grid-cols-2">
                       {meetings.map((meeting) => (
                         <MeetingCard key={meeting._id} data={formatMeetingForCard(meeting)} />

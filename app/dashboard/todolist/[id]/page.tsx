@@ -46,7 +46,7 @@ type Task = {
   completedDate?: string
 }
 
-type ColumnId = "todo" | "inProgress" | "done"
+type ColumnId = "todo" | "in-progress" | "done"
 
 export default function TodolistDetailPage() {
   const initialTodo: Task[] = [
@@ -155,7 +155,7 @@ export default function TodolistDetailPage() {
 
   const [columns, setColumns] = React.useState<Record<ColumnId, Task[]>>({
     todo: initialTodo,
-    inProgress: initialInProgress,
+    'in-progress': initialInProgress,
     done: initialDone,
   })
 
@@ -291,7 +291,7 @@ export default function TodolistDetailPage() {
     })
 
     // If dropped over a column container itself
-    if (!destColumn && (over.id === "todo" || over.id === "inProgress" || over.id === "done")) {
+    if (!destColumn && (over.id === "todo" || over.id === "in-progress" || over.id === "done")) {
       destColumn = over.id as ColumnId
     }
 
@@ -328,7 +328,7 @@ export default function TodolistDetailPage() {
       if (columns[c].some((t) => t.id === overIdStr)) to = c
     })
     if (!from) return
-    if (!to && (overIdStr === "todo" || overIdStr === "inProgress" || overIdStr === "done")) to = overIdStr as ColumnId
+    if (!to && (overIdStr === "todo" || overIdStr === "in-progress" || overIdStr === "done")) to = overIdStr as ColumnId
     if (!to) return
 
     if (from === to) {
@@ -397,7 +397,7 @@ export default function TodolistDetailPage() {
     const update = (items: Task[]) => items.map((t) => (t.id === editing.id ? editing : t))
     setColumns((prev) => ({
       todo: update(prev.todo),
-      inProgress: update(prev.inProgress),
+      'in-progress': update(prev['in-progress']),
       done: update(prev.done),
     }))
     setEditOpen(false)
@@ -601,14 +601,14 @@ export default function TodolistDetailPage() {
                           <div className="flex items-center gap-2">
                             <span className="h-2 w-2 rounded-full bg-orange-400"></span>
                             <h2 className="font-semibold text-lg">On Progress</h2>
-                            <Badge variant="secondary" className="ml-1 bg-gray-100 text-gray-700">{columns.inProgress.length}</Badge>
+                            <Badge variant="secondary" className="ml-1 bg-gray-100 text-gray-700">{columns['in-progress'].length}</Badge>
                           </div>
                           <IconDots className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div className="mt-3 h-1 rounded bg-orange-300"></div>
                       </div>
                       <div className="space-y-3">
-                        {columns.inProgress.map((task) => (
+                        {columns['in-progress'].map((task: Task) => (
                           <TaskCard key={task.id} task={task} showProgress={true} />
                         ))}
                       </div>
@@ -668,22 +668,22 @@ export default function TodolistDetailPage() {
                     </DroppableColumn>
 
                     {/* In Progress Column */}
-                    <DroppableColumn id="inProgress">
+                    <DroppableColumn id="in-progress">
                     <div className="space-y-4 bg-[#f5f5f5] p-4 rounded-[6px]">
                       <div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="h-2 w-2 rounded-full bg-orange-400"></span>
                             <h2 className="font-semibold text-lg">On Progress</h2>
-                            <Badge variant="secondary" className="ml-1 bg-gray-100 text-gray-700">{columns.inProgress.length}</Badge>
+                            <Badge variant="secondary" className="ml-1 bg-gray-100 text-gray-700">{columns['in-progress'].length}</Badge>
                           </div>
                           <IconDots className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div className="mt-3 h-1 rounded bg-orange-300"></div>
                       </div>
-                      <SortableContext items={columns.inProgress.map((t) => t.id)} strategy={rectSortingStrategy}>
+                      <SortableContext items={columns['in-progress'].map((t: Task) => t.id)} strategy={rectSortingStrategy}>
                         <div className="space-y-3">
-                        {columns.inProgress.map((task) => (
+                        {columns['in-progress'].map((task: Task) => (
                             <SortableCard key={task.id} task={task} showProgress={true} />
                           ))}
                           <Card className="border-dashed border-2 border-gray-300 hover:border-gray-400 transition-colors">
@@ -750,7 +750,7 @@ export default function TodolistDetailPage() {
                         <p className="text-sm text-muted-foreground">To Do</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-yellow-600">{columns.inProgress.length}</div>
+                        <div className="text-2xl font-bold text-yellow-600">{columns['in-progress'].length}</div>
                         <p className="text-sm text-muted-foreground">In Progress</p>
                       </div>
                       <div className="text-center">
@@ -759,7 +759,7 @@ export default function TodolistDetailPage() {
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-purple-600">
-                          {Math.round((columns.done.length / (columns.todo.length + columns.inProgress.length + columns.done.length)) * 100)}%
+                          {Math.round((columns.done.length / (columns.todo.length + columns['in-progress'].length + columns.done.length)) * 100)}%
                         </div>
                         <p className="text-sm text-muted-foreground">Completion Rate</p>
                       </div>

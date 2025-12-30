@@ -65,13 +65,16 @@ interface AuthApi {
   createOnlineMeeting: (data: { meetingUrl: string; platform?: string; duration?: number }) => Promise<any>
   updateMeeting: (id: string, data: any) => Promise<any>
   deleteMeeting: (id: string) => Promise<any>
+  deleteBoard: (id: string) => Promise<any>
   retryTranscription: (id: string) => Promise<any>
+  regenerateAiNotes: (id: string) => Promise<any>
   exportTranscript: (id: string, format: string) => Promise<any>
   generateMeetingShareLink: (id: string) => Promise<any>
   joinMeeting: (shareToken: string) => Promise<any>
   revokeMeetingShareLink: (id: string) => Promise<any>
   updateMeetingCollaboratorRole: (id: string, userId: string, role: string) => Promise<any>
   removeMeetingCollaborator: (id: string, userId: string) => Promise<any>
+  updateSpeakerName: (id: string, data: { oldSpeakerName: string; newSpeakerName: string; segmentIndex?: number; applyToAll: boolean }) => Promise<any>
   getTasks: (params?: { status?: string; priority?: string; meetingId?: string }) => Promise<any>
   getKanbanTasks: (boardId?: string) => Promise<any>
   getTask: (id: string) => Promise<any>
@@ -150,6 +153,10 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.retryTranscription(backendToken, id))
     },
+    regenerateAiNotes: (id: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.regenerateAiNotes(backendToken, id))
+    },
     exportTranscript: (id: string, format: 'json' | 'txt' | 'srt' | 'vtt') => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.exportTranscript(backendToken, id, format))
@@ -174,6 +181,10 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.removeMeetingCollaborator(backendToken, id, userId))
     },
+    updateSpeakerName: (id: string, data: any) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.updateSpeakerName(backendToken, id, data))
+    },
 
     // Tasks
     getTasks: (params?: { status?: string; priority?: string; meetingId?: string }) => {
@@ -188,7 +199,7 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.getTask(backendToken, id))
     },
-    createTask: (data: { title: string; description?: string; status?: string; priority?: string; dueDate?: string; assignee?: string; tags?: string[]; meetingId?: string; boardId?: string }) => {
+    createTask: (data: any) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.createTask(backendToken, data))
     },
@@ -200,7 +211,7 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.deleteTask(backendToken, id))
     },
-    reorderTasks: (tasks: { id: string; status: string; order: number }[], boardId?: string) => {
+    reorderTasks: (tasks: any[], boardId?: string) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.reorderTasks(backendToken, tasks, boardId))
     },
@@ -238,27 +249,27 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.updateProfile(backendToken, data))
     },
-      // Boards
-      getBoards: (params?: { filter?: string; meetingId?: string; search?: string; page?: number; limit?: number; source?: string }) => {
-        if (!backendToken) throw new Error("Not authenticated")
-        return guard(api.getBoards(backendToken, params))
-      },
-      getBoard: (id: string) => {
-        if (!backendToken) throw new Error("Not authenticated")
-        return guard(api.getBoard(backendToken, id))
-      },
-      updateBoard: (id: string, data: any) => {
-        if (!backendToken) throw new Error("Not authenticated")
-        return guard(api.updateBoard(backendToken, id, data))
-      },
-      createBoardFromMeeting: (meetingId: string) => {
-        if (!backendToken) throw new Error("Not authenticated")
-        return guard(api.createBoardFromMeeting(backendToken, meetingId))
-      },
-      createBoard: (data: { title: string; description?: string; source?: string }) => {
-        if (!backendToken) throw new Error("Not authenticated")
-        return guard(api.createBoard(backendToken, data))
-      },
+    // Boards
+    getBoards: (params?: { filter?: string; meetingId?: string; search?: string; page?: number; limit?: number; source?: string }) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getBoards(backendToken, params))
+    },
+    getBoard: (id: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getBoard(backendToken, id))
+    },
+    updateBoard: (id: string, data: any) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.updateBoard(backendToken, id, data))
+    },
+    createBoardFromMeeting: (meetingId: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.createBoardFromMeeting(backendToken, meetingId))
+    },
+    createBoard: (data: any) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.createBoard(backendToken, data))
+    },
     generateBoardShareLink: (id: string) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.generateBoardShareLink(backendToken, id))
@@ -278,6 +289,10 @@ export function useApiWithAuth() {
     removeBoardCollaborator: (id: string, userId: string) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.removeBoardCollaborator(backendToken, id, userId))
+    },
+    deleteBoard: (id: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.deleteBoard(backendToken, id))
     },
   }) as AuthApi, [backendToken, guard])
 

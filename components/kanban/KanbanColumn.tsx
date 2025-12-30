@@ -40,7 +40,7 @@ function SortableTaskCard({ task, labels, onClick, showProgress, members }: { ta
 
 export function KanbanColumn({ id, title, tasks, color, bgLight, bgDark, labels, onAddTask, onEditTask, members, canModify = true }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id })
-  const showProgress = id === 'inProgress'
+  const showProgress = id === 'in-progress'
 
   return (
     <div ref={setNodeRef} className={isOver ? "bg-purple-50/40 rounded-lg p-0.5 -m-0.5" : undefined}>

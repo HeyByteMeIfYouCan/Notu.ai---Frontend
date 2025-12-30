@@ -13,6 +13,7 @@ import MeetingCard from "@/components/custom/MeetingCard"
 import Pagination from "@/components/custom/Pagination"
 import { IconCloudUpload, IconLoader2, IconX } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
+import { ApiError } from "@/lib/api"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import useListParams from "@/hooks/use-list-params"
@@ -47,6 +48,7 @@ export default function UploadsPage() {
   const [isDragging, setIsDragging] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [totalPages, setTotalPages] = useState(1)
+  const [llmError, setLlmError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -62,6 +64,10 @@ export default function UploadsPage() {
       } catch (error) {
         console.error("Error fetching meetings:", error)
         toast.error("Gagal memuat meeting")
+        if (error instanceof ApiError) {
+          if (error.status === 429) setLlmError('AI service rate-limited. Coba lagi sebentar atau tambahkan API key di Settings.');
+          else if (error.diagnostics && error.diagnostics.fallback) setLlmError('AI service fallback occured. Hasil mungkin terbatas.');
+        }
         setMeetings([])
       } finally {
         setIsLoading(false)
@@ -306,6 +312,11 @@ export default function UploadsPage() {
                   </div>
                 ) : (
                   <>
+                    {llmError && (
+                      <div className="mb-4 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800">
+                        <strong>AI Service:</strong> {llmError}
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       {meetings.map((meeting) => (
                         <MeetingCard key={meeting._id} data={formatMeetingForCard(meeting)} />

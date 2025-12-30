@@ -27,16 +27,10 @@ import { TaskForm } from "./TaskForm"
 import { getSocket } from "@/lib/socket"
 import { Input } from "@/components/ui/input"
 
-const statusToColumn: Record<string, ColumnId> = {
-  'todo': 'todo',
-  'in-progress': 'inProgress',
-  'in_progress': 'inProgress',
-  'done': 'done'
-}
-
+// Status format is now consistent: 'in-progress' used everywhere
 const columnToStatus: Record<ColumnId, string> = {
   'todo': 'todo',
-  'inProgress': 'in-progress',
+  'in-progress': 'in-progress',
   'done': 'done'
 }
 
@@ -47,7 +41,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
 
   const [columns, setColumns] = useState<Record<ColumnId, Task[]>>({
     todo: [],
-    inProgress: [],
+    'in-progress': [],
     done: [],
   })
 
@@ -105,6 +99,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     // De-duplicate by id
     return Array.from(new Map(members.map(m => [m.id, m])).values())
   }, [board])
+
+  // Defensive derived role (avoid referencing undefined bare `userRole`)
+  const role = board?.userRole ?? 'viewer'
 
   // Labels
   const [labels, setLabels] = useState<BoardLabel[]>([])
@@ -196,7 +193,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
           description: task.description || '',
           assignee: typeof task.assignee === 'object' ? task.assignee?._id : (task.assignee || null),
           dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : undefined,
-          tags: labelsFromBackend,
+          labels: labelsFromBackend,
           status: task.status,
           priority: task.priority || 'medium',
           order: task.order,
@@ -208,7 +205,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
 
       setColumns({
         todo: (rawData.todo || []).map(transformTask),
-        inProgress: (rawData['in-progress'] || []).map(transformTask),
+        'in-progress': (rawData['in-progress'] || []).map(transformTask),
         done: (rawData.done || []).map(transformTask),
       })
     } catch (error) {
@@ -297,10 +294,10 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
 
   // Permissions
   const canModify = useMemo(() => {
-    return board?.userRole === 'owner' || board?.userRole === 'editor'
-  }, [board])
+    return role === 'owner' || role === 'editor'
+  }, [role])
 
-  const isOwner = useMemo(() => board?.userRole === 'owner', [board])
+  const isOwner = useMemo(() => role === 'owner', [role])
 
   // Title Editing
   const [editingTitle, setEditingTitle] = useState(false)
@@ -356,7 +353,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     ;(Object.keys(columns) as ColumnId[]).forEach((colId) => {
       if (columns[colId].some((t) => t.id === overIdStr)) targetCol = colId
     })
-    if (!targetCol && (overIdStr === "todo" || overIdStr === "inProgress" || overIdStr === "done")) {
+    if (!targetCol && (overIdStr === "todo" || overIdStr === "in-progress" || overIdStr === "done")) {
        targetCol = overIdStr as ColumnId
     }
 
@@ -416,7 +413,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     
     if (!from) return
     // If over a container logic
-    if (!to && (overIdStr === "todo" || overIdStr === "inProgress" || overIdStr === "done")) to = overIdStr as ColumnId
+    if (!to && (overIdStr === "todo" || overIdStr === "in-progress" || overIdStr === "done")) to = overIdStr as ColumnId
     
     if (!to) return
 
@@ -488,7 +485,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     const update = (items: Task[]) => items.map(t => t.id === editing.id ? editing : t)
     setColumns(prev => ({
       todo: update(prev.todo),
-      inProgress: update(prev.inProgress),
+      'in-progress': update(prev['in-progress']),
       done: update(prev.done)
     }))
     setEditOpen(false)
@@ -500,7 +497,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
         assignee: editing.assignee,
         dueDate: editing.dueDate,
         priority: editing.priority,
-        labels: editing.labelIds?.map(id => labels.find(l => l.id === id)?.name || '').filter(Boolean) || editing.tags,
+        labels: editing.labelIds?.map(id => labels.find(l => l.id === id)?.name || '').filter(Boolean) || editing.labels,
       })
       toast.success("Task updated")
     } catch (e) {
@@ -696,9 +693,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                 canModify={canModify}
               />
               <KanbanColumn 
-                id="inProgress" 
+                id="in-progress" 
                 title="In Progress" 
-                tasks={columns.inProgress} 
+                tasks={columns['in-progress']} 
                 color="#f97316" // orange-500
                 bgLight="bg-orange-50/40"
                 bgDark="#fdba74" // orange-300
@@ -725,7 +722,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
             <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)" }}>
               {activeTaskRef.current ? (
                 <div className="scale-[1.02] shadow-2xl opacity-90 cursor-grabbing">
-                  <TaskCard task={activeTaskRef.current} labels={labels} showProgress={activeId === 'inProgress'} members={boardMembers} />
+                  <TaskCard task={activeTaskRef.current} labels={labels} showProgress={activeId === 'in-progress'} members={boardMembers} />
                 </div>
               ) : null}
             </DragOverlay>
@@ -740,7 +737,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                     <p className="text-sm text-muted-foreground">To Do</p>
                 </div>
                 <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-600">{columns.inProgress.length}</div>
+                    <div className="text-2xl font-bold text-yellow-600">{columns['in-progress'].length}</div>
                     <p className="text-sm text-muted-foreground">In Progress</p>
                 </div>
                 <div className="text-center">

@@ -1,57 +1,65 @@
+import type {
+  Meeting,
+  MeetingCreateInput,
+  MeetingUpdateInput,
+  MeetingsResponse,
+  MeetingResponse,
+  Task,
+  TaskCreateInput,
+  TaskUpdateInput,
+  TasksResponse,
+  KanbanResponse,
+  KanbanData,
+  Board,
+  BoardCreateInput,
+  BoardUpdateInput,
+  BoardsResponse,
+  BoardResponse,
+  StatsResponse,
+  AnalyticsResponse,
+  UserPreferences,
+  ApiResponse,
+  TaskStatus,
+} from './types';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  body?: any;
+  body?: unknown;
   token?: string;
   headers?: Record<string, string>;
 }
 
-interface MeetingsResponse {
-  success: boolean;
-  meetings: any[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+// Re-export types for consumers
+export type {
+  Meeting,
+  MeetingCreateInput,
+  MeetingUpdateInput,
+  Task,
+  TaskCreateInput,
+  TaskUpdateInput,
+  Board,
+  BoardCreateInput,
+  BoardUpdateInput,
+  KanbanData,
+  StatsResponse,
+  TasksResponse,
+  KanbanResponse,
+  MeetingsResponse,
+  BoardsResponse,
+};
 
-interface StatsResponse {
-  success: boolean;
-  data: {
-    meetings: {
-      total: number;
-      completed: number;
-      pending: number;
-      processing: number;
-      failed: number;
-    };
-    totalMinutes: number;
-    totalHours: number;
-    tasks: {
-      todo: number;
-      'in-progress': number;
-      done: number;
-    };
-    totalTasks: number;
-  };
-}
+export class ApiError extends Error {
+  public status: number;
+  public diagnostics?: any;
 
-interface TasksResponse {
-  success: boolean;
-  data: any[];
-  count: number;
-}
-
-interface KanbanResponse {
-  success: boolean;
-  data: {
-    todo: any[];
-    'in-progress': any[];
-    done: any[];
-  };
+  constructor(message: string, status = 500, diagnostics?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.diagnostics = diagnostics;
+  }
 }
 
 class ApiClient {
@@ -88,7 +96,8 @@ class ApiClient {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'API request failed');
+      // Surface structured error to callers (includes diagnostics if present)
+      throw new ApiError(data.message || 'API request failed', response.status, data.__llm_diagnostics || data.diagnostics || null);
     }
 
     return data;
@@ -103,7 +112,7 @@ class ApiClient {
     return this.request('/api/auth/profile', { token });
   }
 
-  async updateProfile(token: string, data: { name?: string; preferences?: any }) {
+  async updateProfile(token: string, data: { name?: string; preferences?: Partial<UserPreferences> }) {
     return this.request('/api/auth/profile', {
       method: 'PUT',
       token,
@@ -116,20 +125,20 @@ class ApiClient {
     let queryString = ''
     if (params) {
       const filtered = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
-      queryString = filtered.length ? '?' + new URLSearchParams(Object.fromEntries(filtered) as any).toString() : ''
+      queryString = filtered.length ? '?' + new URLSearchParams(Object.fromEntries(filtered) as Record<string, string>).toString() : ''
     }
     return this.request<MeetingsResponse>(`/api/meetings${queryString}`, { token });
   }
 
-  async getMeeting(token: string, id: string) {
+  async getMeeting(token: string, id: string): Promise<MeetingResponse> {
     return this.request(`/api/meetings/${id}`, { token });
   }
 
-  async getMeetingAnalytics(token: string, id: string) {
+  async getMeetingAnalytics(token: string, id: string): Promise<AnalyticsResponse> {
     return this.request(`/api/meetings/${id}/analytics`, { token });
   }
 
-  async createMeeting(token: string, data: any) {
+  async createMeeting(token: string, data: MeetingCreateInput): Promise<MeetingResponse> {
     return this.request('/api/meetings', {
       method: 'POST',
       token,
@@ -156,7 +165,14 @@ class ApiClient {
     });
   }
 
-  async updateMeeting(token: string, id: string, data: any) {
+  async regenerateAiNotes(token: string, id: string) {
+    return this.request(`/api/meetings/${id}/regenerate-ai`, {
+      method: 'POST',
+      token,
+    });
+  }
+
+  async updateMeeting(token: string, id: string, data: MeetingUpdateInput): Promise<ApiResponse<Meeting>> {
     return this.request(`/api/meetings/${id}`, {
       method: 'PATCH',
       token,
@@ -199,6 +215,14 @@ class ApiClient {
     });
   }
 
+  async updateSpeakerName(token: string, id: string, data: { oldSpeakerName: string; newSpeakerName: string; segmentIndex?: number; applyToAll: boolean }) {
+    return this.request(`/api/meetings/${id}/segments/speaker`, {
+      method: 'PATCH',
+      token,
+      body: data
+    });
+  }
+
   async exportTranscript(token: string, id: string, format: 'json' | 'txt' | 'srt' | 'vtt' | 'mp3' | 'mp4' = 'txt') {
     const response = await fetch(`${this.baseUrl}/api/meetings/${id}/export?format=${format}`, {
       headers: {
@@ -217,7 +241,7 @@ class ApiClient {
     let queryString = ''
     if (params) {
       const filtered = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
-      queryString = filtered.length ? '?' + new URLSearchParams(Object.fromEntries(filtered) as any).toString() : ''
+      queryString = filtered.length ? '?' + new URLSearchParams(Object.fromEntries(filtered) as Record<string, string>).toString() : ''
     }
     return this.request<TasksResponse>(`/api/tasks${queryString}`, { token });
   }
@@ -227,11 +251,11 @@ class ApiClient {
     return this.request<KanbanResponse>(`/api/tasks/kanban${queryString}`, { token });
   }
 
-  async getTask(token: string, id: string) {
+  async getTask(token: string, id: string): Promise<ApiResponse<Task>> {
     return this.request(`/api/tasks/${id}`, { token });
   }
 
-  async createTask(token: string, data: { title: string; description?: string; status?: string; priority?: string; dueDate?: string; assignee?: string; tags?: string[]; meetingId?: string; boardId?: string }) {
+  async createTask(token: string, data: TaskCreateInput): Promise<ApiResponse<Task>> {
     return this.request('/api/tasks', {
       method: 'POST',
       token,
@@ -239,7 +263,7 @@ class ApiClient {
     });
   }
 
-  async updateTask(token: string, id: string, data: any) {
+  async updateTask(token: string, id: string, data: TaskUpdateInput): Promise<ApiResponse<Task>> {
     return this.request(`/api/tasks/${id}`, {
       method: 'PATCH',
       token,
@@ -254,7 +278,7 @@ class ApiClient {
     });
   }
 
-  async reorderTasks(token: string, tasks: { id: string; order: number; status: string }[], boardId?: string) {
+  async reorderTasks(token: string, tasks: { id: string; order: number; status: TaskStatus }[], boardId?: string): Promise<ApiResponse> {
     return this.request('/api/tasks/reorder', {
       method: 'PATCH',
       token,
@@ -314,21 +338,21 @@ class ApiClient {
     return this.request('/api/health');
   }
   // Board endpoints
-  async getBoards(token: string, params?: { filter?: string; meetingId?: string; search?: string; page?: number; limit?: number; source?: string }) {
+  async getBoards(token: string, params?: { filter?: string; meetingId?: string; search?: string; page?: number; limit?: number; source?: string }): Promise<BoardsResponse> {
     let queryString = ''
     if (params) {
       const filtered = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
-      queryString = filtered.length ? '?' + new URLSearchParams(Object.fromEntries(filtered) as any).toString() : ''
+      queryString = filtered.length ? '?' + new URLSearchParams(Object.fromEntries(filtered) as Record<string, string>).toString() : ''
     }
-    return this.request(`/api/boards${queryString}`, { token });
+    return this.request<BoardsResponse>(`/api/boards${queryString}`, { token });
   }
 
-  async getBoard(token: string, id: string) {
-    return this.request(`/api/boards/${id}`, { token });
+  async getBoard(token: string, id: string): Promise<BoardResponse> {
+    return this.request<BoardResponse>(`/api/boards/${id}`, { token });
   }
 
-  async updateBoard(token: string, id: string, data: any) {
-    return this.request(`/api/boards/${id}`, {
+  async updateBoard(token: string, id: string, data: BoardUpdateInput): Promise<BoardResponse> {
+    return this.request<BoardResponse>(`/api/boards/${id}`, {
       method: 'PATCH',
       token,
       body: data
@@ -339,15 +363,22 @@ class ApiClient {
     return this.request('/api/boards/from-meeting', {
       method: 'POST',
       token,
-      body: meetingId,
+      body: { meetingId },
     });
   }
 
-  async createBoard(token: string, data: { title: string; description?: string; source?: string }) {
-    return this.request('/api/boards', {
+  async createBoard(token: string, data: BoardCreateInput): Promise<BoardResponse> {
+    return this.request<BoardResponse>('/api/boards', {
       method: 'POST',
       token,
       body: data,
+    });
+  }
+
+  async deleteBoard(token: string, id: string): Promise<ApiResponse> {
+    return this.request<ApiResponse>(`/api/boards/${id}`, {
+      method: 'DELETE',
+      token,
     });
   }
 

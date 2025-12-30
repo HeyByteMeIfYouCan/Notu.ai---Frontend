@@ -67,18 +67,49 @@ export default function StatusMeetingPage() {
 
   // Polling for active meetings
   useEffect(() => {
-    const hasActiveMeetings = meetings.some(m => 
-      m.status === 'pending' || m.status === 'recording' || m.status === 'processing'
-    )
-    
-    if (!hasActiveMeetings) return
+    // Poll list refresh (for status changes)
+    const listInterval = setInterval(fetchMeetings, 10000)
 
-    const interval = setInterval(() => {
-      fetchMeetings()
-    }, 5000) // Poll every 5 seconds
+    // Poll progress for processing meetings (more frequent)
+    const processingMeetings = meetings.filter(m => m.status === 'processing' || m.status === 'uploading')
+    let progressInterval: NodeJS.Timeout
 
-    return () => clearInterval(interval)
-  }, [meetings, fetchMeetings])
+    if (processingMeetings.length > 0) {
+      progressInterval = setInterval(async () => {
+        for (const m of processingMeetings) {
+           try {
+             // We need to cast api to any because getMeetingStatus might not be in the interface definition used here yet
+             const res = await (api as any).getMeetingStatus(m._id)
+             if (res.success && res.data) {
+                setMeetings(prev => prev.map(pm => {
+                  if (pm._id === m._id) {
+                    return {
+                      ...pm,
+                      status: res.data.status, // Update status if changed
+                      processingProgress: res.data.job?.progress || pm.processingProgress || 0,
+                      processingLogs: res.data.processingLogs || []
+                    }
+                  }
+                  return pm
+                }))
+                
+                // If finished, force full refresh
+                if (res.data.status === 'completed' || res.data.status === 'failed') {
+                   fetchMeetings()
+                }
+             }
+           } catch (e) {
+             console.error("Progress poll error", e)
+           }
+        }
+      }, 3000)
+    }
+
+    return () => {
+      clearInterval(listInterval)
+      if (progressInterval) clearInterval(progressInterval)
+    }
+  }, [meetings, fetchMeetings, api])
 
   const handleRefresh = () => {
     setIsRefreshing(true)
@@ -283,14 +314,33 @@ export default function StatusMeetingPage() {
                                   <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{meeting.summary}</p>
                                 )}
                                 {meeting.processingProgress !== undefined && meeting.status === 'processing' && (
-                                  <div className="mt-2">
-                                    <div className="w-full bg-[var(--input)] rounded-full h-2">
+                                  <div className="mt-3">
+                                    <div className="flex items-center justify-between mb-1">
+                                       <p className="text-xs font-medium text-[var(--primary)]">
+                                          {(meeting as any).processingLogs && (meeting as any).processingLogs.length > 0 
+                                            ? (meeting as any).processingLogs[(meeting as any).processingLogs.length - 1].message 
+                                            : 'Sedang memproses...'}
+                                       </p>
+                                       <p className="text-xs text-muted-foreground">{meeting.processingProgress}%</p>
+                                    </div>
+                                    <div className="w-full bg-[var(--input)] rounded-full h-1.5">
                                       <div 
-                                        className="bg-[var(--primary)] h-2 rounded-full transition-all" 
+                                        className="bg-[var(--primary)] h-1.5 rounded-full transition-all duration-500" 
                                         style={{ width: `${meeting.processingProgress}%` }}
                                       />
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-1">Processing: {meeting.processingProgress}%</p>
+                                    
+                                    {/* Small log viewer (compact) */}
+                                    {(meeting as any).processingLogs && (meeting as any).processingLogs.length > 1 && (
+                                       <div className="mt-2 p-2 bg-gray-50 rounded text-[10px] text-muted-foreground max-h-20 overflow-y-auto font-mono">
+                                          {(meeting as any).processingLogs.slice(-3).map((log: any, i: number) => (
+                                             <div key={i} className="flex gap-2">
+                                                <span className="opacity-50">{new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                                <span>{log.message}</span>
+                                             </div>
+                                          ))}
+                                       </div>
+                                    )}
                                   </div>
                                 )}
                               </div>

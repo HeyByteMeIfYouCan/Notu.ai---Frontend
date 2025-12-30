@@ -15,6 +15,7 @@ import { useApiWithAuth } from "@/hooks/use-auth"
 import useListParams from "@/hooks/use-list-params"
 import ListToolbar from "@/components/custom/ListToolbar"
 import { normalizeMeetingsResponse } from "@/lib/meetings"
+import { ApiError } from "@/lib/api"
 
 interface Meeting {
   _id: string
@@ -34,6 +35,7 @@ export default function MeetingPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [totalPages, setTotalPages] = useState(1)
+  const [llmError, setLlmError] = useState<string | null>(null)
 
   // default to online meetings on this page and do not expose upload
   const controls = useListParams({ defaultPageSize: 10, defaultType: 'online' })
@@ -58,6 +60,10 @@ export default function MeetingPage() {
       } catch (error) {
         console.error("Error fetching meetings:", error)
         setMeetings([])
+        if (error instanceof ApiError) {
+          if (error.status === 429) setLlmError('AI service rate-limited. Coba lagi sebentar atau tambahkan API key di Settings.');
+          else if (error.diagnostics && error.diagnostics.fallback) setLlmError('AI service fallback occured. Hasil mungkin terbatas.');
+        }
       } finally {
         setIsLoading(false)
         controls.setIsFetching(false)
@@ -86,7 +92,7 @@ export default function MeetingPage() {
       minute: '2-digit'
     }),
     title: meeting.title || "Untitled Meeting",
-    description: meeting.summarySnippet || meeting.description || "Meeting sedang diproses...",
+    description: meeting.description || "Meeting sedang diproses...",
     type: meeting.type || "online",
     status: meeting.status
   })
@@ -150,6 +156,11 @@ export default function MeetingPage() {
                   </div>
                 ) : (
                   <>
+                    {llmError && (
+                      <div className="mb-4 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800">
+                        <strong>AI Service:</strong> {llmError}
+                      </div>
+                    )}
                     <div className="grid gap-4 md:grid-cols-2">
                       {meetings.map((meeting) => (
                         <MeetingCard key={meeting._id} data={formatMeetingForCard(meeting)} />

@@ -19,7 +19,13 @@ export default function JoinMeetingPage() {
         try {
           const res = await api.joinMeeting(token as string)
           toast.success("Berhasil bergabung dengan meeting")
-          router.push(`/dashboard/meeting/${res.data.meetingId}`)
+          // API may return either { data: { meetingId } } or { data: { meeting } }
+          const meetingId = res?.data?.meetingId || res?.data?.meeting?._id || res?.meetingId || res?.data?._id
+          if (!meetingId) {
+            console.warn('joinMeeting response missing meetingId, falling back to dashboard')
+            return router.push(`/dashboard`)
+          }
+          router.push(`/dashboard/meeting/${meetingId}`)
         } catch (err: any) {
           console.error(err)
           setError(err.message || "Gagal bergabung dengan meeting")
