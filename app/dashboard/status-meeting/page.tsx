@@ -11,9 +11,16 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2 } from "@tabler/icons-react"
+import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2, IconChevronDown, IconChevronUp } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
+import { getSocket } from "@/lib/socket"
+
+interface ProcessingLog {
+  message: string
+  timestamp: string
+  progress?: number
+}
 
 interface Meeting {
   _id: string
@@ -23,6 +30,7 @@ interface Meeting {
   duration?: number
   createdAt: string
   processingProgress?: number
+  processingLogs?: ProcessingLog[]
   participants?: any[]
   summary?: string
   userRole?: 'owner' | 'editor' | 'viewer' | string
@@ -39,7 +47,20 @@ export default function StatusMeetingPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
   const { api, isReady } = useApiWithAuth()
+
+  const toggleLogExpand = (meetingId: string) => {
+    setExpandedLogs(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(meetingId)) {
+        newSet.delete(meetingId)
+      } else {
+        newSet.add(meetingId)
+      }
+      return newSet
+    })
+  }
 
   const fetchMeetings = useCallback(async () => {
     if (!isReady) return
@@ -65,10 +86,48 @@ export default function StatusMeetingPage() {
     }
   }, [isReady, fetchMeetings])
 
+  // Socket integration for real-time updates
+  useEffect(() => {
+    const socket = getSocket()
+
+    // Listen for transcription progress updates
+    socket.on('transcription_progress', ({ meetingId, progress, message }) => {
+      setMeetings(prev => prev.map(m => {
+        if (m._id === meetingId) {
+          const newLog: ProcessingLog = { message, timestamp: new Date().toISOString(), progress }
+          return {
+            ...m,
+            processingProgress: progress,
+            processingLogs: [...(m.processingLogs || []), newLog].slice(-10) // Keep last 10 logs
+          }
+        }
+        return m
+      }))
+    })
+
+    // Listen for transcription completion
+    socket.on('transcription_complete', ({ meetingId }) => {
+      fetchMeetings()
+      toast.success('Transcription completed!')
+    })
+
+    // Listen for transcription failure
+    socket.on('transcription_failed', ({ meetingId, error }) => {
+      fetchMeetings()
+      toast.error(`Transcription failed: ${error}`)
+    })
+
+    return () => {
+      socket.off('transcription_progress')
+      socket.off('transcription_complete')
+      socket.off('transcription_failed')
+    }
+  }, [fetchMeetings])
+
   // Polling for active meetings
   useEffect(() => {
     // Poll list refresh (for status changes)
-    const listInterval = setInterval(fetchMeetings, 10000)
+    const listInterval = setInterval(fetchMeetings, 15000) // Every 15 seconds
 
     // Poll progress for processing meetings (more frequent)
     const processingMeetings = meetings.filter(m => m.status === 'processing' || m.status === 'uploading')
@@ -78,16 +137,15 @@ export default function StatusMeetingPage() {
       progressInterval = setInterval(async () => {
         for (const m of processingMeetings) {
            try {
-             // We need to cast api to any because getMeetingStatus might not be in the interface definition used here yet
-             const res = await (api as any).getMeetingStatus(m._id)
+             const res = await api.getMeetingStatus(m._id)
              if (res.success && res.data) {
                 setMeetings(prev => prev.map(pm => {
                   if (pm._id === m._id) {
                     return {
                       ...pm,
-                      status: res.data.status, // Update status if changed
+                      status: res.data.status,
                       processingProgress: res.data.job?.progress || pm.processingProgress || 0,
-                      processingLogs: res.data.processingLogs || []
+                      processingLogs: res.data.processingLogs || pm.processingLogs || []
                     }
                   }
                   return pm
@@ -102,7 +160,7 @@ export default function StatusMeetingPage() {
              console.error("Progress poll error", e)
            }
         }
-      }, 3000)
+      }, 5000) // Every 5 seconds for processing meetings
     }
 
     return () => {
@@ -136,15 +194,18 @@ export default function StatusMeetingPage() {
         return <IconCheck className="h-5 w-5 text-green-500" />
       case "recording":
       case "processing":
+      case "uploading":
         return <IconLoader2 className="h-5 w-5 text-blue-500 animate-spin" />
       case "pending":
+      case "queued":
         return <IconClock className="h-5 w-5 text-yellow-500" />
       case "cancelled":
         return <IconX className="h-5 w-5 text-gray-500" />
       case "failed":
+      case "error":
         return <IconAlertCircle className="h-5 w-5 text-red-500" />
       default:
-        return <IconClock className="h-5 w-5 text-gray-500" />
+        return <IconClock className="h-5 w-5 text-gray-400" />
     }
   }
 
@@ -156,14 +217,18 @@ export default function StatusMeetingPage() {
         return <Badge className="bg-blue-100 text-blue-800">Recording</Badge>
       case "processing":
         return <Badge className="bg-orange-100 text-orange-800">Processing</Badge>
+      case "uploading":
+        return <Badge className="bg-blue-100 text-blue-800">Uploading</Badge>
       case "pending":
+      case "queued":
         return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
       case "cancelled":
         return <Badge className="bg-gray-100 text-gray-800">Cancelled</Badge>
       case "failed":
+      case "error":
         return <Badge className="bg-red-100 text-red-800">Failed</Badge>
       default:
-        return <Badge variant="secondary">Unknown</Badge>
+        return <Badge variant="secondary">{status || 'Pending'}</Badge>
     }
   }
 
@@ -313,32 +378,55 @@ export default function StatusMeetingPage() {
                                 {meeting.summary && (
                                   <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{meeting.summary}</p>
                                 )}
-                                {meeting.processingProgress !== undefined && meeting.status === 'processing' && (
+                                {(meeting.status === 'processing' || meeting.status === 'uploading') && (
                                   <div className="mt-3">
                                     <div className="flex items-center justify-between mb-1">
                                        <p className="text-xs font-medium text-[var(--primary)]">
-                                          {(meeting as any).processingLogs && (meeting as any).processingLogs.length > 0 
-                                            ? (meeting as any).processingLogs[(meeting as any).processingLogs.length - 1].message 
+                                          {meeting.processingLogs && meeting.processingLogs.length > 0 
+                                            ? meeting.processingLogs[meeting.processingLogs.length - 1].message 
                                             : 'Sedang memproses...'}
                                        </p>
-                                       <p className="text-xs text-muted-foreground">{meeting.processingProgress}%</p>
+                                       <p className="text-xs text-muted-foreground">{meeting.processingProgress || 0}%</p>
                                     </div>
-                                    <div className="w-full bg-[var(--input)] rounded-full h-1.5">
+                                    <div className="w-full bg-[var(--input)] rounded-full h-1.5 overflow-hidden">
                                       <div 
-                                        className="bg-[var(--primary)] h-1.5 rounded-full transition-all duration-500" 
-                                        style={{ width: `${meeting.processingProgress}%` }}
+                                        className="bg-[var(--primary)] h-1.5 rounded-full transition-all duration-500 ease-out" 
+                                        style={{ width: `${meeting.processingProgress || 0}%` }}
                                       />
                                     </div>
                                     
-                                    {/* Small log viewer (compact) */}
-                                    {(meeting as any).processingLogs && (meeting as any).processingLogs.length > 1 && (
-                                       <div className="mt-2 p-2 bg-gray-50 rounded text-[10px] text-muted-foreground max-h-20 overflow-y-auto font-mono">
-                                          {(meeting as any).processingLogs.slice(-3).map((log: any, i: number) => (
-                                             <div key={i} className="flex gap-2">
-                                                <span className="opacity-50">{new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                                <span>{log.message}</span>
+                                    {/* Expandable log viewer */}
+                                    {meeting.processingLogs && meeting.processingLogs.length > 1 && (
+                                       <div className="mt-2">
+                                          <button 
+                                             onClick={() => toggleLogExpand(meeting._id)}
+                                             className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                                          >
+                                             {expandedLogs.has(meeting._id) ? (
+                                                <>
+                                                   <IconChevronUp className="h-3 w-3" />
+                                                   Hide Logs
+                                                </>
+                                             ) : (
+                                                <>
+                                                   <IconChevronDown className="h-3 w-3" />
+                                                   Show Logs ({meeting.processingLogs.length})
+                                                </>
+                                             )}
+                                          </button>
+                                          {expandedLogs.has(meeting._id) && (
+                                             <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded border text-[10px] text-muted-foreground max-h-32 overflow-y-auto font-mono custom-scrollbar">
+                                                {meeting.processingLogs.map((log, i) => (
+                                                   <div key={i} className="flex gap-2 py-0.5 border-b border-border/50 last:border-0">
+                                                      <span className="opacity-50 shrink-0">{new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}</span>
+                                                      <span className="flex-1">{log.message}</span>
+                                                      {log.progress !== undefined && (
+                                                         <span className="shrink-0 text-[var(--primary)]">{log.progress}%</span>
+                                                      )}
+                                                   </div>
+                                                ))}
                                              </div>
-                                          ))}
+                                          )}
                                        </div>
                                     )}
                                   </div>

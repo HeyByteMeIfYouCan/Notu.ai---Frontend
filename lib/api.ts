@@ -223,6 +223,26 @@ class ApiClient {
     });
   }
 
+  // Ask AI - Chat with meeting context
+  async askAI(token: string, meetingId: string, question: string): Promise<{ success: boolean; data: { question: string; answer: string; messageId: string; responseTime: number } }> {
+    return this.request(`/api/meetings/${meetingId}/ask`, {
+      method: 'POST',
+      token,
+      body: { question },
+    });
+  }
+
+  async getChatHistory(token: string, meetingId: string, limit = 50): Promise<{ success: boolean; data: Array<{ _id: string; role: 'user' | 'assistant'; content: string; createdAt: string; userId?: { name: string; image?: string } }> }> {
+    return this.request(`/api/meetings/${meetingId}/chat?limit=${limit}`, { token });
+  }
+
+  async clearChatHistory(token: string, meetingId: string): Promise<{ success: boolean; message: string }> {
+    return this.request(`/api/meetings/${meetingId}/chat`, {
+      method: 'DELETE',
+      token,
+    });
+  }
+
   async exportTranscript(token: string, id: string, format: 'json' | 'txt' | 'srt' | 'vtt' | 'mp3' | 'mp4' = 'txt') {
     const response = await fetch(`${this.baseUrl}/api/meetings/${id}/export?format=${format}`, {
       headers: {
@@ -305,8 +325,8 @@ class ApiClient {
     return this.request(`/api/analytics/activity${queryString}`, { token });
   }
 
-  // Upload endpoint
-  async uploadFile(token: string, file: File, metadata?: any) {
+  // Upload endpoint with real progress tracking using XMLHttpRequest
+  async uploadFile(token: string, file: File, metadata?: any, onProgress?: (progress: number) => void): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -316,21 +336,42 @@ class ApiClient {
       });
     }
 
-    const response = await fetch(`${this.baseUrl}/api/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${this.baseUrl}/api/upload`, true);
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+      // Track upload progress
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && onProgress) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          onProgress(progress);
+        }
+      };
+
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(data);
+          } else {
+            reject(new ApiError(data.message || 'Upload failed', xhr.status));
+          }
+        } catch (e) {
+          reject(new ApiError('Failed to parse response', xhr.status));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new ApiError('Network error during upload', 0));
+      };
+
+      xhr.onabort = () => {
+        reject(new ApiError('Upload cancelled', 0));
+      };
+
+      xhr.send(formData);
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Upload failed');
-    }
-
-    return data;
   }
 
   // Health check

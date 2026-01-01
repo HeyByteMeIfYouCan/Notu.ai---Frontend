@@ -109,17 +109,12 @@ export default function UploadsPage() {
     setUploadProgress(0)
     
     try {
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => Math.min(prev + 10, 90))
-      }, 500)
-      
+      // Use real XHR progress tracking
       const response = await api.uploadFile(selectedFile, {
         title: selectedFile.name.replace(/\.[^/.]+$/, ""),
+      }, (progress) => {
+        setUploadProgress(progress)
       })
-      
-      clearInterval(progressInterval)
-      setUploadProgress(100)
       
       toast.success("File berhasil diupload! Transkripsi sedang diproses.")
       setSelectedFile(null)
@@ -128,7 +123,7 @@ export default function UploadsPage() {
       router.push(`/dashboard/status-meeting?id=${response.meeting._id}`)
     } catch (error: any) {
       console.error("Error uploading file:", error)
-      toast.error(error.response?.data?.error || "Gagal mengupload file")
+      toast.error(error.response?.data?.error || error.message || "Gagal mengupload file")
     } finally {
       setIsUploading(false)
       setUploadProgress(0)
@@ -229,13 +224,15 @@ export default function UploadsPage() {
                           
                           {isUploading && (
                               <div className="w-64 mt-4">
-                              <div className="w-full bg-[var(--input)] rounded-full h-2">
+                              <div className="w-full bg-[var(--input)] rounded-full h-2 overflow-hidden">
                                 <div 
-                                  className="bg-[var(--primary)] h-2 rounded-full transition-all" 
+                                  className="bg-[var(--primary)] h-2 rounded-full transition-all duration-300 ease-out" 
                                   style={{ width: `${uploadProgress}%` }}
                                 />
                               </div>
-                              <p className="text-xs text-[var(--muted-foreground)] mt-2">Uploading... {uploadProgress}%</p>
+                              <p className="text-xs text-[var(--muted-foreground)] mt-2">
+                                {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Processing...'}
+                              </p>
                             </div>
                           )}
                           

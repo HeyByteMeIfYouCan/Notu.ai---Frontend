@@ -18,7 +18,8 @@ import {
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import dynamic from "next/dynamic"
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import { getPermissions } from "@/lib/permissions"
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor").then((mod) => mod.default),
@@ -54,6 +55,9 @@ export function MeetingMainContent({
 }: MeetingMainContentProps) {
   const [editingField, setEditingField] = useState<string | null>(null)
   const [editValue, setEditValue] = useState<string>("")
+
+  // Get permissions based on user role
+  const permissions = useMemo(() => getPermissions(userRole), [userRole])
 
   const executiveSummary = meeting.transcription?.summary || ""
   const highlights = meeting.transcription?.highlights || {}
@@ -122,7 +126,7 @@ export function MeetingMainContent({
               ) : (
                 <>
                   <h1 className="text-xl font-semibold">{meeting.title}</h1>
-                  <button disabled={userRole === 'viewer'} onClick={() => userRole !== 'viewer' && handleStartEdit('title', meeting.title)} className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40">
+                  <button disabled={!permissions.canEdit} onClick={() => permissions.canEdit && handleStartEdit('title', meeting.title)} className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40">
                     <IconPencil className="h-4 w-4 text-muted-foreground" />
                   </button>
                 </>
@@ -145,7 +149,7 @@ export function MeetingMainContent({
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground">{meeting.description || "Tambahkan deskripsi..."}</p>
-                  <button disabled={userRole === 'viewer'} onClick={() => userRole !== 'viewer' && handleStartEdit('description', meeting.description || "")} className="p-0.5 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40">
+                  <button disabled={!permissions.canEdit} onClick={() => permissions.canEdit && handleStartEdit('description', meeting.description || "")} className="p-0.5 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40">
                     <IconPencil className="h-3 w-3 text-muted-foreground" />
                   </button>
                 </>
@@ -196,7 +200,7 @@ export function MeetingMainContent({
                 <h2 className="text-base font-semibold text-[var(--primary)]">Executive Summary</h2>
                 <Dialog open={editingField === 'executiveSummary'} onOpenChange={(open) => !open && setEditingField(null)}>
                   <DialogTrigger asChild>
-                    <button disabled={userRole === 'viewer'} onClick={() => handleStartEdit('executiveSummary', executiveSummary)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
+                    <button disabled={!permissions.canEdit} onClick={() => handleStartEdit('executiveSummary', executiveSummary)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
                       <IconPencil className="h-3.5 w-3.5" />
                       Edit
                     </button>
@@ -225,7 +229,7 @@ export function MeetingMainContent({
                   <h2 className="text-base font-semibold text-[var(--primary)]">Catatan Rapat</h2>
                   <Dialog open={editingField === 'highlights'} onOpenChange={(open) => !open && setEditingField(null)}>
                     <DialogTrigger asChild>
-                      <button disabled={userRole === 'viewer'} onClick={() => handleStartEdit('highlights', Object.entries(highlights).map(([k, v]) => `${k}:\n${v}`).join('\n\n'))} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
+                      <button disabled={!permissions.canEdit} onClick={() => handleStartEdit('highlights', Object.entries(highlights).map(([k, v]) => `${k}:\n${v}`).join('\n\n'))} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
                         <IconPencil className="h-3.5 w-3.5" />
                         Edit
                       </button>
@@ -260,12 +264,12 @@ export function MeetingMainContent({
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-base font-semibold text-[var(--primary)]">Action Items</h2>
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-[var(--primary)] disabled:opacity-40" onClick={onRegenerateAi} disabled={userRole === 'viewer'}>
+                  <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-[var(--primary)] disabled:opacity-40" onClick={onRegenerateAi} disabled={!permissions.canRegenerateAI}>
                     <IconRefresh className="h-4 w-4" />
                     <span className="text-xs font-medium">Ulangi Analisis</span>
                   </Button>
                   {!hasSyncedTasks && actionItems.length > 0 && (
-                    <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-[var(--primary)] disabled:opacity-40" onClick={onGenerateKanban} disabled={userRole === 'viewer'}>
+                    <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-[var(--primary)] disabled:opacity-40" onClick={onGenerateKanban} disabled={!permissions.canEdit}>
                       <IconLayoutKanban className="h-4 w-4" />
                       <span className="text-xs font-medium">Buat Board</span>
                     </Button>
@@ -305,7 +309,7 @@ export function MeetingMainContent({
                 <h2 className="text-base font-semibold text-[var(--primary)]">Conclusion</h2>
                   <Dialog open={editingField === 'conclusion'} onOpenChange={(open) => !open && setEditingField(null)}>
                     <DialogTrigger asChild>
-                      <button disabled={userRole === 'viewer'} onClick={() => handleStartEdit('conclusion', conclusion)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
+                      <button disabled={!permissions.canEdit} onClick={() => handleStartEdit('conclusion', conclusion)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
                         <IconPencil className="h-3.5 w-3.5" />
                         Edit
                       </button>

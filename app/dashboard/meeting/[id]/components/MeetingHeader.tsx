@@ -17,7 +17,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { IconMenu2, IconShare, IconCopy, IconLink, IconPlus, IconDownload, IconTrash, IconLoader2, IconPencil, IconInfoCircle, IconChecks } from "@tabler/icons-react"
 import { toast } from "sonner"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { OnlinePresence } from "@/components/custom/OnlinePresence"
+import { getPermissions, getAssignableRoles, getRoleLabel } from "@/lib/permissions"
 
 interface MeetingHeaderProps {
   title: string
@@ -66,6 +68,10 @@ export function MeetingHeader({
   const [editTitle, setEditTitle] = useState(title)
   const [editDesc, setEditDesc] = useState(description)
 
+  // Get permissions based on user role
+  const permissions = useMemo(() => getPermissions(userRole), [userRole])
+  const assignableRoles = useMemo(() => getAssignableRoles(userRole), [userRole])
+
   useEffect(() => {
     setEditTitle(title)
   }, [title])
@@ -96,7 +102,17 @@ export function MeetingHeader({
         </div>
         
         <div className="flex items-center gap-2">
-          {userRole === 'owner' && (
+          {/* Online Presence Avatars */}
+          <OnlinePresence
+            resourceType="meeting"
+            resourceId={meetingId}
+            currentUserId={user?.id}
+            collaborators={collaborators}
+            owner={meeting?.userId}
+            maxAvatars={4}
+          />
+          
+          {permissions.canShare && (
             <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-[var(--primary)] hover:brightness-90 text-[var(--primary-foreground)] rounded-full px-4 h-9 flex items-center gap-2" 
@@ -138,7 +154,7 @@ export function MeetingHeader({
                             {meeting?.userId?.image || (meeting?.userId?._id === user?.id && user?.image) ? (
                               <img src={meeting?.userId?.image || user?.image} className="w-8 h-8 rounded-full" alt="" />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-xs font-bold text-[var(--primary)] text-purple-600">
+                              <div className="w-8 h-8 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-xs font-bold text-[var(--primary)]">
                                 {(meeting?.userId?.name || user?.name || 'O')[0]}
                               </div>
                             )}
@@ -170,13 +186,17 @@ export function MeetingHeader({
                                 value={col.role}
                                 onChange={(e) => onUpdateRole(col.user._id, e.target.value)}
                                 className="text-xs bg-transparent border-none focus:ring-0 cursor-pointer text-muted-foreground hover:text-foreground"
+                                disabled={!permissions.canManageCollaborators}
                               >
-                                <option value="viewer">Viewer</option>
-                                <option value="editor">Editor</option>
+                                {assignableRoles.map(r => (
+                                  <option key={r} value={r}>{getRoleLabel(r)}</option>
+                                ))}
                               </select>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onRemoveMember(col.user._id)}>
-                                <IconPlus className="h-4 w-4 rotate-45" />
-                              </Button>
+                              {permissions.canManageCollaborators && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onRemoveMember(col.user._id)}>
+                                  <IconPlus className="h-4 w-4 rotate-45" />
+                                </Button>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -317,7 +337,7 @@ export function MeetingHeader({
             <IconCopy className="h-4 w-4" />
           </Button>
 
-          {userRole === 'owner' && (
+          {permissions.canDelete && (
             <Button 
               variant="ghost" 
               size="icon" 

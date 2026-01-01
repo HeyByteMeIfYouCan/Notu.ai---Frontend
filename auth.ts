@@ -27,7 +27,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!response.ok) {
-            console.error('Backend auth failed');
+            console.error('Backend auth failed:', response.status);
+            // CRITICAL FIX: Return false to prevent login without valid backend token
             return false;
           }
 
@@ -37,12 +38,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (data.success && data.data?.token) {
             (user as any).backendToken = data.data.token;
             (user as any).backendUser = data.data.user;
+            return true;
+          } else {
+            console.error('Backend did not return valid token');
+            return false;
           }
-
-          return true;
         } catch (error) {
           console.error('Error syncing with backend:', error);
-          return true; // Still allow sign in even if backend sync fails
+          // CRITICAL FIX: Return false on error - user cannot use app without backend token
+          return false;
         }
       }
       return true;
@@ -55,6 +59,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           accessToken: account.access_token,
           backendToken: (user as any).backendToken,
           backendUser: (user as any).backendUser,
+          // Ensure picture is passed through
+          picture: user.image,
         };
       }
       return token;
@@ -69,6 +75,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           ...session.user,
           id: (token.backendUser as any)?.id,
           plan: (token.backendUser as any)?.plan || 'free',
+          // Ensure image is available from token
+          image: token.picture as string || session.user?.image,
         },
       };
     },

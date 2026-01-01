@@ -22,8 +22,11 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import { AskAI } from "./AskAI"
 
 interface MeetingTranscriptProps {
+  meetingId: string
+  userRole?: string
   transcriptSegments: any[]
   filteredSegments: any[]
   searchQuery: string
@@ -45,6 +48,8 @@ interface MeetingTranscriptProps {
 }
 
 export function MeetingTranscript({
+  meetingId,
+  userRole,
   transcriptSegments,
   filteredSegments,
   searchQuery,
@@ -94,7 +99,7 @@ export function MeetingTranscript({
   }
 
   return (
-    <div className="w-80 border-l flex flex-col hidden xl:flex">
+    <div className="w-80 border-l hidden xl:flex xl:flex-col">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
         <TabsList className="w-full rounded-none border-b">
           <TabsTrigger value="transcript" className="flex-1">Transkrip</TabsTrigger>
@@ -205,11 +210,8 @@ export function MeetingTranscript({
           </div>
         </TabsContent>
 
-        <TabsContent value="ask-ai" className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Ask AI</h3>
-            <p className="text-sm text-muted-foreground">Fitur Ask AI akan segera hadir</p>
-          </div>
+        <TabsContent value="ask-ai" className="flex-1 flex flex-col m-0 overflow-hidden">
+          <AskAI meetingId={meetingId} userRole={userRole} />
         </TabsContent>
       </Tabs>
 

@@ -140,7 +140,7 @@ export default function Page() {
   // Format meeting data for MeetingCard
   const formatMeetingForCard = (meeting: Meeting) => ({
     id: meeting._id,
-    tag: meeting.userRole === 'owner' ? '#My Meeting' : (meeting.userRole ? `#${meeting.userRole}` : '#Meeting'),
+    tag: meeting.userRole === 'owner' ? '#My Meeting' : '#Shared With Me',
     platform: meeting.platform || "Google Meet",
     date: new Date(meeting.createdAt).toLocaleDateString('id-ID', {
       weekday: 'long',

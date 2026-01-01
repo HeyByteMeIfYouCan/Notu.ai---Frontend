@@ -26,6 +26,8 @@ import { TaskCard } from "./TaskCard"
 import { TaskForm } from "./TaskForm"
 import { getSocket } from "@/lib/socket"
 import { Input } from "@/components/ui/input"
+import { OnlinePresence } from "@/components/custom/OnlinePresence"
+import { getPermissions, getAssignableRoles, getRoleLabel } from "@/lib/permissions"
 
 // Status format is now consistent: 'in-progress' used everywhere
 const columnToStatus: Record<ColumnId, string> = {
@@ -102,6 +104,10 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
 
   // Defensive derived role (avoid referencing undefined bare `userRole`)
   const role = board?.userRole ?? 'viewer'
+
+  // Get permissions based on user role using centralized utility
+  const permissions = useMemo(() => getPermissions(role), [role])
+  const assignableRoles = useMemo(() => getAssignableRoles(role), [role])
 
   // Labels
   const [labels, setLabels] = useState<BoardLabel[]>([])
@@ -292,12 +298,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     }
   }
 
-  // Permissions
-  const canModify = useMemo(() => {
-    return role === 'owner' || role === 'editor'
-  }, [role])
-
-  const isOwner = useMemo(() => role === 'owner', [role])
+  // Permissions - use centralized utility
+  const canModify = permissions.canEditTasks
+  const isOwner = permissions.canDelete // Owner has delete permission
 
   // Title Editing
   const [editingTitle, setEditingTitle] = useState(false)
@@ -562,6 +565,18 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
               )}
             </div>
             <div className="flex items-center gap-2">
+              {/* Online Presence */}
+              {boardId && (
+                <OnlinePresence
+                  resourceType="board"
+                  resourceId={boardId}
+                  currentUserId={(user as any)?.id || (user as any)?._id}
+                  collaborators={board?.collaborators}
+                  owner={board?.userId}
+                  maxAvatars={4}
+                />
+              )}
+              
               {isOwner && (
                 <Dialog.Root open={showShare} onOpenChange={setShowShare}>
                   <Dialog.Trigger asChild>
@@ -593,11 +608,11 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                           </div>
                         </div>
                         
-                        {board?.userRole === 'owner' && (
+                        {permissions.canManageCollaborators && (
                           <div className="pt-4 border-t space-y-3">
                             <h3 className="text-sm font-medium">Members</h3>
                             <div className="space-y-2">
-                              {board.collaborators?.map((col) => (
+                              {board?.collaborators?.map((col) => (
                                 <div key={col.user._id} className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
@@ -612,9 +627,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                                         api.updateBoardCollaboratorRole(boardId!, col.user._id, e.target.value).then(() => fetchBoardInfo())
                                       }}
                                     >
-                                      <option value="owner">Owner</option>
-                                      <option value="editor">Editor</option>
-                                      <option value="viewer">Viewer</option>
+                                      {assignableRoles.map(r => (
+                                        <option key={r} value={r}>{getRoleLabel(r)}</option>
+                                      ))}
                                     </select>
                                   </div>
                                 </div>
@@ -691,6 +706,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                 onEditTask={openEdit}
                 members={boardMembers}
                 canModify={canModify}
+                isLoading={isLoading}
               />
               <KanbanColumn 
                 id="in-progress" 
@@ -704,6 +720,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                 onEditTask={openEdit}
                 members={boardMembers}
                 canModify={canModify}
+                isLoading={isLoading}
               />
               <KanbanColumn 
                 id="done" 
@@ -717,6 +734,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                 onEditTask={openEdit}
                 members={boardMembers}
                 canModify={canModify}
+                isLoading={isLoading}
               />
             </div>
             <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)" }}>

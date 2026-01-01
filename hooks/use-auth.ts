@@ -75,6 +75,11 @@ interface AuthApi {
   updateMeetingCollaboratorRole: (id: string, userId: string, role: string) => Promise<any>
   removeMeetingCollaborator: (id: string, userId: string) => Promise<any>
   updateSpeakerName: (id: string, data: { oldSpeakerName: string; newSpeakerName: string; segmentIndex?: number; applyToAll: boolean }) => Promise<any>
+  // Ask AI
+  askAI: (meetingId: string, question: string) => Promise<any>
+  getChatHistory: (meetingId: string, limit?: number) => Promise<any>
+  clearChatHistory: (meetingId: string) => Promise<any>
+  // Tasks
   getTasks: (params?: { status?: string; priority?: string; meetingId?: string }) => Promise<any>
   getKanbanTasks: (boardId?: string) => Promise<any>
   getTask: (id: string) => Promise<any>
@@ -86,7 +91,7 @@ interface AuthApi {
   getTrends: (period?: string) => Promise<any>
   getPlatformStats: () => Promise<any>
   getRecentActivity: (limit?: number) => Promise<any>
-  uploadFile: (file: File, metadata?: any) => Promise<any>
+  uploadFile: (file: File, metadata?: any, onProgress?: (progress: number) => void) => Promise<any>
   getProfile: () => Promise<any>
   updateProfile: (data: { name?: string; preferences?: any }) => Promise<any>
   getBoards: (params?: { filter?: string; meetingId?: string; search?: string; page?: number; limit?: number; source?: string }) => Promise<any>
@@ -186,6 +191,20 @@ export function useApiWithAuth() {
       return guard(api.updateSpeakerName(backendToken, id, data))
     },
 
+    // Ask AI - Chat
+    askAI: (meetingId: string, question: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.askAI(backendToken, meetingId, question))
+    },
+    getChatHistory: (meetingId: string, limit?: number) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getChatHistory(backendToken, meetingId, limit))
+    },
+    clearChatHistory: (meetingId: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.clearChatHistory(backendToken, meetingId))
+    },
+
     // Tasks
     getTasks: (params?: { status?: string; priority?: string; meetingId?: string }) => {
       if (!backendToken) throw new Error("Not authenticated")
@@ -235,9 +254,9 @@ export function useApiWithAuth() {
     },
 
     // Upload
-    uploadFile: (file: File, metadata?: any) => {
+    uploadFile: (file: File, metadata?: any, onProgress?: (progress: number) => void) => {
       if (!backendToken) throw new Error("Not authenticated")
-      return guard(api.uploadFile(backendToken, file, metadata))
+      return guard(api.uploadFile(backendToken, file, metadata, onProgress))
     },
 
     // Profile

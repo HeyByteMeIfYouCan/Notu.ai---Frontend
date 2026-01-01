@@ -4,7 +4,7 @@ import { CSS } from "@dnd-kit/utilities"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { IconDots, IconPlus } from "@tabler/icons-react"
+import { IconDots, IconPlus, IconGripVertical } from "@tabler/icons-react"
 import { Task, ColumnId, BoardLabel } from "./types"
 import { TaskCard } from "./TaskCard"
 
@@ -20,62 +20,113 @@ interface KanbanColumnProps {
   onEditTask: (task: Task) => void
   members?: { id: string, name: string }[]
   canModify?: boolean
+  isLoading?: boolean
 }
 
-function SortableTaskCard({ task, labels, onClick, showProgress, members }: { task: Task; labels: BoardLabel[]; onClick: (t: Task) => void; showProgress?: boolean; members?: { id: string, name: string }[] }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
+function SortableTaskCard({ task, labels, onClick, showProgress, members, canModify }: { task: Task; labels: BoardLabel[]; onClick: (t: Task) => void; showProgress?: boolean; members?: { id: string, name: string }[]; canModify?: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: !canModify })
   
   const style = {
     transform: CSS.Transform.toString(transform),
     transition: transition || "transform 200ms cubic-bezier(0.2, 0, 0, 1)",
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : undefined,
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className="relative group">
+      {canModify && (
+        <div {...attributes} {...listeners} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1">
+          <IconGripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+      )}
       <TaskCard task={task} showProgress={showProgress} onClick={onClick} labels={labels} members={members} />
     </div>
   )
 }
 
-export function KanbanColumn({ id, title, tasks, color, bgLight, bgDark, labels, onAddTask, onEditTask, members, canModify = true }: KanbanColumnProps) {
+// Loading skeleton for tasks
+function TaskSkeleton() {
+  return (
+    <Card className="mb-3 animate-pulse">
+      <CardContent className="p-4">
+        <div className="space-y-3">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 rounded w-full"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          <div className="flex justify-between">
+            <div className="h-3 bg-gray-200 rounded w-20"></div>
+            <div className="h-3 bg-gray-200 rounded w-16"></div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function KanbanColumn({ id, title, tasks, color, bgLight, bgDark, labels, onAddTask, onEditTask, members, canModify = true, isLoading = false }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id })
   const showProgress = id === 'in-progress'
 
   return (
-    <div ref={setNodeRef} className={isOver ? "bg-purple-50/40 rounded-lg p-0.5 -m-0.5" : undefined}>
-      <div className="space-y-4">
+    <div 
+      ref={setNodeRef} 
+      className={`rounded-xl transition-all duration-200 ${
+        isOver 
+          ? 'ring-2 ring-[var(--primary)] ring-offset-2 bg-[var(--primary)]/5' 
+          : bgLight
+      }`}
+    >
+      <div className="space-y-4 p-2">
         {/* Header */}
-        <div>
+        <div className="sticky top-0 bg-inherit pt-2 pb-1 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full`} style={{ backgroundColor: color }}></span>
-              <h2 className="font-semibold text-lg">{title}</h2>
-              <Badge variant="secondary" className="ml-1 bg-gray-100 text-gray-700">{tasks.length}</Badge>
+              <span className={`h-2.5 w-2.5 rounded-full shadow-sm`} style={{ backgroundColor: color }}></span>
+              <h2 className="font-semibold text-base">{title}</h2>
+              <Badge variant="secondary" className="ml-1 bg-white/80 text-gray-700 font-medium text-xs">
+                {tasks.length}
+              </Badge>
             </div>
-            <IconDots className="h-4 w-4 text-muted-foreground" />
+            <IconDots className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" />
           </div>
-          <div className={`mt-3 h-1 rounded`} style={{ backgroundColor: bgDark }}></div>
+          <div className={`mt-3 h-1 rounded-full`} style={{ backgroundColor: bgDark }}></div>
         </div>
 
         {/* Tasks List */}
         <SortableContext items={tasks.filter(Boolean).map((t) => t.id)} strategy={rectSortingStrategy}>
-          <div className="space-y-3">
-            {tasks.filter(Boolean).map((task) => (
-              <SortableTaskCard 
-                key={task.id} 
-                task={task} 
-                labels={labels}
-                onClick={onEditTask} 
-                showProgress={showProgress} 
-                members={members}
-              />
-            ))}
+          <div className="space-y-3 min-h-[100px]">
+            {isLoading ? (
+              <>
+                <TaskSkeleton />
+                <TaskSkeleton />
+              </>
+            ) : (
+              <>
+                {tasks.filter(Boolean).map((task) => (
+                  <SortableTaskCard 
+                    key={task.id} 
+                    task={task} 
+                    labels={labels}
+                    onClick={onEditTask} 
+                    showProgress={showProgress} 
+                    members={members}
+                    canModify={canModify}
+                  />
+                ))}
+                
+                {tasks.length === 0 && !isLoading && (
+                  <div className="flex items-center justify-center h-20 text-sm text-muted-foreground border-2 border-dashed border-gray-200 rounded-lg">
+                    {isOver ? 'Drop here' : 'No tasks'}
+                  </div>
+                )}
+              </>
+            )}
             
             {canModify && (
-              <Card className="border-dashed border-2 border-gray-300 hover:border-gray-400 transition-colors">
-                <CardContent className="p-4 text-center">
-                  <Button variant="ghost" className="w-full h-12 text-muted-foreground" onClick={onAddTask}>
+              <Card className="border-dashed border-2 border-gray-200 hover:border-[var(--primary)]/50 hover:bg-[var(--primary)]/5 transition-all cursor-pointer group">
+                <CardContent className="p-3">
+                  <Button variant="ghost" className="w-full h-10 text-muted-foreground group-hover:text-[var(--primary)]" onClick={onAddTask}>
                     <IconPlus className="h-4 w-4 mr-2" />
                     Add Task
                   </Button>

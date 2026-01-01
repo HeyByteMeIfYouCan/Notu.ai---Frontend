@@ -6,13 +6,24 @@ import { IconLayoutBoard } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 
 interface BoardCardProps {
-  board: any
+  board: {
+    _id: string
+    title: string
+    description?: string
+    updatedAt: string
+    labels?: { name: string }[] | string[]
+    userRole?: 'owner' | 'admin' | 'editor' | 'viewer'
+    userId?: { name?: string; _id?: string }
+  }
 }
 
 export default function BoardCard({ board }: BoardCardProps) {
   const router = useRouter()
 
-  const ownerName = board.userId?.name || (board.userId?._id === board.userId ? 'Owner' : 'Owner')
+  const roleLabel = board.userRole === 'owner' ? 'My Board' : 'Shared'
+  const roleBadgeColor = board.userRole === 'owner' 
+    ? 'bg-purple-100 text-purple-700' 
+    : 'bg-blue-100 text-blue-700'
 
   return (
     <Card
@@ -42,7 +53,7 @@ export default function BoardCard({ board }: BoardCardProps) {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-xs text-[var(--kanban-muted)]">{ownerName}</div>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>{roleLabel}</span>
           </div>
         </div>
       </CardContent>

@@ -22,6 +22,9 @@ interface Board {
   description: string
   createdAt: string
   updatedAt: string
+  userRole?: 'owner' | 'admin' | 'editor' | 'viewer'
+  canEdit?: boolean
+  canDelete?: boolean
 }
 
 export default function KanbanListPage() {
@@ -61,8 +64,9 @@ export default function KanbanListPage() {
     }
   }
 
-  const myBoards = boards.filter(b => (b as any).userId?._id === user?.id || (b as any).userId === user?.id)
-  const sharedBoards = boards.filter(b => (b as any).userId?._id !== user?.id && (b as any).userId !== user?.id)
+  // Use userRole from backend for reliable ownership detection
+  const myBoards = boards.filter(b => b.userRole === 'owner')
+  const sharedBoards = boards.filter(b => b.userRole && b.userRole !== 'owner')
 
   return (
     <SidebarProvider

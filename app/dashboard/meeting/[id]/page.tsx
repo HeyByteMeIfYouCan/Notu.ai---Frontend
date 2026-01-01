@@ -355,6 +355,8 @@ export default function MeetingDetailPage() {
         />
 
         <MeetingTranscript 
+          meetingId={meetingId}
+          userRole={meeting.userRole}
           transcriptSegments={meeting.transcription?.segments || []}
           filteredSegments={filteredSegments}
           searchQuery={searchQuery}

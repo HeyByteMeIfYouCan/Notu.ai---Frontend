@@ -12,6 +12,7 @@ import { IconPlus, IconLayoutKanban, IconTrash, IconLoader2 } from "@tabler/icon
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
+import { formatDueDate } from "@/lib/dateUtils"
 
 interface TalkTimeData {
   speaker: string
@@ -258,28 +259,8 @@ export function MeetingAnalytics({
                         const colors = ['bg-purple-500', 'bg-red-500', 'bg-emerald-500', 'bg-amber-500'];
                         const colorClass = item.priority === 'urgent' ? 'bg-rose-500' : item.priority === 'high' ? 'bg-orange-500' : colors[index % colors.length];
                         
-                        let dateStr = '-';
-                        if (hasSyncedTasks) {
-                            const now = new Date();
-                            const d = item.dueDate ? new Date(item.dueDate) : null;
-                            if (d) {
-                                const diffTime = d.getTime() - now.getTime();
-                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                if (diffDays < 0) dateStr = 'Late';
-                                else if (diffDays === 0) dateStr = 'Today';
-                                else if (diffDays === 1) dateStr = 'Tmr';
-                                else dateStr = `${diffDays}d`;
-                            }
-                        } else if (item.dueDate) {
-                            const d = new Date(item.dueDate);
-                            const now = new Date();
-                            const diffTime = d.getTime() - now.getTime();
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                            
-                            if (diffDays === 0) dateStr = 'Today';
-                            else if (diffDays === 1) dateStr = 'Tmr';
-                            else dateStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                        }
+                        // Use centralized date utility for consistent formatting
+                        const dateStr = formatDueDate(item.dueDate);
 
                         return (
                           <div key={index} className="flex items-start justify-between group cursor-default">
