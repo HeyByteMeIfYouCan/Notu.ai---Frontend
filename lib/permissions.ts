@@ -1,22 +1,62 @@
 /**
  * Frontend Permission Utilities
  * Centralized role-based permission checks for UI components
+ * 
+ * Role Hierarchy: owner (4) > admin (3) > editor (2) > viewer (1)
+ * 
+ * Viewer: Can only view content, NO action buttons/icons visible
+ * Editor: Can edit content, transcripts, ask AI, create tasks
+ * Admin: Can share, manage collaborators, delete tasks, regenerate AI
+ * Owner: Full access, can delete meeting, transfer ownership
  */
 
 export type UserRole = 'owner' | 'admin' | 'editor' | 'viewer';
 
 export interface Permission {
+  // Core permissions
   canView: boolean;
   canEdit: boolean;
   canDelete: boolean;
   canShare: boolean;
   canManageCollaborators: boolean;
+  
+  // Task permissions
   canCreateTasks: boolean;
   canEditTasks: boolean;
   canDeleteTasks: boolean;
   canDragTasks: boolean;
+  
+  // AI permissions
   canRegenerateAI: boolean;
+  canAskAI: boolean; // Can view and write to AI chat
+  canWriteAI: boolean; // Can write/ask questions (editor+)
+  
+  // Export permissions
   canExport: boolean;
+  canExportMedia: boolean;
+  
+  // Meeting-specific permissions
+  canEditSegments: boolean;
+  canEditSpeakers: boolean;
+  canSyncTasks: boolean;
+  canDeleteMeeting: boolean;
+  canEditTitle: boolean;
+  canEditDescription: boolean;
+  canEditContent: boolean;
+  
+  // UI visibility permissions (what actions/icons to show)
+  showShareButton: boolean;
+  showDeleteButton: boolean;
+  showEditActions: boolean;
+  showExportDropdown: boolean;
+  showCopyLink: boolean;
+  showInfoButton: boolean;
+  showNotionConnect: boolean;
+  showKanbanActions: boolean;
+  showAskAI: boolean;
+  showRegenerateButton: boolean;
+  showSpeakerEdit: boolean;
+  showTranscriptEdit: boolean;
 }
 
 /**
@@ -31,45 +71,66 @@ const ROLE_LEVELS: Record<UserRole, number> = {
 
 /**
  * Get all permissions for a given role
+ * Viewer: Minimal access - view only, no action buttons
+ * Editor: Can edit content but not share/delete/manage
+ * Admin: Can share, manage, delete tasks, but not delete meeting
+ * Owner: Full access
  */
 export function getPermissions(role: UserRole | string | undefined): Permission {
   const normalizedRole = (role?.toLowerCase() || 'viewer') as UserRole;
-  
   const level = ROLE_LEVELS[normalizedRole] || 1;
   
+  // Viewer = level 1: View only, NO actions visible
+  const isViewer = level === 1;
+  const isEditor = level >= 2;
+  const isAdmin = level >= 3;
+  const isOwner = level >= 4;
+  
   return {
-    // All roles can view
-    canView: level >= 1,
+    // Core permissions
+    canView: true, // Everyone can view
+    canEdit: isEditor,
+    canDelete: isAdmin,
+    canShare: isAdmin,
+    canManageCollaborators: isAdmin,
     
-    // Editor+ can edit content
-    canEdit: level >= 2,
+    // Task permissions
+    canCreateTasks: isEditor,
+    canEditTasks: isEditor,
+    canDeleteTasks: isAdmin,
+    canDragTasks: isEditor,
     
-    // Owner only can delete resources
-    canDelete: level >= 4,
+    // AI permissions
+    canRegenerateAI: isAdmin, // Only admin+ can regenerate AI notes
+    canAskAI: true, // Everyone can view AI chat
+    canWriteAI: isEditor, // Editor+ can ask questions
     
-    // Owner and Admin can share
-    canShare: level >= 3,
+    // Export permissions
+    canExport: true, // Everyone can export text formats
+    canExportMedia: isEditor, // Editor+ can export media
     
-    // Owner and Admin can manage collaborators
-    canManageCollaborators: level >= 3,
+    // Meeting-specific permissions
+    canEditSegments: isEditor,
+    canEditSpeakers: isEditor,
+    canSyncTasks: isEditor,
+    canDeleteMeeting: isOwner, // Only owner can delete meeting
+    canEditTitle: isEditor,
+    canEditDescription: isEditor,
+    canEditContent: isEditor,
     
-    // Editor+ can create tasks
-    canCreateTasks: level >= 2,
-    
-    // Editor+ can edit tasks
-    canEditTasks: level >= 2,
-    
-    // Owner and Admin can delete tasks
-    canDeleteTasks: level >= 3,
-    
-    // Editor+ can drag/reorder tasks
-    canDragTasks: level >= 2,
-    
-    // Editor+ can regenerate AI notes
-    canRegenerateAI: level >= 2,
-    
-    // All roles can export
-    canExport: level >= 1,
+    // UI visibility - Viewer sees NOTHING, just content
+    showShareButton: isAdmin,
+    showDeleteButton: isOwner,
+    showEditActions: isEditor,
+    showExportDropdown: true, // Show but limit options based on role
+    showCopyLink: isEditor, // Editor+ can copy link
+    showInfoButton: true, // Everyone can see info
+    showNotionConnect: isAdmin,
+    showKanbanActions: isEditor,
+    showAskAI: true, // Everyone can VIEW the Ask AI tab
+    showRegenerateButton: isAdmin,
+    showSpeakerEdit: isEditor,
+    showTranscriptEdit: isEditor,
   };
 }
 

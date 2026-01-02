@@ -6,6 +6,8 @@ import { useApiWithAuth, useAuth } from "@/hooks/use-auth"
 import { getSocket } from "@/lib/socket"
 import { toast } from "sonner"
 import { IconLoader2 } from "@tabler/icons-react"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 
 // Components
 import { MeetingHeader } from "./components/MeetingHeader"
@@ -13,6 +15,15 @@ import { MeetingAnalytics } from "./components/MeetingAnalytics"
 import { MeetingMainContent } from "./components/MeetingMainContent"
 import { MeetingTranscript } from "./components/MeetingTranscript"
 import { PlaybackControls } from "./components/PlaybackControls"
+import { RealtimeBanner } from "./components/RealtimeBanner"
+
+// Types for socket events
+interface MeetingUpdateEvent {
+  meeting: any
+  updatedBy: { _id: string; name: string }
+  field?: string
+  action?: string
+}
 
 export default function MeetingDetailPage() {
   const params = useParams()
@@ -80,43 +91,145 @@ export default function MeetingDetailPage() {
     if (isReady) fetchMeeting()
   }, [isReady, fetchMeeting])
 
-  // Socket: subscribe to meeting updates so collaborators list and metadata refresh in real-time
+  // Socket: subscribe to meeting updates for realtime collaboration
   useEffect(() => {
     if (!meetingId) return
     const socket = getSocket()
+    
+    // Join meeting room
     socket.emit('join_meeting', meetingId)
-    socket.on('meeting_updated', (payload: any) => {
-      if (payload && payload.meeting && String(payload.meeting._id) === meetingId) {
+    
+    // Handle meeting updated event (title, description, etc.)
+    const handleMeetingUpdated = (payload: MeetingUpdateEvent) => {
+      if (!payload?.meeting || String(payload.meeting._id) !== meetingId) return
+      
+      // Don't show toast for own updates
+      if (payload.updatedBy?._id !== user?.id) {
+        const fieldLabel = payload.field === 'title' ? 'judul' : 
+                          payload.field === 'description' ? 'deskripsi' :
+                          payload.field === 'speaker' ? 'nama pembicara' : 'konten'
+        toast.info(`${payload.updatedBy?.name || 'Seseorang'} memperbarui ${fieldLabel}`, {
+          duration: 3000,
+        })
+      }
+      
+      fetchMeeting()
+    }
+    
+    // Handle AI regeneration
+    const handleAiRegenerated = (payload: any) => {
+      if (payload?.meetingId !== meetingId) return
+      
+      if (payload.regeneratedBy?._id !== user?.id) {
+        toast.info(`${payload.regeneratedBy?.name || 'Seseorang'} membuat ulang analisis AI`, {
+          duration: 3000,
+        })
+      }
+      
+      fetchMeeting()
+    }
+    
+    // Handle action item sync
+    const handleActionItemSynced = (payload: any) => {
+      if (payload?.meetingId !== meetingId) return
+      
+      if (payload.syncedBy?._id !== user?.id) {
+        toast.info(`${payload.syncedBy?.name || 'Seseorang'} membuat Kanban board`, {
+          duration: 3000,
+        })
+      }
+      
+      fetchMeeting()
+    }
+    
+    // Handle collaborator changes
+    const handleCollaboratorAdded = (payload: any) => {
+      if (payload?.meetingId !== meetingId) return
+      toast.success(`${payload.user?.name || 'Seseorang'} bergabung ke meeting`, {
+        duration: 3000,
+      })
+      fetchMeeting()
+    }
+    
+    const handleCollaboratorRemoved = (payload: any) => {
+      if (payload?.meetingId !== meetingId) return
+      
+      // If current user was removed, redirect
+      if (payload.userId === user?.id) {
+        toast.error('Akses Anda ke meeting ini telah dicabut')
+        router.push('/dashboard/meeting')
+        return
+      }
+      
+      fetchMeeting()
+    }
+    
+    // Handle role changes
+    const handleCollaboratorRoleChanged = (payload: any) => {
+      if (payload?.resourceId !== meetingId) return
+      
+      // If current user's role was changed, refetch and show notification
+      if (payload.userId === user?.id) {
+        toast.info(`Peran Anda diubah menjadi ${payload.newRole}`, {
+          duration: 4000,
+        })
+        fetchMeeting()
+      } else {
+        // Someone else's role changed, just refetch silently
         fetchMeeting()
       }
-    })
+    }
+    
+    socket.on('meeting_updated', handleMeetingUpdated)
+    socket.on('meeting_ai_regenerated', handleAiRegenerated)
+    socket.on('meeting_action_synced', handleActionItemSynced)
+    socket.on('meeting_collaborator_added', handleCollaboratorAdded)
+    socket.on('meeting_collaborator_removed', handleCollaboratorRemoved)
+    socket.on('collaborator_role_changed', handleCollaboratorRoleChanged)
+    
     return () => {
       socket.emit('leave_meeting', meetingId)
-      socket.off('meeting_updated')
+      socket.off('meeting_updated', handleMeetingUpdated)
+      socket.off('meeting_ai_regenerated', handleAiRegenerated)
+      socket.off('meeting_action_synced', handleActionItemSynced)
+      socket.off('meeting_collaborator_added', handleCollaboratorAdded)
+      socket.off('meeting_collaborator_removed', handleCollaboratorRemoved)
+      socket.off('collaborator_role_changed', handleCollaboratorRoleChanged)
     }
-  }, [meetingId, getSocket])
+  }, [meetingId, user?.id, fetchMeeting, router])
 
-  // Player logic
+  // Player logic - Track current time and active segment
   useEffect(() => {
     const video = videoRef.current
     const audio = audioRef.current
+    
     const handleTimeUpdate = () => {
       const time = video?.currentTime || audio?.currentTime || 0
       setCurrentTime(time)
-      if (meeting?.transcription?.segments) {
+      
+      // Update active segment based on current time
+      if (meeting?.transcription?.segments && meeting.transcription.segments.length > 0) {
         const activeIndex = meeting.transcription.segments.findIndex(
           (seg: any) => seg.start <= time && seg.end >= time
         )
-        if (activeIndex !== -1 && activeIndex !== activeSegmentIndex) {
+        
+        // Update active segment index whenever it changes
+        if (activeIndex !== -1) {
           setActiveSegmentIndex(activeIndex)
+          
+          // Auto-scroll to active segment if enabled
           if (autoFollow && transcriptContainerRef.current && !searchQuery) {
             const segmentElement = transcriptContainerRef.current.children[activeIndex] as HTMLElement
-            if (segmentElement) segmentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            if (segmentElement) {
+              segmentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }
           }
         }
       }
     }
+    
     const handleEnded = () => setIsPlaying(false)
+    
     if (video) {
       video.addEventListener('timeupdate', handleTimeUpdate)
       video.addEventListener('ended', handleEnded)
@@ -125,6 +238,7 @@ export default function MeetingDetailPage() {
       audio.addEventListener('timeupdate', handleTimeUpdate)
       audio.addEventListener('ended', handleEnded)
     }
+    
     return () => {
       if (video) {
         video.removeEventListener('timeupdate', handleTimeUpdate)
@@ -135,14 +249,23 @@ export default function MeetingDetailPage() {
         audio.removeEventListener('ended', handleEnded)
       }
     }
-  }, [videoUrl, audioUrl, meeting?.transcription?.segments, autoFollow, activeSegmentIndex, searchQuery])
+  }, [videoUrl, audioUrl, meeting?.transcription?.segments, autoFollow, searchQuery])
 
   const togglePlayPause = () => {
     const media = videoRef.current || audioRef.current
     if (media) {
-      if (isPlaying) media.pause()
-      else media.play()
-      setIsPlaying(!isPlaying)
+      // Sync media time with state before toggling
+      if (Math.abs(media.currentTime - currentTime) > 0.5) {
+        media.currentTime = currentTime
+      }
+      
+      if (isPlaying) {
+        media.pause()
+        setIsPlaying(false)
+      } else {
+        media.play().catch(err => console.error('Play failed:', err))
+        setIsPlaying(true)
+      }
     }
   }
 
@@ -150,8 +273,9 @@ export default function MeetingDetailPage() {
     const media = videoRef.current || audioRef.current
     if (media) {
       media.currentTime = seconds
+      setCurrentTime(seconds)  // Sync state immediately
       if (!isPlaying) {
-        media.play()
+        media.play().catch(err => console.error('Play failed:', err))
         setIsPlaying(true)
       }
     }
@@ -306,95 +430,111 @@ export default function MeetingDetailPage() {
   ) || []
 
   return (
-    <div className="min-h-screen bg-white flex flex-col h-screen overflow-hidden">
-      <MeetingHeader 
-        title={meeting.title}
-        description={meeting.description || ""}
-        meetingId={meetingId}
-        shareToken={shareToken}
-        user={user}
-        userRole={meeting?.userRole}
-        collaborators={meeting.collaborators}
-        onGenerateShareLink={handleGenerateShareLink}
-        onUpdateRole={handleUpdateRole}
-        onRemoveMember={handleRemoveMember}
-        onExport={handleExport}
-        onDeleteMeeting={handleDeleteMeeting}
-        onUpdateMeeting={handleUpdateMeeting}
-        isVideoFile={isVideoFile}
-        audioUrl={audioUrl}
-        summary={meeting.transcription?.summary || ""}
-        meeting={meeting}
-      />
+    <SidebarProvider defaultOpen={false}>
+      <AppSidebar className="z-[100]" />
+      <SidebarInset className="flex flex-col h-screen overflow-hidden">
+        <div className="min-h-screen bg-background flex flex-col h-screen overflow-hidden">
+          <RealtimeBanner 
+            meetingId={meetingId}
+            currentUserName={user?.name}
+            onRefresh={fetchMeeting}
+          />
+          
+          <MeetingHeader 
+            title={meeting.title}
+            description={meeting.description || ""}
+            meetingId={meetingId}
+            shareToken={shareToken}
+            user={user}
+            userRole={meeting?.userRole}
+            collaborators={meeting.collaborators}
+            participants={meeting.participants}
+            onGenerateShareLink={handleGenerateShareLink}
+            onUpdateRole={handleUpdateRole}
+            onRemoveMember={handleRemoveMember}
+            onExport={handleExport}
+            onDeleteMeeting={handleDeleteMeeting}
+            onUpdateMeeting={handleUpdateMeeting}
+            isVideoFile={isVideoFile}
+            audioUrl={audioUrl}
+            summary={meeting.transcription?.summary || ""}
+          />
 
-      <div className="flex flex-1 overflow-hidden">
-        <MeetingAnalytics 
-          talkTime={analytics?.talkTime || []}
-          topics={analytics?.topics || []}
-          actionItems={actionItems}
-          hasSyncedTasks={hasSyncedTasks}
-          hasBoard={meeting?.hasBoard}
-          onGenerateKanban={handleGenerateKanban}
-          onDeleteKanban={handleDeleteKanban}
-          boardId={meeting?.boardId}
-          userRole={meeting?.userRole}
-        />
+          <div className="flex flex-1 overflow-hidden">
+            <MeetingAnalytics 
+              talkTime={analytics?.talkTime || []}
+              topics={analytics?.topics || []}
+              actionItems={actionItems}
+              hasSyncedTasks={hasSyncedTasks}
+              hasBoard={meeting?.hasBoard}
+              onGenerateKanban={handleGenerateKanban}
+              onDeleteKanban={handleDeleteKanban}
+              boardId={meeting?.boardId}
+              userRole={meeting?.userRole}
+            />
 
-        <MeetingMainContent 
-          meeting={meeting}
-                    userRole={meeting?.userRole}
-          actionItems={actionItems}
-          hasSyncedTasks={hasSyncedTasks}
-          onUpdateMeeting={handleUpdateMeeting}
-          onRegenerateAi={handleRegenerateAi}
-          onGenerateKanban={handleGenerateKanban}
-          onUpdateContent={handleUpdateContent}
-          formatDate={formatDate}
-          formatTimeOnly={formatTimeOnly}
-          formatDuration={formatDuration}
-        />
+            <MeetingMainContent 
+              meeting={meeting}
+              userRole={meeting?.userRole}
+              actionItems={actionItems}
+              hasSyncedTasks={hasSyncedTasks}
+              onUpdateMeeting={handleUpdateMeeting}
+              onRegenerateAi={handleRegenerateAi}
+              onGenerateKanban={handleGenerateKanban}
+              onUpdateContent={handleUpdateContent}
+              formatDate={formatDate}
+              formatTimeOnly={formatTimeOnly}
+              formatDuration={formatDuration}
+            />
 
-        <MeetingTranscript 
-          meetingId={meetingId}
-          userRole={meeting.userRole}
-          transcriptSegments={meeting.transcription?.segments || []}
-          filteredSegments={filteredSegments}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          autoFollow={autoFollow}
-          setAutoFollow={setAutoFollow}
-          activeSegmentIndex={activeSegmentIndex}
-          jumpToTimestamp={jumpToTimestamp}
-          formatTime={formatTime}
-          currentTime={currentTime}
-          totalDuration={meeting.duration || 0}
-          videoUrl={videoUrl}
-          videoRef={videoRef}
-          isVideoFile={isVideoFile}
-          isPlaying={isPlaying}
-          togglePlayPause={togglePlayPause}
-          transcriptContainerRef={transcriptContainerRef}
-          onUpdateSpeaker={handleUpdateSpeaker}
-        />
-      </div>
+            <MeetingTranscript 
+              meetingId={meetingId}
+              userRole={meeting.userRole}
+              transcriptSegments={meeting.transcription?.segments || []}
+              filteredSegments={filteredSegments}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              autoFollow={autoFollow}
+              setAutoFollow={setAutoFollow}
+              activeSegmentIndex={activeSegmentIndex}
+              jumpToTimestamp={jumpToTimestamp}
+              formatTime={formatTime}
+              currentTime={currentTime}
+              totalDuration={meeting.duration || 0}
+              videoUrl={videoUrl}
+              audioRef={audioRef}
+              videoRef={videoRef}
+              isVideoFile={isVideoFile}
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+              togglePlayPause={togglePlayPause}
+              transcriptContainerRef={transcriptContainerRef}
+              onUpdateSpeaker={handleUpdateSpeaker}
+              meeting={meeting}
+              collaborators={meeting.collaborators}
+              user={user}
+            />
+          </div>
 
-      {(videoUrl || audioUrl) && (
-        <PlaybackControls 
-          currentTime={currentTime}
-          totalDuration={meeting.duration || 0}
-          isPlaying={isPlaying}
-          isVideoFile={isVideoFile}
-          togglePlayPause={togglePlayPause}
-          jumpToTimestamp={jumpToTimestamp}
-          formatTime={formatTime}
-          videoRef={videoRef}
-          audioRef={audioRef}
-        />
-      )}
+          {(videoUrl || audioUrl) && (
+            <PlaybackControls 
+              currentTime={currentTime}
+              totalDuration={meeting.duration || 0}
+              isPlaying={isPlaying}
+              isVideoFile={isVideoFile}
+              togglePlayPause={togglePlayPause}
+              jumpToTimestamp={jumpToTimestamp}
+              formatTime={formatTime}
+              videoRef={videoRef}
+              audioRef={audioRef}
+            />
+          )}
 
-      {audioUrl && !videoUrl && (
-        <audio ref={audioRef} src={audioUrl} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
-      )}
-    </div>
+          {audioUrl && !videoUrl && (
+            <audio ref={audioRef} src={audioUrl} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
+          )}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

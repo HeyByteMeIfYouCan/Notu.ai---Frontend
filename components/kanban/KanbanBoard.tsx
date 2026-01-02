@@ -5,11 +5,15 @@ import { useCallback, useEffect, useState, useRef, useMemo } from "react"
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
+  UniqueIdentifier,
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { IconPlus, IconDownload, IconShare2, IconLink, IconPencil, IconCopy } from "@tabler/icons-react"
@@ -61,9 +65,18 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
   const [showShare, setShowShare] = useState(false)
   const [shareToken, setShareToken] = useState<string | null>(null)
 
+  // Labels - declare early to avoid "used before declaration" error
+  const [labels, setLabels] = useState<BoardLabel[]>([])
+
   // Avoid hydration mismatch
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
+
+  // Labels ref to avoid stale closure in fetchTasks
+  const labelsRef = useRef<BoardLabel[]>([])
+  useEffect(() => {
+    labelsRef.current = labels
+  }, [labels])
 
   // Fetch Board info
   const fetchBoardInfo = useCallback(async () => {
@@ -73,7 +86,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
       const data = (response as any).data || response
       setBoard(data)
       if (data.labels) {
-        setLabels(data.labels.map((l: any) => ({ ...l, id: l._id || l.id })))
+        const mappedLabels = data.labels.map((l: any) => ({ ...l, id: l._id || l.id }))
+        setLabels(mappedLabels)
+        labelsRef.current = mappedLabels
       }
     } catch (error) {
       console.error("Error fetching board info:", error)
@@ -109,9 +124,6 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
   const permissions = useMemo(() => getPermissions(role), [role])
   const assignableRoles = useMemo(() => getAssignableRoles(role), [role])
 
-  // Labels
-  const [labels, setLabels] = useState<BoardLabel[]>([])
-
   const handleCreateLabel = async (newLabel: Omit<BoardLabel, "id">) => {
     if (!boardId || !board) return
     try {
@@ -120,7 +132,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
       const updatedBoard = (response as any).data || response
       setBoard(updatedBoard)
       if (updatedBoard.labels) {
-        setLabels(updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id })))
+        const mappedLabels = updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id }))
+        setLabels(mappedLabels)
+        labelsRef.current = mappedLabels
       }
       toast.success("Label created")
     } catch (error) {
@@ -138,7 +152,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
       const updatedBoard = (response as any).data || response
       setBoard(updatedBoard)
       if (updatedBoard.labels) {
-        setLabels(updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id })))
+        const mappedLabels = updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id }))
+        setLabels(mappedLabels)
+        labelsRef.current = mappedLabels
       }
       // Refresh tasks because labels in tasks are strings (names) and might have been renamed
       fetchTasks()
@@ -156,7 +172,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
       const updatedBoard = (response as any).data || response
       setBoard(updatedBoard)
       if (updatedBoard.labels) {
-        setLabels(updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id })))
+        const mappedLabels = updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id }))
+        setLabels(mappedLabels)
+        labelsRef.current = mappedLabels
       }
       // Refresh tasks because labels are removed from tasks on backend
       fetchTasks()
@@ -220,13 +238,22 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     } finally {
       setIsLoading(false)
     }
-  }, [isReady, api, boardId, labels])
+  }, [isReady, api, boardId])
 
+  // Fetch tasks when board info (and labels) are loaded
   useEffect(() => {
-    if (isReady) fetchTasks()
-  }, [isReady, fetchTasks])
+    if (isReady && boardId && board) {
+      fetchTasks()
+    }
+  }, [isReady, boardId, board, fetchTasks])
 
-  // Socket.io Integration
+  // User ID ref for socket event filtering (avoids stale closure)
+  const userIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    userIdRef.current = (user as any)?.id || (user as any)?._id || null
+  }, [user])
+
+  // Socket.io Integration with named handlers for proper cleanup
   useEffect(() => {
     if (!boardId || !mounted) return
 
@@ -234,59 +261,57 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     
     socket.emit('join_board', boardId)
 
-    socket.on('task_created', ({ task, userName, taskTitle, userId }) => {
-      const currentUserId = (user as any)?.id || (user as any)?._id
-      if (userId && userId === currentUserId) return
-
+    const handleTaskCreated = ({ task, userName, taskTitle, userId }: any) => {
+      if (userId && userId === userIdRef.current) return
       toast.info(`${userName} telah membuat task "${taskTitle || task?.title || 'Baru'}"`)
       fetchTasks()
-    })
+    }
 
-    socket.on('task_updated', ({ task, userName, taskTitle, userId }) => {
-      const currentUserId = (user as any)?.id || (user as any)?._id
-      if (userId && userId === currentUserId) return
-
+    const handleTaskUpdated = ({ task, userName, taskTitle, userId }: any) => {
+      if (userId && userId === userIdRef.current) return
       toast.info(`${userName} telah memperbarui task "${taskTitle || task?.title || 'Tugas'}"`)
       fetchTasks()
-    })
+    }
 
-    socket.on('task_deleted', ({ taskId, userName, taskTitle, userId }) => {
-      const currentUserId = (user as any)?.id || (user as any)?._id
-      if (userId && userId === currentUserId) return
-
+    const handleTaskDeleted = ({ taskId, userName, taskTitle, userId }: any) => {
+      if (userId && userId === userIdRef.current) return
       toast.info(`${userName} telah menghapus task "${taskTitle || 'Tugas'}"`)
       fetchTasks()
-    })
+    }
 
-    socket.on('tasks_reordered', ({ tasks, userName, userId }) => {
-      const currentUserId = (user as any)?.id || (user as any)?._id
-      if (userId && userId === currentUserId) return
-      
+    const handleTasksReordered = ({ tasks, userName, userId }: any) => {
+      if (userId && userId === userIdRef.current) return
       toast.info(`${userName} telah memindahkan posisi task`)
       fetchTasks()
-    })
+    }
 
-    socket.on('board_updated', ({ board: updatedBoard, userName, userId }) => {
-      const currentUserId = (user as any)?.id || (user as any)?._id
-      if (userId && userId === currentUserId) return
-
+    const handleBoardUpdated = ({ board: updatedBoard, userName, userId }: any) => {
+      if (userId && userId === userIdRef.current) return
       toast.info(`${userName} telah memperbarui board`)
       setBoard(updatedBoard)
       if (updatedBoard.labels) {
-        setLabels(updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id })))
+        const mappedLabels = updatedBoard.labels.map((l: any) => ({ ...l, id: l._id || l.id }))
+        setLabels(mappedLabels)
+        labelsRef.current = mappedLabels
       }
       fetchTasks()
-    })
+    }
+
+    socket.on('task_created', handleTaskCreated)
+    socket.on('task_updated', handleTaskUpdated)
+    socket.on('task_deleted', handleTaskDeleted)
+    socket.on('tasks_reordered', handleTasksReordered)
+    socket.on('board_updated', handleBoardUpdated)
 
     return () => {
       socket.emit('leave_board', boardId)
-      socket.off('task_created')
-      socket.off('task_updated')
-      socket.off('task_deleted')
-      socket.off('tasks_reordered')
-      socket.off('board_updated')
+      socket.off('task_created', handleTaskCreated)
+      socket.off('task_updated', handleTaskUpdated)
+      socket.off('task_deleted', handleTaskDeleted)
+      socket.off('tasks_reordered', handleTasksReordered)
+      socket.off('board_updated', handleBoardUpdated)
     }
-  }, [boardId, mounted, fetchTasks, fetchBoardInfo])
+  }, [boardId, mounted, fetchTasks])
 
   const handleGenerateShare = async () => {
     if (!isReady || !boardId) return
@@ -317,131 +342,157 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
     }
   }
 
-  // DnD logic
+  // DnD logic - Add touch sensor for mobile support
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   )
 
   const activeTaskRef = useRef<Task | null>(null)
   const startColumnRef = useRef<ColumnId | null>(null)
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
 
-  const onDragStart = (activeId: string) => {
-    if (!canModify) return
-    let sourceCol: ColumnId | null = null
-    const task = Object.values(columns).flat().find((t) => t.id === activeId) || null
-
-    ;(Object.keys(columns) as ColumnId[]).forEach((colId) => {
-      if (columns[colId].some((t) => t.id === activeId)) sourceCol = colId
-    })
-
-    console.log("[DND] Start:", { activeId, sourceCol })
-    startColumnRef.current = sourceCol
-    activeTaskRef.current = task
-    setActiveId(activeId)
+  const findColumnByTaskId = (taskId: string): ColumnId | null => {
+    for (const colId of Object.keys(columns) as ColumnId[]) {
+      if (columns[colId].some((t) => t.id === taskId)) return colId
+    }
+    return null
   }
 
-  const onDragEnd = async (event: DragEndEvent) => {
-    setActiveId(null)
+  const handleDragStart = (event: DragStartEvent) => {
     if (!canModify) return
-    const { over, active } = event
-    if (!over) return
+    const { active } = event
+    const activeIdStr = String(active.id)
+    
+    const sourceCol = findColumnByTaskId(activeIdStr)
+    const task = Object.values(columns).flat().find((t) => t.id === activeIdStr) || null
 
+    console.log("[DND] Start:", { activeIdStr, sourceCol })
+    startColumnRef.current = sourceCol
+    activeTaskRef.current = task
+    setActiveId(active.id)
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { over, active } = event
+    const activeTask = activeTaskRef.current
     const startCol = startColumnRef.current
+    
+    // Reset drag state
+    setActiveId(null)
+    activeTaskRef.current = null
+    startColumnRef.current = null
+    
+    if (!canModify || !over || !activeTask || !startCol) return
+
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
 
     // Identify final destination column
-    let targetCol: ColumnId | null = null
-    ;(Object.keys(columns) as ColumnId[]).forEach((colId) => {
-      if (columns[colId].some((t) => t.id === overIdStr)) targetCol = colId
-    })
+    let targetCol: ColumnId | null = findColumnByTaskId(overIdStr)
+    
+    // If dropping on the column container itself (empty area)
     if (!targetCol && (overIdStr === "todo" || overIdStr === "in-progress" || overIdStr === "done")) {
-       targetCol = overIdStr as ColumnId
+      targetCol = overIdStr as ColumnId
     }
 
     console.log("[DND] Final Commit:", { activeIdStr, startCol, targetCol })
 
-    if (isReady && targetCol && startCol) {
-      setTimeout(async () => {
-        try {
-          // Send BOTH columns to ensure order consistency
-          const destPayload = (columns[targetCol!] as Task[]).filter(Boolean).map((t, idx) => ({
-            id: t._id || t.id,
-            order: idx,
-            status: columnToStatus[targetCol!]
-          }))
-          
-          let totalPayload = [...destPayload]
-          if (startCol !== targetCol) {
-            const sourcePayload = (columns[startCol] as Task[]).filter(Boolean).map((t, idx) => ({
-              id: t._id || t.id,
-              order: idx,
-              status: columnToStatus[startCol]
-            }))
-            const destIds = new Set(destPayload.map(p => p.id))
-            totalPayload = [
-              ...destPayload,
-              ...sourcePayload.filter(p => !destIds.has(p.id))
-            ]
-          }
-          
-          await api.reorderTasks(totalPayload, boardId)
-          console.log("[DND] Persistence Success")
-          fetchTasks() // Sync with server for absolute consistency
-        } catch (error: any) {
-          console.error("[DND] Persistence Failed:", error)
-          toast.error(error.message || "Reorder failed")
-          fetchTasks()
-        }
-      }, 0)
+    if (!isReady || !targetCol) return
+
+    // Persist changes to backend
+    try {
+      // Get current state of columns after optimistic updates from onDragOver
+      const currentColumns = columns
+      
+      // Build payload for all affected columns
+      const destPayload = currentColumns[targetCol].filter(Boolean).map((t, idx) => ({
+        id: t._id || t.id,
+        order: idx,
+        status: columnToStatus[targetCol!]
+      }))
+      
+      let totalPayload = [...destPayload]
+      
+      if (startCol !== targetCol) {
+        const sourcePayload = currentColumns[startCol].filter(Boolean).map((t, idx) => ({
+          id: t._id || t.id,
+          order: idx,
+          status: columnToStatus[startCol]
+        }))
+        const destIds = new Set(destPayload.map(p => p.id))
+        totalPayload = [
+          ...destPayload,
+          ...sourcePayload.filter(p => !destIds.has(p.id))
+        ]
+      }
+      
+      await api.reorderTasks(totalPayload, boardId)
+      console.log("[DND] Persistence Success")
+    } catch (error: any) {
+      console.error("[DND] Persistence Failed:", error)
+      toast.error(error.message || "Reorder failed")
+      // Revert by fetching from server
+      fetchTasks()
     }
-    
-    startColumnRef.current = null
   }
 
-  const onDragOver = (event: DragEndEvent) => {
+  const handleDragOver = (event: DragOverEvent) => {
     if (!canModify) return
     const { active, over } = event
     if (!over) return
+    
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
 
-    let from: ColumnId | null = null
-    let to: ColumnId | null = null
-    ;(Object.keys(columns) as ColumnId[]).forEach((c) => {
-      if (columns[c].some((t) => t.id === activeIdStr)) from = c
-      if (columns[c].some((t) => t.id === overIdStr)) to = c
-    })
-    
+    // Find source column
+    const from = findColumnByTaskId(activeIdStr)
     if (!from) return
-    // If over a container logic
-    if (!to && (overIdStr === "todo" || overIdStr === "in-progress" || overIdStr === "done")) to = overIdStr as ColumnId
+
+    // Find destination column
+    let to: ColumnId | null = findColumnByTaskId(overIdStr)
+    
+    // If dropping on column container (empty area or column header)
+    if (!to && (overIdStr === "todo" || overIdStr === "in-progress" || overIdStr === "done")) {
+      to = overIdStr as ColumnId
+    }
     
     if (!to) return
 
+    // Same column reordering
     if (from === to) {
-      const items = [...columns[from]] as Task[]
-      const oldIndex = items.findIndex((t) => t.id === activeIdStr)
-      const newIndex = items.findIndex((t) => t.id === overIdStr)
-      if (newIndex !== -1 && oldIndex !== newIndex) {
-        setColumns((prev) => ({ ...prev, [from!]: arrayMove(items, oldIndex, newIndex) }))
-      }
+      setColumns((prev) => {
+        const items = [...prev[from]]
+        const oldIndex = items.findIndex((t) => t.id === activeIdStr)
+        const newIndex = items.findIndex((t) => t.id === overIdStr)
+        
+        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return prev
+        
+        return { ...prev, [from]: arrayMove(items, oldIndex, newIndex) }
+      })
       return
     }
 
-    // Move across columns (optimistic visual)
-    const fromItems = [...columns[from]] as Task[]
-    const toItems = [...columns[to]] as Task[]
-    const fromIndex = fromItems.findIndex((t) => t.id === activeIdStr)
-    if (fromIndex === -1) return
-    
-    const [moved] = fromItems.splice(fromIndex, 1) as Task[]
-    const overIndex = toItems.findIndex((t) => t.id === overIdStr)
-    const insertAt = overIndex >= 0 ? overIndex : toItems.length
-    toItems.splice(insertAt, 0, moved)
-    
-    setColumns((prev) => ({ ...prev, [from!]: fromItems, [to!]: toItems }))
+    // Cross-column movement (optimistic UI update)
+    setColumns((prev) => {
+      const fromItems = [...prev[from]]
+      const toItems = [...prev[to!]]
+      
+      const fromIndex = fromItems.findIndex((t) => t.id === activeIdStr)
+      if (fromIndex === -1) return prev
+      
+      // Check if task already exists in destination (prevent duplicates)
+      if (toItems.some((t) => t.id === activeIdStr)) return prev
+      
+      const [moved] = fromItems.splice(fromIndex, 1)
+      
+      // Find insert position
+      const overIndex = toItems.findIndex((t) => t.id === overIdStr)
+      const insertAt = overIndex >= 0 ? overIndex : toItems.length
+      toItems.splice(insertAt, 0, moved)
+      
+      return { ...prev, [from]: fromItems, [to!]: toItems }
+    })
   }
 
   // Add Task Logic
@@ -688,9 +739,9 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
         <div className="px-4 lg:px-6 flex-1 overflow-x-auto">
           <DndContext 
             sensors={sensors} 
-            onDragEnd={onDragEnd} 
-            onDragOver={onDragOver} 
-            onDragStart={({ active }) => onDragStart(String(active.id))} 
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
             collisionDetection={closestCorners}
           >
             <div className="grid gap-6 lg:grid-cols-3 h-full pb-8 min-w-[800px]">
@@ -738,9 +789,14 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
               />
             </div>
             <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)" }}>
-              {activeTaskRef.current ? (
+              {activeId && activeTaskRef.current ? (
                 <div className="scale-[1.02] shadow-2xl opacity-90 cursor-grabbing">
-                  <TaskCard task={activeTaskRef.current} labels={labels} showProgress={activeId === 'in-progress'} members={boardMembers} />
+                  <TaskCard 
+                    task={activeTaskRef.current} 
+                    labels={labels} 
+                    showProgress={startColumnRef.current === 'in-progress'} 
+                    members={boardMembers} 
+                  />
                 </div>
               ) : null}
             </DragOverlay>

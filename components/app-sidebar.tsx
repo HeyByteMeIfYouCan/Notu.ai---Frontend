@@ -27,6 +27,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import Image from "next/image"
 
@@ -66,6 +67,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
+  const { setOpen } = useSidebar()
 
   const user = {
     name: session?.user?.name || "Guest",
@@ -74,7 +76,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar 
+
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

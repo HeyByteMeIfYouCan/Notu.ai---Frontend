@@ -10,9 +10,10 @@ import { IconChevronDown, IconChevronRight, IconChecks } from "@tabler/icons-rea
 import { Button } from "@/components/ui/button"
 import { IconPlus, IconLayoutKanban, IconTrash, IconLoader2 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import { formatDueDate } from "@/lib/dateUtils"
+import { getPermissions } from "@/lib/permissions"
 
 interface TalkTimeData {
   speaker: string
@@ -55,6 +56,9 @@ export function MeetingAnalytics({
     action: false
   })
 
+  // Permission checks
+  const permissions = useMemo(() => getPermissions(userRole || undefined), [userRole])
+
   const toggleSection = (section: string) => {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
@@ -86,7 +90,7 @@ export function MeetingAnalytics({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 rounded-full text-muted-foreground hover:text-[var(--primary)] hover:bg-[var(--primary)]/5"
+            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
             onClick={() => toast.info("Fitur Detail Analytics akan tersedia segera!")}
           >
             <IconChevronRight className="h-4 w-4" />
@@ -97,9 +101,9 @@ export function MeetingAnalytics({
         <div className="mb-6 pt-2">
           <button 
             onClick={() => toggleSection('talktime')}
-            className="flex items-center justify-between w-full mb-3 group"
+            className="flex items-center justify-between w-full mb-3 group hover:opacity-70 transition-opacity"
           >
-            <h3 className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">TALKTIME</h3>
+            <h3 className="text-[10px] font-extrabold text-muted-foreground tracking-widest uppercase">TALKTIME</h3>
             <IconChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${collapsedSections.talktime ? '-rotate-90' : ''}`} />
           </button>
           
@@ -117,33 +121,70 @@ export function MeetingAnalytics({
                   sortedTalkTime.map((item, index) => {
                     const circumference = 2 * Math.PI * 6
                     const dashOffset = circumference - (circumference * item.total / 100)
+                    
+                    // Generate a color for each speaker
+                    const colors = [
+                      'bg-purple-500', 'bg-emerald-500', 'bg-indigo-500', 
+                      'bg-rose-500', 'bg-amber-500', 'bg-blue-500', 
+                      'bg-pink-500', 'bg-cyan-500', 'bg-orange-500'
+                    ]
+                    const textColors = [
+                      'text-purple-500', 'text-emerald-500', 'text-indigo-500', 
+                      'text-rose-500', 'text-amber-500', 'text-blue-500', 
+                      'text-pink-500', 'text-cyan-500', 'text-orange-500'
+                    ]
+                    const bgColor = colors[index % colors.length]
+                    const textColor = textColors[index % textColors.length]
+                    
                     return (
-                      <div key={index} className="grid grid-cols-4 gap-2 items-center">
+                      <div 
+                        key={index} 
+                        className="grid grid-cols-4 gap-2 items-center group/speaker hover:bg-muted/50 rounded-lg p-2 -mx-2 transition-all cursor-default relative"
+                      >
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <div className="w-6 h-6 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] text-[10px] font-bold border border-[var(--primary)]/10">
+                          <div className={`w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold shadow-sm transition-transform group-hover/speaker:scale-110`}>
                             {item.speaker.charAt(item.speaker.length - 1)}
                           </div>
-                          <span className="text-xs truncate font-medium text-foreground">{item.speaker}</span>
+                          <span className={`text-xs truncate font-medium ${textColor} group-hover/speaker:font-semibold transition-all`}>
+                            {item.speaker}
+                          </span>
                         </div>
-                        <div className="text-[11px] text-muted-foreground">{item.words}</div>
-                        <div className="text-[11px] text-muted-foreground">{item.talks}x</div>
+                        <div className="text-[11px] text-muted-foreground group-hover/speaker:text-foreground transition-colors">
+                          {item.words}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground group-hover/speaker:text-foreground transition-colors">
+                          {item.talks}x
+                        </div>
                         <div className="flex items-center justify-end gap-1.5">
-                          <span className="text-[11px] font-semibold text-foreground">{item.total}%</span>
-                          <div className="relative w-3.5 h-3.5">
-                            <svg className="w-3.5 h-3.5 -rotate-90" viewBox="0 0 16 16">
-                              <circle cx="8" cy="8" r="6" fill="none" stroke="var(--border)" strokeWidth="2.5"/>
+                          <span className={`text-[11px] font-semibold ${textColor} group-hover/speaker:font-bold transition-all`}>
+                            {item.total}%
+                          </span>
+                          <div className="relative w-4 h-4 flex-shrink-0">
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 16 16" preserveAspectRatio="xMidYMid meet">
+                              <circle cx="8" cy="8" r="6" fill="none" stroke="hsl(var(--border))" strokeWidth="2.5"/>
                               <circle 
                                 cx="8" 
                                 cy="8" 
                                 r="6" 
                                 fill="none" 
-                                stroke="var(--primary)" 
+                                stroke="currentColor" 
+                                className={textColor}
                                 strokeWidth="2.5" 
                                 strokeDasharray={circumference}
                                 strokeDashoffset={dashOffset}
                                 strokeLinecap="round"
                               />
                             </svg>
+                          </div>
+                        </div>
+                        
+                        {/* Hover Tooltip */}
+                        <div className="absolute left-0 top-full mt-1 bg-popover text-popover-foreground px-3 py-2 rounded-lg shadow-lg border border-border opacity-0 group-hover/speaker:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap text-xs">
+                          <div className="font-semibold mb-1">{item.speaker}</div>
+                          <div className="space-y-0.5 text-[10px] text-muted-foreground">
+                            <div>💬 {item.words} kata diucapkan</div>
+                            <div>🗣️ {item.talks} kali berbicara</div>
+                            <div>📊 {item.total}% dari total waktu</div>
                           </div>
                         </div>
                       </div>
@@ -201,14 +242,14 @@ export function MeetingAnalytics({
             <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
               {actionItems.length > 0 && (
                 <>
-                  <div className="flex items-center justify-between bg-[var(--primary)]/5 rounded-xl p-2.5 border border-[var(--primary)]/10 shadow-sm transition-all hover:bg-[var(--primary)]/8">
+                  <div className="flex items-center justify-between bg-primary/5 rounded-xl p-2.5 border border-primary/10 shadow-sm transition-all hover:bg-primary/8">
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className="w-6 h-6 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-[var(--primary)]">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-primary">
                           <path d="M20 6L9 17l-5-5"/>
                         </svg>
                       </div>
-                      <span className="text-xs font-medium text-[var(--primary)] truncate">
+                      <span className="text-xs font-semibold text-primary truncate">
                         {hasSyncedTasks 
                           ? "Kanban board aktif" 
                           : "Action items tersedia"}
@@ -218,7 +259,7 @@ export function MeetingAnalytics({
                       <Button 
                         size="sm" 
                         variant="secondary" 
-                        className="h-7 text-[10px] px-3 font-bold uppercase tracking-tight rounded-lg bg-white border border-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white shadow-sm transition-all" 
+                        className="h-7 text-[10px] px-3 font-extrabold uppercase tracking-tight rounded-lg bg-background border border-primary/10 text-primary hover:bg-primary hover:text-primary-foreground shadow-sm transition-all" 
                         onClick={() => {
                           // Use explicit board existence (`hasBoard`) to decide Open vs Create UI
                           if (hasBoard) {
@@ -230,8 +271,8 @@ export function MeetingAnalytics({
                             }
                             if (bid) router.push(`/dashboard/kanban/${bid}`);
                           } else {
-                            if (userRole !== 'owner') {
-                              toast.error('Hanya pemilik rapat yang dapat membuat board.');
+                            if (!permissions.canSyncTasks) {
+                              toast.error('Anda tidak memiliki izin untuk membuat board.');
                               return;
                             }
                             onGenerateKanban();
@@ -240,7 +281,7 @@ export function MeetingAnalytics({
                       >
                         {hasBoard ? "Buka" : "Buat"}
                       </Button>
-                      {hasBoard && (
+                      {hasBoard && permissions.canDelete && (
                         <Button
                           size="sm"
                           variant="ghost"

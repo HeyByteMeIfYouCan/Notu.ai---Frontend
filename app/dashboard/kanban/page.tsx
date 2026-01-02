@@ -39,10 +39,13 @@ export default function KanbanListPage() {
     const loadBoards = async () => {
       try {
         setIsLoading(true)
-        const params: any = { ...controls.queryParams, search: controls.searchQuery }
+        // queryParams already contains search from searchQuery
+        const params = { ...controls.queryParams }
         const res = await api.getBoards(params as any)
         const payload = res?.data || res
-        setBoards(payload || payload?.data || [])
+        // Handle both array and object response
+        const boardsData = Array.isArray(payload) ? payload : (payload?.data || [])
+        setBoards(boardsData)
       } catch (error) {
         console.error(error)
         toast.error("Failed to load boards")
@@ -54,7 +57,7 @@ export default function KanbanListPage() {
 
     if (isReady) loadBoards()
     else setIsLoading(false)
-  }, [isReady, controls.page, controls.searchQuery, controls.filter, controls.source])
+  }, [isReady, api, controls.page, controls.searchQuery, controls.filter, controls.source])
 
   const createBoardExample = async () => {
     try {

@@ -10,7 +10,7 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type MeetingStatus = 'pending' | 'processing' | 'completed' | 'failed';
 export type MeetingType = 'upload' | 'online' | 'realtime';
 export type Platform = 'Google Meet' | 'Upload' | 'Zoom' | 'Microsoft Teams';
-export type CollaboratorRole = 'owner' | 'editor' | 'viewer';
+export type CollaboratorRole = 'owner' | 'admin' | 'editor' | 'viewer';
 export type UserPlan = 'free' | 'pro' | 'enterprise';
 export type BoardSource = 'manual' | 'ai';
 
@@ -56,6 +56,13 @@ export interface Collaborator {
     user: UserPublic;
     role: CollaboratorRole;
     joinedAt: string;
+}
+
+export interface Participant {
+    user: UserPublic;
+    role: CollaboratorRole;
+    joinedAt: string;
+    isOwner: boolean;
 }
 
 // ============================================
@@ -223,7 +230,7 @@ export interface Meeting {
     startedAt?: string;
     endedAt?: string;
     duration?: number;
-    participants: number;
+    participantsCount?: number; // Number of participants (legacy field renamed)
     originalFile?: OriginalFile;
     transcription?: Transcription;
     actionItems?: TaskCandidate[]; // AI Candidates
@@ -231,16 +238,26 @@ export interface Meeting {
     isPublic: boolean;
     shareToken?: string;
     collaborators: Collaborator[];
+    participants?: Participant[]; // Unified array: owner + collaborators sorted by joinedAt
     tags: string[];
     errorMessage?: string;
     retryCount: number;
     processingMeta?: ProcessingMeta;
+    processingLogs?: { message: string; timestamp: string }[];
     summarySnippet?: string;
     deleted: boolean;
     createdAt: string;
     updatedAt: string;
     // Virtual (set by controller)
     userRole?: CollaboratorRole;
+    hasBoard?: boolean;
+    boardId?: string;
+    fileUrl?: string;
+    // Permission flags from controller
+    canEdit?: boolean;
+    canDelete?: boolean;
+    canShare?: boolean;
+    canManageCollaborators?: boolean;
 }
 
 export interface MeetingCreateInput {

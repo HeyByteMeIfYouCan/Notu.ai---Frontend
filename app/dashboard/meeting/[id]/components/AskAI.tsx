@@ -3,11 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { IconSend, IconLoader2, IconTrash, IconRobot, IconUser } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { useApiWithAuth, useAuth } from "@/hooks/use-auth"
-import { hasPermission } from "@/lib/permissions"
+import { hasPermission, getPermissions } from "@/lib/permissions"
 
 interface ChatMessage {
   _id: string
@@ -35,7 +34,9 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const canClearHistory = hasPermission(userRole, 'canManageCollaborators')
+  const permissions = getPermissions(userRole)
+  const canClearHistory = permissions.canManageCollaborators
+  const canWriteAI = permissions.canWriteAI // Editor+ can write
 
   // Fetch chat history on mount
   useEffect(() => {
@@ -140,7 +141,7 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b">
+      <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
         <div className="flex items-center gap-2">
           <IconRobot className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Ask AI</h3>
@@ -159,7 +160,7 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center py-8">
             <div className="p-4 rounded-full bg-primary/10 mb-4">
@@ -170,13 +171,22 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
               Ajukan pertanyaan tentang ringkasan, poin-poin penting, atau action items dari rapat ini.
             </p>
             <div className="mt-4 flex flex-wrap gap-2 justify-center">
-              {["Apa kesimpulan rapat?", "Siapa yang paling banyak bicara?", "Apa action items utama?"].map((q) => (
+              {[
+                "Apa kesimpulan rapat?",
+                "Ringkas poin-poin utama",
+                "Siapa saja pembicara?",
+                "Apa action items?",
+                "Keputusan apa yang diambil?",
+                "Topik apa yang dibahas?"
+              ].map((q) => (
                 <Button
                   key={q}
                   variant="outline"
                   size="sm"
                   className="text-xs"
+                  disabled={!canWriteAI}
                   onClick={() => {
+                    if (!canWriteAI) return
                     setInput(q)
                     inputRef.current?.focus()
                   }}
@@ -238,33 +248,41 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
             )}
           </div>
         )}
-      </ScrollArea>
+      </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex gap-2">
-          <Input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ketik pertanyaan..."
-            disabled={isLoading}
-            className="flex-1"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                handleSubmit()
-              }
-            }}
-          />
-          <Button type="submit" disabled={isLoading || !input.trim()}>
-            {isLoading ? (
-              <IconLoader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <IconSend className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+      <form onSubmit={handleSubmit} className="p-4 border-t flex-shrink-0">
+        {canWriteAI ? (
+          <div className="flex gap-2">
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ketik pertanyaan..."
+              disabled={isLoading}
+              className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSubmit()
+                }
+              }}
+            />
+            <Button type="submit" disabled={isLoading || !input.trim()}>
+              {isLoading ? (
+                <IconLoader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <IconSend className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        ) : (
+          <div className="text-center py-2 px-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              Anda hanya dapat melihat riwayat chat. Untuk bertanya, minta akses Editor.
+            </p>
+          </div>
+        )}
       </form>
     </div>
   )

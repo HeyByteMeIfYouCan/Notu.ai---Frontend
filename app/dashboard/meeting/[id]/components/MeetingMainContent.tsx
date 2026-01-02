@@ -114,7 +114,7 @@ export function MeetingMainContent({
               {editingField === 'title' ? (
                 <div className="flex items-center gap-2 flex-1 max-w-2xl">
                   <input 
-                    className="text-xl font-semibold bg-transparent border-b border-[var(--primary)] focus:outline-none flex-1"
+                    className="text-xl font-semibold bg-transparent border-b border-primary focus:outline-none flex-1 text-foreground"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     autoFocus
@@ -125,10 +125,12 @@ export function MeetingMainContent({
                 </div>
               ) : (
                 <>
-                  <h1 className="text-xl font-semibold">{meeting.title}</h1>
-                  <button disabled={!permissions.canEdit} onClick={() => permissions.canEdit && handleStartEdit('title', meeting.title)} className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40">
-                    <IconPencil className="h-4 w-4 text-muted-foreground" />
-                  </button>
+                  <h1 className="text-xl font-semibold text-foreground">{meeting.title}</h1>
+                  {permissions.canEdit && (
+                    <button onClick={() => handleStartEdit('title', meeting.title)} className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                      <IconPencil className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -137,7 +139,7 @@ export function MeetingMainContent({
               {editingField === 'description' ? (
                 <div className="flex items-center gap-2 flex-1 max-w-3xl">
                   <input 
-                    className="text-sm text-muted-foreground bg-transparent border-b border-[var(--primary)] outline-none flex-1"
+                    className="text-sm text-muted-foreground bg-transparent border-b border-primary outline-none flex-1"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     autoFocus
@@ -149,9 +151,11 @@ export function MeetingMainContent({
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground">{meeting.description || "Tambahkan deskripsi..."}</p>
-                  <button disabled={!permissions.canEdit} onClick={() => permissions.canEdit && handleStartEdit('description', meeting.description || "")} className="p-0.5 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-40">
-                    <IconPencil className="h-3 w-3 text-muted-foreground" />
-                  </button>
+                  {permissions.canEdit && (
+                    <button onClick={() => handleStartEdit('description', meeting.description || "")} className="p-0.5 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                      <IconPencil className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -187,7 +191,7 @@ export function MeetingMainContent({
             <p className="text-base text-muted-foreground max-w-lg mb-10">
               Belum ada analisis yang dilakukan untuk pertemuan ini. Klik tombol di bawah untuk membuat ringkasan secara otomatis.
             </p>
-            <Button size="lg" onClick={onRegenerateAi} className="gap-3 px-12 py-7 text-lg font-semibold rounded-2xl bg-[var(--primary)] text-white">
+            <Button size="lg" onClick={onRegenerateAi} className="gap-3 px-12 py-7 text-lg font-bold rounded-2xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
               <IconSparkles className="h-6 w-6" />
               Generate Meeting Summary
             </Button>
@@ -197,25 +201,27 @@ export function MeetingMainContent({
             {/* Executive Summary */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-semibold text-[var(--primary)]">Executive Summary</h2>
-                <Dialog open={editingField === 'executiveSummary'} onOpenChange={(open) => !open && setEditingField(null)}>
-                  <DialogTrigger asChild>
-                    <button disabled={!permissions.canEdit} onClick={() => handleStartEdit('executiveSummary', executiveSummary)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
-                      <IconPencil className="h-3.5 w-3.5" />
-                      Edit
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-3xl">
-                    <DialogHeader><DialogTitle>Edit Executive Summary</DialogTitle></DialogHeader>
-                    <div data-color-mode="light">
-                      <MDEditor value={editValue} onChange={(val) => setEditValue(val || "")} height={300} preview="edit" />
-                    </div>
-                    <div className="flex justify-end gap-2 mt-4">
-                      <Button variant="outline" onClick={() => setEditingField(null)}>Batal</Button>
-                      <Button onClick={() => handleSaveEdit('executiveSummary')}>Simpan</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <h2 className="text-base font-semibold text-primary">Executive Summary</h2>
+                {permissions.canEdit && (
+                  <Dialog open={editingField === 'executiveSummary'} onOpenChange={(open) => !open && setEditingField(null)}>
+                    <DialogTrigger asChild>
+                      <button onClick={() => handleStartEdit('executiveSummary', executiveSummary)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        <IconPencil className="h-3.5 w-3.5" />
+                        Edit
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl">
+                      <DialogHeader><DialogTitle>Edit Executive Summary</DialogTitle></DialogHeader>
+                      <div data-color-mode="light">
+                        <MDEditor value={editValue} onChange={(val) => setEditValue(val || "")} height={300} preview="edit" />
+                      </div>
+                      <div className="flex justify-end gap-2 mt-4">
+                        <Button variant="outline" onClick={() => setEditingField(null)}>Batal</Button>
+                        <Button onClick={() => handleSaveEdit('executiveSummary')}>Simpan</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
               <div className="prose prose-sm prose-gray max-w-none text-muted-foreground">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{executiveSummary}</ReactMarkdown>
@@ -226,25 +232,27 @@ export function MeetingMainContent({
             {Object.keys(highlights).length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-base font-semibold text-[var(--primary)]">Catatan Rapat</h2>
-                  <Dialog open={editingField === 'highlights'} onOpenChange={(open) => !open && setEditingField(null)}>
-                    <DialogTrigger asChild>
-                      <button disabled={!permissions.canEdit} onClick={() => handleStartEdit('highlights', Object.entries(highlights).map(([k, v]) => `${k}:\n${v}`).join('\n\n'))} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
-                        <IconPencil className="h-3.5 w-3.5" />
-                        Edit
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-3xl">
-                      <DialogHeader><DialogTitle>Edit Catatan Rapat</DialogTitle></DialogHeader>
-                      <div data-color-mode="light">
-                        <MDEditor value={editValue} onChange={(val) => setEditValue(val || "")} height={400} preview="edit" />
-                      </div>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" onClick={() => setEditingField(null)}>Batal</Button>
-                        <Button onClick={() => handleSaveEdit('highlights')}>Simpan</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <h2 className="text-base font-semibold text-primary">Catatan Rapat</h2>
+                  {permissions.canEdit && (
+                    <Dialog open={editingField === 'highlights'} onOpenChange={(open) => !open && setEditingField(null)}>
+                      <DialogTrigger asChild>
+                        <button onClick={() => handleStartEdit('highlights', Object.entries(highlights).map(([k, v]) => `${k}:\n${v}`).join('\n\n'))} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                          <IconPencil className="h-3.5 w-3.5" />
+                          Edit
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-3xl">
+                        <DialogHeader><DialogTitle>Edit Catatan Rapat</DialogTitle></DialogHeader>
+                        <div data-color-mode="light">
+                          <MDEditor value={editValue} onChange={(val) => setEditValue(val || "")} height={400} preview="edit" />
+                        </div>
+                        <div className="flex justify-end gap-2 mt-4">
+                          <Button variant="outline" onClick={() => setEditingField(null)}>Batal</Button>
+                          <Button onClick={() => handleSaveEdit('highlights')}>Simpan</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </div>
                 <div className="space-y-6">
                   {Object.entries(highlights).map(([header, content]: [string, any]) => (
@@ -306,10 +314,11 @@ export function MeetingMainContent({
             {/* Conclusion */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-semibold text-[var(--primary)]">Conclusion</h2>
+                <h2 className="text-base font-semibold text-primary">Conclusion</h2>
+                {permissions.canEdit && (
                   <Dialog open={editingField === 'conclusion'} onOpenChange={(open) => !open && setEditingField(null)}>
                     <DialogTrigger asChild>
-                      <button disabled={!permissions.canEdit} onClick={() => handleStartEdit('conclusion', conclusion)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40">
+                      <button onClick={() => handleStartEdit('conclusion', conclusion)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
                         <IconPencil className="h-3.5 w-3.5" />
                         Edit
                       </button>
@@ -325,6 +334,7 @@ export function MeetingMainContent({
                     </div>
                   </DialogContent>
                 </Dialog>
+                )}
               </div>
               <div className="prose prose-sm prose-gray max-w-none text-muted-foreground">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{conclusion || "Tidak ada conclusion tersedia"}</ReactMarkdown>

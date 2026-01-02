@@ -36,7 +36,14 @@ export default function RootLayout({
       >
         <Providers>
           {children}
-          <Toaster position="top-right" richColors />
+          <Toaster 
+            position="top-right" 
+            richColors 
+            gap={16}
+            expand={false}
+            visibleToasts={5}
+            offset={16}
+          />
         </Providers>
       </body>
     </html>

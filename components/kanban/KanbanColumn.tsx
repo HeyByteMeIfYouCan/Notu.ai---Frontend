@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { IconDots, IconPlus, IconGripVertical } from "@tabler/icons-react"
 import { Task, ColumnId, BoardLabel } from "./types"
 import { TaskCard } from "./TaskCard"
+import { useState } from "react"
 
 interface KanbanColumnProps {
   id: ColumnId
@@ -25,6 +26,7 @@ interface KanbanColumnProps {
 
 function SortableTaskCard({ task, labels, onClick, showProgress, members, canModify }: { task: Task; labels: BoardLabel[]; onClick: (t: Task) => void; showProgress?: boolean; members?: { id: string, name: string }[]; canModify?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: !canModify })
+  const [isDraggingState, setIsDraggingState] = useState(false)
   
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -33,14 +35,44 @@ function SortableTaskCard({ task, labels, onClick, showProgress, members, canMod
     zIndex: isDragging ? 50 : undefined,
   }
 
+  // Spread drag listeners to entire card for easier dragging
+  const dragProps = canModify ? { 
+    ...attributes, 
+    ...listeners,
+    onMouseDown: (e: React.MouseEvent) => {
+      setIsDraggingState(false)
+      listeners?.onMouseDown?.(e as any)
+    },
+    onMouseMove: (e: React.MouseEvent) => {
+      if (e.buttons === 1) setIsDraggingState(true)
+      listeners?.onMouseMove?.(e as any)
+    },
+    onMouseUp: (e: React.MouseEvent) => {
+      listeners?.onMouseUp?.(e as any)
+      setTimeout(() => setIsDraggingState(false), 10)
+    },
+  } : {}
+
+  const handleClick = (task: Task) => {
+    if (!isDraggingState) {
+      onClick(task)
+    }
+  }
+
   return (
-    <div ref={setNodeRef} style={style} className="relative group">
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`relative group ${canModify ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      {...dragProps}
+    >
+      {/* Show grip icon on hover as visual indicator */}
       {canModify && (
-        <div {...attributes} {...listeners} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1">
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
           <IconGripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
       )}
-      <TaskCard task={task} showProgress={showProgress} onClick={onClick} labels={labels} members={members} />
+      <TaskCard task={task} showProgress={showProgress} onClick={handleClick} labels={labels} members={members} />
     </div>
   )
 }
