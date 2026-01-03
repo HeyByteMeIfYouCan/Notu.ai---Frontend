@@ -48,6 +48,7 @@ export default function MeetingDetailPage() {
   const [autoFollow, setAutoFollow] = useState(true)
   const [shareToken, setShareToken] = useState<string | null>(null)
   const [processingProgress, setProcessingProgress] = useState(0)
+  const [mediaDuration, setMediaDuration] = useState<number>(0)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -230,23 +231,43 @@ export default function MeetingDetailPage() {
     
     const handleEnded = () => setIsPlaying(false)
     
+    // Get actual duration from media element when metadata loads
+    const handleLoadedMetadata = () => {
+      const duration = video?.duration || audio?.duration || 0
+      if (duration && isFinite(duration) && duration > 0) {
+        setMediaDuration(duration)
+      }
+    }
+    
     if (video) {
       video.addEventListener('timeupdate', handleTimeUpdate)
       video.addEventListener('ended', handleEnded)
+      video.addEventListener('loadedmetadata', handleLoadedMetadata)
+      // If already loaded, get duration immediately
+      if (video.duration && isFinite(video.duration)) {
+        setMediaDuration(video.duration)
+      }
     }
     if (audio) {
       audio.addEventListener('timeupdate', handleTimeUpdate)
       audio.addEventListener('ended', handleEnded)
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+      // If already loaded, get duration immediately
+      if (audio.duration && isFinite(audio.duration)) {
+        setMediaDuration(audio.duration)
+      }
     }
     
     return () => {
       if (video) {
         video.removeEventListener('timeupdate', handleTimeUpdate)
         video.removeEventListener('ended', handleEnded)
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       }
       if (audio) {
         audio.removeEventListener('timeupdate', handleTimeUpdate)
         audio.removeEventListener('ended', handleEnded)
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
       }
     }
   }, [videoUrl, audioUrl, meeting?.transcription?.segments, autoFollow, searchQuery])
@@ -500,7 +521,7 @@ export default function MeetingDetailPage() {
               jumpToTimestamp={jumpToTimestamp}
               formatTime={formatTime}
               currentTime={currentTime}
-              totalDuration={meeting.duration || 0}
+              totalDuration={mediaDuration || meeting.duration || 0}
               videoUrl={videoUrl}
               audioRef={audioRef}
               videoRef={videoRef}
@@ -519,7 +540,7 @@ export default function MeetingDetailPage() {
           {(videoUrl || audioUrl) && (
             <PlaybackControls 
               currentTime={currentTime}
-              totalDuration={meeting.duration || 0}
+              totalDuration={mediaDuration || meeting.duration || 0}
               isPlaying={isPlaying}
               isVideoFile={isVideoFile}
               togglePlayPause={togglePlayPause}

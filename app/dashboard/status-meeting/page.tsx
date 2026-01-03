@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2, IconChevronDown, IconChevronUp, IconSearch, IconFilter, IconDownload, IconSparkles } from "@tabler/icons-react"
+import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2, IconChevronDown, IconChevronUp, IconSearch, IconFilter, IconDownload, IconSparkles, IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { getSocket } from "@/lib/socket"
@@ -36,22 +36,26 @@ interface Meeting {
   processingLogs?: ProcessingLog[]
   processingStage?: string
   participants?: any[]
-  summary?: string
+  description?: string
   userRole?: 'owner' | 'editor' | 'viewer' | string
-  summarySnippet?: string
   isUpload?: boolean
   actionItems?: any[]
+  chunkingEnabled?: boolean
+  totalChunks?: number
+  currentChunk?: number
+  originalFilename?: string
 }
 
-// Stage configuration for visual display
+// Stage configuration for visual display with progress ranges
+// Progress ranges are NON-OVERLAPPING: each stage ends just before next starts
 const PROCESSING_STAGES = [
-  { key: 'starting', label: 'Memulai', icon: '🚀', color: 'from-blue-400 to-blue-600' },
-  { key: 'downloading', label: 'Mengunduh', icon: '📥', color: 'from-cyan-400 to-cyan-600' },
-  { key: 'transcribing', label: 'Transkripsi', icon: '🎙️', color: 'from-purple-400 to-purple-600' },
-  { key: 'diarization', label: 'Identifikasi Pembicara', icon: '👥', color: 'from-pink-400 to-pink-600' },
-  { key: 'ai_analysis', label: 'Analisis AI', icon: '🤖', color: 'from-violet-400 to-violet-600' },
-  { key: 'saving', label: 'Menyimpan', icon: '💾', color: 'from-indigo-400 to-indigo-600' },
-  { key: 'completed', label: 'Selesai', icon: '✅', color: 'from-green-400 to-green-600' },
+  { key: 'starting', label: 'Memulai', icon: '🚀', start: 0, end: 9 },
+  { key: 'downloading', label: 'Memproses File', icon: '📥', start: 10, end: 19 },
+  { key: 'transcribing', label: 'Transkripsi Audio', icon: '🎙️', start: 20, end: 69 },
+  { key: 'diarization', label: 'Identifikasi Pembicara', icon: '👥', start: 70, end: 79 },
+  { key: 'ai_analysis', label: 'Analisis AI', icon: '🤖', start: 80, end: 89 },
+  { key: 'saving', label: 'Menyimpan Hasil', icon: '💾', start: 90, end: 99 },
+  { key: 'completed', label: 'Selesai', icon: '✅', start: 100, end: 100 },
 ] as const
 
 function getStageIndex(stage?: string): number {
@@ -65,6 +69,24 @@ function getStageBadge(stage?: string): { label: string; icon: string } | null {
   return found || null
 }
 
+// Calculate per-stage progress (0-100%) from global progress
+function getStageProgress(globalProgress: number, stage?: string): number {
+  if (!stage) return 0
+  if (stage === 'completed') return 100
+  
+  const stageConfig = PROCESSING_STAGES.find(s => s.key === stage)
+  if (!stageConfig) return 0
+  
+  const { start, end } = stageConfig
+  if (globalProgress < start) return 0
+  if (globalProgress > end) return 100
+  
+  // Calculate progress within this stage (end is inclusive)
+  const range = end - start + 1
+  const current = globalProgress - start
+  return Math.min(100, Math.round((current / range) * 100))
+}
+
 export default function StatusMeetingPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -75,6 +97,11 @@ export default function StatusMeetingPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
   const { api, isReady } = useApiWithAuth()
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const pageSize = 10
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState("")
@@ -96,8 +123,8 @@ export default function StatusMeetingPage() {
         const search = debouncedSearch.toLowerCase()
         const matchesTitle = meeting.title?.toLowerCase().includes(search)
         const matchesPlatform = meeting.platform?.toLowerCase().includes(search)
-        const matchesSummary = meeting.summary?.toLowerCase().includes(search)
-        if (!matchesTitle && !matchesPlatform && !matchesSummary) {
+        const matchesDescription = meeting.description?.toLowerCase().includes(search)
+        if (!matchesTitle && !matchesPlatform && !matchesDescription) {
           return false
         }
       }
@@ -136,12 +163,15 @@ export default function StatusMeetingPage() {
     })
   }
 
-  const fetchMeetings = useCallback(async () => {
+  const fetchMeetings = useCallback(async (page = currentPage) => {
     if (!isReady) return
     
     try {
-      const response = await api.getMeetings({ limit: 20 })
+      const response = await api.getMeetings({ limit: pageSize, page })
       setMeetings(response.meetings || [])
+      if (response.pagination) {
+        setTotalPages(response.pagination.totalPages || 1)
+      }
     } catch (error) {
       console.error("Error fetching meetings:", error)
       toast.error("Gagal memuat status meeting")
@@ -149,35 +179,63 @@ export default function StatusMeetingPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [isReady, api])
+  }, [isReady, api, currentPage, pageSize])
 
-  // Initial fetch
+  // Initial fetch and page change
   useEffect(() => {
     if (isReady) {
-      fetchMeetings()
+      fetchMeetings(currentPage)
     } else {
       setIsLoading(false)
     }
-  }, [isReady, fetchMeetings])
+  }, [isReady, currentPage])
+
+  // Page change handler
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Track last heartbeat for detecting hung workers
+  const [lastHeartbeats, setLastHeartbeats] = useState<Map<string, Date>>(new Map())
 
   // Socket integration for real-time updates
   useEffect(() => {
     const socket = getSocket()
 
     // Listen for transcription progress updates
-    socket.on('transcription_progress', ({ meetingId, progress, message, stage }) => {
+    socket.on('transcription_progress', ({ meetingId, progress, message, stage, chunking, totalChunks, chunk }) => {
       setMeetings(prev => prev.map(m => {
         if (m._id === meetingId) {
+          // MONOTONIC GUARD: Only update if progress is forward (prevent backward progress)
+          const currentProgress = m.processingProgress || 0
+          const newProgress = progress ?? currentProgress
+          if (newProgress < currentProgress && stage !== 'completed') {
+            // Skip backward progress updates (except for completed which resets)
+            console.log(`[Progress Guard] Skipping backward progress: ${currentProgress} -> ${newProgress}`)
+            return m
+          }
+          
           const newLog: ProcessingLog = { message, timestamp: new Date().toISOString(), progress, stage }
           return {
             ...m,
-            processingProgress: progress,
+            processingProgress: newProgress,
             processingStage: stage || m.processingStage,
-            processingLogs: [...(m.processingLogs || []), newLog].slice(-15) // Keep last 15 logs
+            processingLogs: [...(m.processingLogs || []), newLog].slice(-15), // Keep last 15 logs
+            // Add chunking info if available
+            ...(chunking !== undefined && { chunkingEnabled: chunking }),
+            ...(totalChunks !== undefined && { totalChunks }),
+            ...(chunk !== undefined && { currentChunk: chunk })
           }
         }
         return m
       }))
+      // Update heartbeat on any progress
+      setLastHeartbeats(prev => new Map(prev).set(meetingId, new Date()))
+    })
+
+    // Listen for worker heartbeat (indicates worker is still alive)
+    socket.on('worker_heartbeat', ({ meetingId, stage, timestamp }) => {
+      setLastHeartbeats(prev => new Map(prev).set(meetingId, new Date(timestamp)))
     })
 
     // Listen for transcription completion
@@ -194,6 +252,7 @@ export default function StatusMeetingPage() {
 
     return () => {
       socket.off('transcription_progress')
+      socket.off('worker_heartbeat')
       socket.off('transcription_complete')
       socket.off('transcription_failed')
     }
@@ -223,10 +282,21 @@ export default function StatusMeetingPage() {
                   if (pm._id === m._id) {
                     // Get stage from latest log if available
                     const latestLog = res.data.processingLogs?.[res.data.processingLogs.length - 1]
+                    const newProgress = res.data.job?.progress || 0
+                    const currentProgress = pm.processingProgress || 0
+                    
+                    // MONOTONIC GUARD: Only update if progress is forward or status changed to completed/failed
+                    const isStatusComplete = res.data.status === 'completed' || res.data.status === 'failed'
+                    if (newProgress < currentProgress && !isStatusComplete) {
+                      // Skip backward progress from polling (socket has more up-to-date data)
+                      console.log(`[Polling Guard] Skipping backward progress for ${m._id}: ${currentProgress} -> ${newProgress}`)
+                      return pm
+                    }
+                    
                     return {
                       ...pm,
                       status: res.data.status,
-                      processingProgress: res.data.job?.progress || pm.processingProgress || 0,
+                      processingProgress: Math.max(newProgress, currentProgress),
                       processingStage: latestLog?.stage || res.data.processingStage || pm.processingStage,
                       processingLogs: res.data.processingLogs || pm.processingLogs || []
                     }
@@ -544,11 +614,12 @@ export default function StatusMeetingPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="grid gap-4">
-                    {filteredMeetings.map((meeting) => (
-                      <Card 
-                        key={meeting._id} 
-                        className={`group border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 ${
+                  <>
+                    <div className="grid gap-4">
+                      {filteredMeetings.map((meeting) => (
+                        <Card 
+                          key={meeting._id} 
+                          className={`group border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 ${
                           meetingIdFromUrl === meeting._id ? 'ring-2 ring-primary shadow-lg' : ''
                         }`}
                       >
@@ -588,119 +659,123 @@ export default function StatusMeetingPage() {
                                 </div>
                               </div>
 
-                              {/* Summary */}
-                              {meeting.summarySnippet && meeting.status === 'completed' && (
+                              {/* Description */}
+                              {meeting.description && meeting.status === 'completed' && (
                                 <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                                  {meeting.summarySnippet}
+                                  {meeting.description}
                                 </p>
                               )}
 
-                              {/* Processing Progress */}
-                              {(meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued') && (meeting.processingLogs && meeting.processingLogs.length > 0 || meeting.processingProgress) && (
-                                <div className="space-y-4 p-4 rounded-lg bg-gradient-to-br from-blue-50/50 via-purple-50/50 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 border border-primary/10">
-                                  {/* Stage Pills */}
-                                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                              {/* File Info for Processing */}
+                              {(meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued') && meeting.originalFilename && (
+                                <p className="text-xs text-muted-foreground">
+                                  📁 {meeting.originalFilename}
+                                </p>
+                              )}
+
+                              {/* Processing Progress - Visual Stage Stepper */}
+                              {(meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued') && (
+                                <div className="space-y-3 p-4 rounded-lg bg-muted/50 border border-border">
+                                  {/* Stage Stepper - Visual Steps */}
+                                  <div className="flex items-center justify-between gap-1">
                                     {PROCESSING_STAGES.slice(0, -1).map((stage, idx) => {
-                                      const currentIdx = getStageIndex(meeting.processingStage)
-                                      const isCompleted = idx < currentIdx
-                                      const isCurrent = idx === currentIdx
+                                      const currentStageIdx = getStageIndex(meeting.processingStage)
+                                      const isCompleted = idx < currentStageIdx
+                                      const isCurrent = idx === currentStageIdx
+                                      const isPending = idx > currentStageIdx
+                                      
                                       return (
-                                        <div 
-                                          key={stage.key}
-                                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-500 ${
-                                            isCurrent 
-                                              ? `bg-gradient-to-r ${stage.color} text-white shadow-md animate-pulse scale-105` 
-                                              : isCompleted 
-                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
-                                                : 'bg-muted text-muted-foreground opacity-50'
-                                          }`}
-                                        >
-                                          <span className="text-sm">{stage.icon}</span>
-                                          <span className="hidden sm:inline">{stage.label}</span>
+                                        <div key={stage.key} className="flex items-center flex-1">
+                                          {/* Stage Circle with Individual Tooltip */}
+                                          <div className="flex flex-col items-center relative group/stage">
+                                            {/* Icon with enhanced styling */}
+                                            <div 
+                                              className={`relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 cursor-help ${
+                                                isCompleted 
+                                                  ? 'bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md hover:shadow-lg hover:scale-110' 
+                                                  : isCurrent 
+                                                    ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg animate-pulse ring-2 ring-primary/30 hover:scale-110' 
+                                                    : 'bg-gradient-to-br from-muted to-muted/80 text-muted-foreground hover:from-muted/80 hover:to-muted hover:scale-105'
+                                              }`}
+                                            >
+                                              {/* Glow effect for current stage */}
+                                              {isCurrent && (
+                                                <div className="absolute inset-0 rounded-full bg-primary/20 blur-md animate-pulse" />
+                                              )}
+                                              <span className="relative z-10">
+                                                {isCompleted ? '✓' : stage.icon}
+                                              </span>
+                                            </div>
+                                            
+                                            {/* Tooltip - appears on THIS icon hover only */}
+                                            <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-xl border border-gray-700 opacity-0 group-hover/stage:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50">
+                                              {/* Tooltip arrow */}
+                                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-800" />
+                                              <div className="flex items-center gap-1.5">
+                                                <span className="text-base">{stage.icon}</span>
+                                                <span className="font-medium">{stage.label}</span>
+                                                {isCompleted && <span className="text-green-400 font-bold">✓</span>}
+                                                {isCurrent && <span className="text-primary-400">(aktif)</span>}
+                                              </div>
+                                            </div>
+                                            
+                                            {/* Stage Label - Only show for current */}
+                                            {isCurrent && (
+                                              <span className="text-[10px] text-primary font-semibold mt-1.5 whitespace-nowrap">
+                                                {stage.label}
+                                              </span>
+                                            )}
+                                          </div>
+                                          {/* Connector Line */}
+                                          {idx < PROCESSING_STAGES.length - 2 && (
+                                            <div 
+                                              className={`flex-1 h-0.5 mx-1 transition-all duration-300 ${
+                                                isCompleted ? 'bg-green-500' : 'bg-muted'
+                                              }`}
+                                            />
+                                          )}
                                         </div>
                                       )
                                     })}
                                   </div>
 
-                                  {/* Current Status */}
-                                  <div className="space-y-2">
-                                    <div className="flex items-start justify-between gap-4">
-                                      <div className="flex items-start gap-2 flex-1 min-w-0">
-                                        {meeting.processingStage && getStageBadge(meeting.processingStage) && (
-                                          <span className="text-lg shrink-0 mt-0.5 animate-bounce">
-                                            {getStageBadge(meeting.processingStage)?.icon}
-                                          </span>
-                                        )}
-                                        <p className="text-sm font-medium text-primary leading-relaxed">
-                                          {meeting.processingLogs && meeting.processingLogs.length > 0 
-                                            ? meeting.processingLogs[meeting.processingLogs.length - 1].message 
-                                            : 'Sedang memproses...'}
-                                        </p>
-                                      </div>
-                                      <span className="text-lg font-bold text-primary shrink-0">
-                                        {meeting.processingProgress || 0}%
-                                      </span>
-                                    </div>
-
-                                    {/* Progress Bar */}
-                                    <div className="relative w-full h-3 bg-muted rounded-full overflow-hidden shadow-inner">
-                                      <div 
-                                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-700 ease-out shadow-lg"
-                                        style={{ 
-                                          width: `${meeting.processingProgress || 0}%`,
-                                          boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
-                                        }}
-                                      >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Expandable Logs */}
-                                  {meeting.processingLogs && meeting.processingLogs.length > 1 && (
-                                    <div className="border-t border-border/50 pt-3">
-                                      <button 
-                                        onClick={() => toggleLogExpand(meeting._id)}
-                                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors group"
-                                      >
-                                        {expandedLogs.has(meeting._id) ? (
-                                          <>
-                                            <IconChevronUp className="h-3.5 w-3.5 group-hover:-translate-y-0.5 transition-transform" />
-                                            <span>Sembunyikan Log</span>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <IconChevronDown className="h-3.5 w-3.5 group-hover:translate-y-0.5 transition-transform" />
-                                            <span>Lihat Detail Log ({meeting.processingLogs.length})</span>
-                                          </>
-                                        )}
-                                      </button>
-                                      {expandedLogs.has(meeting._id) && (
-                                        <div className="mt-3 p-3 bg-card rounded-lg border border-border shadow-sm max-h-48 overflow-y-auto space-y-1">
-                                          {meeting.processingLogs.map((log, i) => (
+                                  {/* Current Stage Details */}
+                                  {meeting.processingStage && getStageBadge(meeting.processingStage) && (
+                                    <div className="pt-2 border-t border-border/50">
+                                      {/* Progress within current stage */}
+                                      {meeting.processingStage !== 'completed' && (
+                                        <div className="space-y-1.5">
+                                          <div className="flex items-center justify-between text-xs">
+                                            <span className="text-muted-foreground">
+                                              {getStageBadge(meeting.processingStage)?.icon} {getStageBadge(meeting.processingStage)?.label}
+                                              {meeting.processingStage === 'transcribing' && meeting.totalChunks && meeting.totalChunks > 1 && (
+                                                <span className="ml-1 text-primary font-medium">({meeting.currentChunk || 0}/{meeting.totalChunks})</span>
+                                              )}
+                                            </span>
+                                            <span className="font-bold text-primary">
+                                              {meeting.processingProgress || 0}%
+                                            </span>
+                                          </div>
+                                          {/* Global progress bar */}
+                                          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                                             <div 
-                                              key={i} 
-                                              className="flex items-center gap-2 py-2 px-2 rounded hover:bg-muted/50 transition-colors text-xs"
-                                            >
-                                              <span className="text-muted-foreground shrink-0 font-mono text-[10px]">
-                                                {new Date(log.timestamp).toLocaleTimeString([], {
-                                                  hour: '2-digit', 
-                                                  minute:'2-digit', 
-                                                  second:'2-digit'
-                                                })}
-                                              </span>
-                                              {log.stage && getStageBadge(log.stage) && (
-                                                <span className="shrink-0">{getStageBadge(log.stage)?.icon}</span>
-                                              )}
-                                              <span className="flex-1 text-foreground">{log.message}</span>
-                                              {log.progress !== undefined && (
-                                                <span className="shrink-0 text-primary font-bold text-sm">
-                                                  {log.progress}%
-                                                </span>
-                                              )}
-                                            </div>
-                                          ))}
+                                              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+                                              style={{ width: `${meeting.processingProgress || 0}%` }}
+                                            />
+                                          </div>
                                         </div>
+                                      )}
+
+                                      {/* Current Message */}
+                                      {meeting.processingLogs && meeting.processingLogs.length > 0 && (
+                                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-2">
+                                          {meeting.processingStage !== 'completed' ? (
+                                            <IconLoader2 className="h-3 w-3 animate-spin shrink-0" />
+                                          ) : (
+                                            <span className="shrink-0">✓</span>
+                                          )}
+                                          {meeting.processingLogs[meeting.processingLogs.length - 1].message}
+                                        </p>
                                       )}
                                     </div>
                                   )}
@@ -737,7 +812,33 @@ export default function StatusMeetingPage() {
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 mt-6">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage <= 1}
+                        >
+                          <IconChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm text-muted-foreground px-3">
+                          Halaman {currentPage} dari {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage >= totalPages}
+                        >
+                          <IconChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

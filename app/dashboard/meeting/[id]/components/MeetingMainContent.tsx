@@ -163,7 +163,13 @@ export function MeetingMainContent({
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <IconInfoCircle className="h-3.5 w-3.5" />
-                {formatDate(meeting.createdAt)} {formatTimeOnly(meeting.createdAt)} ({formatDuration(meeting.duration || 0)})
+                {meeting.createdAt ? (
+                  <>
+                    {formatDate(meeting.createdAt)} {formatTimeOnly(meeting.createdAt)} ({formatDuration(meeting.duration || 0)})
+                  </>
+                ) : (
+                  <>Durasi: {formatDuration(meeting.duration || 0)}</>
+                )}
               </div>
             </div>
           </div>

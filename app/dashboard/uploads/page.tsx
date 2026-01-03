@@ -30,7 +30,6 @@ interface Meeting {
   createdAt: string
   type?: string
   userRole?: 'owner' | 'editor' | 'viewer' | string
-  summarySnippet?: string
   isUpload?: boolean
 }
 

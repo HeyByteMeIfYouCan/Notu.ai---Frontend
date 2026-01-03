@@ -63,7 +63,6 @@ interface Meeting {
   type?: string
   // Derived/server-provided fields
   userRole?: 'owner' | 'editor' | 'viewer' | string
-  summarySnippet?: string
   isUpload?: boolean
 }
 
