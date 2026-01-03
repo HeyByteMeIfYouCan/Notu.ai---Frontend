@@ -8,6 +8,7 @@
 
 import { IconChevronDown, IconChevronRight, IconChecks } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { IconPlus, IconLayoutKanban, IconTrash, IconLoader2 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
@@ -216,7 +217,7 @@ export function MeetingAnalytics({
                 topics.map((topic, index) => (
                   <div key={index} className="flex items-center gap-2 group cursor-default">
                     <div className={`w-2 h-2 rounded-full ${topic.color || 'bg-slate-400'} shadow-sm ring-2 ring-white`}></div>
-                    <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{topic.name}</span>
+                    <span className="text-xs font-medium text-foreground/80 group-hover:text-primary transition-colors">{topic.name}</span>
                   </div>
                 ))
               ) : (
@@ -304,13 +305,36 @@ export function MeetingAnalytics({
                         const dateStr = formatDueDate(item.dueDate);
 
                         return (
-                          <div key={index} className="flex items-start justify-between group cursor-default">
-                            <div className="flex items-start gap-3 flex-1 min-w-0">
-                              <div className={`w-1.5 h-1.5 rounded-full ${colorClass} mt-1.5 flex-shrink-0 group-hover:scale-150 transition-transform shadow-sm`}></div>
-                              <div className="text-[13px] font-medium leading-tight text-foreground/80 group-hover:text-foreground transition-colors truncate">{item.title}</div>
-                            </div>
-                            <span className="text-[11px] font-bold text-muted-foreground ml-3 bg-muted px-1.5 py-0.5 rounded-md min-w-[32px] text-center border border-border/10">{dateStr}</span>
-                          </div>
+                          <Tooltip key={index}>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-start justify-between group cursor-default">
+                                <div className="flex items-start gap-3 flex-1 min-w-0">
+                                  <div className={`w-1.5 h-1.5 rounded-full ${colorClass} mt-1.5 flex-shrink-0 group-hover:scale-150 transition-transform shadow-sm`}></div>
+                                  <div className="text-[13px] font-medium leading-tight text-foreground group-hover:text-primary transition-colors truncate">{item.title}</div>
+                                </div>
+                                <span className="text-[11px] font-bold text-foreground/70 ml-3 bg-muted px-1.5 py-0.5 rounded-md min-w-[32px] text-center border border-border/10">{dateStr}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[260px] p-3">
+                              <div className="space-y-1.5">
+                                <div className="font-semibold text-sm">{item.title}</div>
+                                {item.description && (
+                                  <div className="text-xs opacity-80 line-clamp-3">{item.description}</div>
+                                )}
+                                <div className="flex items-center gap-2 pt-1 text-[10px] opacity-70">
+                                  {item.priority && (
+                                    <span className="uppercase font-bold">🎯 {item.priority}</span>
+                                  )}
+                                  {item.dueDate && (
+                                    <span>📅 {new Date(item.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                  )}
+                                </div>
+                                {item.assignee && (
+                                  <div className="text-[10px] opacity-70">👤 {item.assignee}</div>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
                         )
                     })}
                   </div>

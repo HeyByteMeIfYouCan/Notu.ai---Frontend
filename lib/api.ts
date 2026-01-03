@@ -154,6 +154,67 @@ class ApiClient {
     });
   }
 
+  async createRealtimeMeeting(token: string, data: {
+    title: string;
+    description?: string;
+    sessionId: string;
+    transcript: string;
+    segments: Array<{ start: number; end: number; text: string; speaker: string }>;
+    speakers?: Record<string, number> | Array<{ speaker: string; start: number; end: number }>;
+    numSpeakers?: number;
+    duration: number;
+    language?: string;
+    aiNotes?: {
+      summary?: string;
+      highlights?: Record<string, string>;
+      conclusion?: string;
+      actionItems?: any[];
+      suggestedTitle?: string;
+      suggestedDescription?: string;
+      tags?: string[];
+    };
+    processingTime?: number;
+    audioBlob?: Blob; // Optional audio blob to save
+  }) {
+    // If audio blob is provided, use FormData for multipart upload
+    if (data.audioBlob) {
+      const formData = new FormData();
+      formData.append('audio', data.audioBlob, 'recording.webm');
+      formData.append('title', data.title);
+      if (data.description) formData.append('description', data.description);
+      formData.append('sessionId', data.sessionId);
+      formData.append('transcript', data.transcript);
+      formData.append('segments', JSON.stringify(data.segments));
+      if (data.speakers) formData.append('speakers', JSON.stringify(data.speakers));
+      if (data.numSpeakers) formData.append('numSpeakers', data.numSpeakers.toString());
+      formData.append('duration', data.duration.toString());
+      if (data.language) formData.append('language', data.language);
+      if (data.aiNotes) formData.append('aiNotes', JSON.stringify(data.aiNotes));
+      if (data.processingTime) formData.append('processingTime', data.processingTime.toString());
+      
+      const response = await fetch(`${this.baseUrl}/api/meetings/realtime`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      
+      const result = await response.json();
+      if (!response.ok) {
+        throw new ApiError(result.message || 'API request failed', response.status, result.__llm_diagnostics || result.diagnostics || null);
+      }
+      return result;
+    }
+    
+    // Fallback to JSON request without audio
+    return this.request('/api/meetings/realtime', {
+      method: 'POST',
+      token,
+      body: data,
+    });
+  }
+
   async getMeetingStatus(token: string, id: string) {
     return this.request(`/api/meetings/${id}/status`, { token });
   }
@@ -185,6 +246,15 @@ class ApiClient {
       method: 'DELETE',
       token,
     });
+  }
+
+  // Pin Meetings
+  async toggleMeetingPin(token: string, id: string) {
+    return this.request(`/api/meetings/${id}/pin`, { method: 'POST', token });
+  }
+
+  async getPinnedMeetings(token: string) {
+    return this.request('/api/meetings/pinned', { token });
   }
 
   // Sharing & Collaboration (Meetings)
@@ -421,6 +491,15 @@ class ApiClient {
       method: 'DELETE',
       token,
     });
+  }
+
+  // Pin Boards
+  async toggleBoardPin(token: string, id: string) {
+    return this.request(`/api/boards/${id}/pin`, { method: 'POST', token });
+  }
+
+  async getPinnedBoards(token: string) {
+    return this.request('/api/boards/pinned', { token });
   }
 
   // Sharing & Collaboration (Boards)

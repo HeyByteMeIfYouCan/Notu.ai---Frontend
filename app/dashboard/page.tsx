@@ -64,6 +64,8 @@ interface Meeting {
   // Derived/server-provided fields
   userRole?: 'owner' | 'editor' | 'viewer' | string
   isUpload?: boolean
+  pinned?: boolean
+  shareToken?: string
 }
 
 export default function Page() {
@@ -152,7 +154,10 @@ export default function Page() {
     title: meeting.title || "Untitled Meeting",
     description: meeting.description || "Meeting sedang diproses...",
     type: meeting.type || "online",
-    status: meeting.status
+    status: meeting.status,
+    userRole: meeting.userRole,
+    isPinned: meeting.pinned || false,
+    shareToken: meeting.shareToken,
   })
 
   // No client-side filtering; server returns filtered/paginated results.

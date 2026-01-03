@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2, IconChevronDown, IconChevronUp, IconSearch, IconFilter, IconDownload, IconSparkles, IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
+import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2, IconChevronDown, IconChevronUp, IconSearch, IconFilter, IconDownload, IconSparkles, IconChevronLeft, IconChevronRight, IconTrash } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { getSocket } from "@/lib/socket"
@@ -96,6 +96,7 @@ export default function StatusMeetingPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const { api, isReady } = useApiWithAuth()
   
   // Pagination state
@@ -341,6 +342,21 @@ export default function StatusMeetingPage() {
     router.push(`/dashboard/meeting/${meetingId}`)
   }
 
+  const handleDelete = async (meetingId: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus meeting ini?")) return
+    
+    setDeletingId(meetingId)
+    try {
+      await api.deleteMeeting(meetingId)
+      setMeetings(prev => prev.filter(m => m._id !== meetingId))
+      toast.success("Meeting berhasil dihapus")
+    } catch (error: any) {
+      toast.error(error.message || "Gagal menghapus meeting")
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
@@ -486,6 +502,7 @@ export default function StatusMeetingPage() {
                       <SelectItem value="zoom">Zoom</SelectItem>
                       <SelectItem value="teams">Teams</SelectItem>
                       <SelectItem value="upload">Upload</SelectItem>
+                      <SelectItem value="microphone">Microphone</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -805,6 +822,22 @@ export default function StatusMeetingPage() {
                                 >
                                   <IconRefresh className="h-4 w-4 mr-2" />
                                   Coba Lagi
+                                </Button>
+                              )}
+                              {/* Delete - Owner/Admin only */}
+                              {(meeting.userRole === 'owner' || meeting.userRole === 'admin') && (
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => handleDelete(meeting._id)}
+                                  disabled={deletingId === meeting._id}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  {deletingId === meeting._id ? (
+                                    <IconLoader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <IconTrash className="h-4 w-4" />
+                                  )}
                                 </Button>
                               )}
                             </div>

@@ -28,6 +28,8 @@ interface Meeting {
   type?: string
   userRole?: 'owner' | 'editor' | 'viewer' | string
   isUpload?: boolean
+  pinned?: boolean
+  shareToken?: string
 }
 
 export default function MeetingPage() {
@@ -36,8 +38,8 @@ export default function MeetingPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [llmError, setLlmError] = useState<string | null>(null)
 
-  // default to online meetings on this page and do not expose upload
-  const controls = useListParams({ defaultPageSize: 10, defaultType: 'online' })
+  // default to all (online + realtime) meetings on this page and do not expose upload
+  const controls = useListParams({ defaultPageSize: 10, defaultType: 'all' })
   const { api, isReady } = useApiWithAuth()
 
   // Fetch meetings when controls change
@@ -93,7 +95,10 @@ export default function MeetingPage() {
     title: meeting.title || "Untitled Meeting",
     description: meeting.description || "Meeting sedang diproses...",
     type: meeting.type || "online",
-    status: meeting.status
+    status: meeting.status,
+    userRole: meeting.userRole,
+    isPinned: meeting.pinned || false,
+    shareToken: meeting.shareToken,
   })
 
   return (

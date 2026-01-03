@@ -31,6 +31,8 @@ interface Meeting {
   type?: string
   userRole?: 'owner' | 'editor' | 'viewer' | string
   isUpload?: boolean
+  pinned?: boolean
+  shareToken?: string
 }
 
 export default function UploadsPage() {
@@ -173,7 +175,10 @@ export default function UploadsPage() {
     title: meeting.title || "Untitled Meeting",
     description: meeting.description || "Meeting sedang diproses...",
     type: "upload",
-    status: meeting.status
+    status: meeting.status,
+    userRole: meeting.userRole || 'owner',
+    isPinned: meeting.pinned || false,
+    shareToken: meeting.shareToken,
   })
 
   return (

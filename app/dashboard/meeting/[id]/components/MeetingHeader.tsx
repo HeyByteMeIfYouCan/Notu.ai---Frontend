@@ -41,6 +41,9 @@ interface MeetingHeaderProps {
   audioUrl: string | null
   summary: string
   userRole?: string
+  createdAt?: string
+  duration?: number
+  segments?: any[]
 }
 
 export function MeetingHeader({
@@ -60,9 +63,13 @@ export function MeetingHeader({
   isVideoFile,
   audioUrl,
   summary,
-  userRole
+  userRole,
+  createdAt,
+  duration,
+  segments
 }: MeetingHeaderProps) {
   const [showShareDialog, setShowShareDialog] = useState(false)
+  const [showInfoDialog, setShowInfoDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isEditingDesc, setIsEditingDesc] = useState(false)
@@ -227,7 +234,83 @@ export function MeetingHeader({
             </Button>
           )}
 
-          {/* Info Dialog moved to MeetingTranscript component */}
+          {/* Info Button - Everyone can view */}
+          <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 hover:bg-primary/5 hover:text-primary text-muted-foreground transition-all duration-200">
+                <IconInfoCircle className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Informasi Meeting</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <IconPencil className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Judul</div>
+                      <div className="text-sm font-semibold text-foreground truncate">{title}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <IconChecks className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Deskripsi</div>
+                      <div className="text-sm text-foreground">{description || 'Tidak ada deskripsi'}</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Dibuat</div>
+                      <div className="text-sm font-semibold text-foreground">
+                        {createdAt ? new Date(createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Durasi</div>
+                      <div className="text-sm font-semibold text-foreground">
+                        {duration ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, '0')}` : '-'}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Segmen</div>
+                      <div className="text-sm font-semibold text-foreground">{segments?.length || 0}</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Kolaborator</div>
+                      <div className="text-sm font-semibold text-foreground">{collaborators?.length || 0}</div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Role Anda</div>
+                    <div className="text-sm font-semibold text-primary">{getRoleLabel(userRole || 'owner')}</div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Meeting ID</div>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs font-mono text-foreground/70 truncate flex-1">{meetingId}</code>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                        navigator.clipboard.writeText(meetingId)
+                        toast.success("Meeting ID disalin")
+                      }}>
+                        <IconCopy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Notion Connect - Admin+ only */}
           {permissions.showNotionConnect && (

@@ -25,6 +25,8 @@ interface Board {
   userRole?: 'owner' | 'admin' | 'editor' | 'viewer'
   canEdit?: boolean
   canDelete?: boolean
+  pinned?: boolean
+  shareToken?: string
 }
 
 export default function KanbanListPage() {

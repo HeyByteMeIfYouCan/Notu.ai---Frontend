@@ -41,8 +41,8 @@ export function PlaybackControls({
   }
 
   return (
-    <div className={`fixed bottom-0 ${isVideoFile ? 'lg:left-72 xl:right-80' : 'lg:left-72 right-0'} left-0 right-0 bg-white border-t px-6 py-3 z-50`}>
-      <div className="flex items-center gap-4 max-w-6xl mx-auto">
+    <div className="sticky bottom-0 bg-white dark:bg-background border-t px-6 py-3 z-40">
+      <div className="flex items-center gap-4 max-w-4xl mx-auto">
         <span className="text-sm text-muted-foreground w-12">{formatTime(currentTime)}</span>
         
         <div className="flex items-center gap-2">

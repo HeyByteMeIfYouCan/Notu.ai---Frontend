@@ -75,6 +75,12 @@ interface AuthApi {
   updateMeetingCollaboratorRole: (id: string, userId: string, role: string) => Promise<any>
   removeMeetingCollaborator: (id: string, userId: string) => Promise<any>
   updateSpeakerName: (id: string, data: { oldSpeakerName: string; newSpeakerName: string; segmentIndex?: number; applyToAll: boolean }) => Promise<any>
+  // Pin Meetings
+  toggleMeetingPin: (id: string) => Promise<any>
+  getPinnedMeetings: () => Promise<any>
+  // Pin Boards
+  toggleBoardPin: (id: string) => Promise<any>
+  getPinnedBoards: () => Promise<any>
   // Ask AI
   askAI: (meetingId: string, question: string) => Promise<any>
   getChatHistory: (meetingId: string, limit?: number) => Promise<any>
@@ -189,6 +195,26 @@ export function useApiWithAuth() {
     updateSpeakerName: (id: string, data: any) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.updateSpeakerName(backendToken, id, data))
+    },
+
+    // Pin Meetings
+    toggleMeetingPin: (id: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.toggleMeetingPin(backendToken, id))
+    },
+    getPinnedMeetings: () => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getPinnedMeetings(backendToken))
+    },
+
+    // Pin Boards
+    toggleBoardPin: (id: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.toggleBoardPin(backendToken, id))
+    },
+    getPinnedBoards: () => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getPinnedBoards(backendToken))
     },
 
     // Ask AI - Chat

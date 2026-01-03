@@ -19,6 +19,7 @@ export interface Permission {
   canDelete: boolean;
   canShare: boolean;
   canManageCollaborators: boolean;
+  canPin: boolean; // Everyone can pin their own items
   
   // Task permissions
   canCreateTasks: boolean;
@@ -93,6 +94,7 @@ export function getPermissions(role: UserRole | string | undefined): Permission 
     canDelete: isAdmin,
     canShare: isAdmin,
     canManageCollaborators: isAdmin,
+    canPin: true, // Everyone can pin their own items (per-user)
     
     // Task permissions
     canCreateTasks: isEditor,

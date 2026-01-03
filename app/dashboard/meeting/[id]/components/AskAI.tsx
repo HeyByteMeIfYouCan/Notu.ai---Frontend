@@ -7,6 +7,7 @@ import { IconSend, IconLoader2, IconTrash, IconRobot, IconUser } from "@tabler/i
 import { toast } from "sonner"
 import { useApiWithAuth, useAuth } from "@/hooks/use-auth"
 import { hasPermission, getPermissions } from "@/lib/permissions"
+import ReactMarkdown from "react-markdown"
 
 interface ChatMessage {
   _id: string
@@ -215,7 +216,13 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  {msg.role === 'assistant' ? (
+                    <div className="text-sm prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  )}
                   <span className={`text-[10px] mt-1 block ${
                     msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                   }`}>
