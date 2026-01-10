@@ -10,8 +10,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import MeetingCard from "@/components/custom/MeetingCard"
-import Pagination from "@/components/custom/Pagination"
-import { IconCloudUpload, IconLoader2, IconX } from "@tabler/icons-react"
+import { ModernPagination } from "@/components/custom/ModernPagination"
+import { IconCloudUpload, IconLoader2, IconX, IconList, IconLayoutGrid } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api"
 import { toast } from "sonner"
@@ -50,6 +50,7 @@ export default function UploadsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [totalPages, setTotalPages] = useState(1)
   const [llmError, setLlmError] = useState<string | null>(null)
+  const [gridCols, setGridCols] = useState<1 | 2>(2)
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -270,10 +271,10 @@ export default function UploadsPage() {
                           <div className="rounded-full bg-[var(--primary-100)] p-3 text-[var(--primary)] mb-4">
                             <IconCloudUpload className="h-6 w-6" />
                           </div>
-                          <h2 className="text-[15px] font-semibold text-[var(--foreground)]">Upload A File To Generate A Transcript</h2>
-                          <p className="mt-1 text-xs text-[var(--muted-foreground)]">Browse Or Drag And Drop MP3, WAV, Or MP4 Files. (Max Video Size 100MB)</p>
+                          <h2 className="text-base font-semibold text-foreground">Upload A File To Generate A Transcript</h2>
+                          <p className="mt-1 text-sm text-muted-foreground">Browse Or Drag And Drop MP3, WAV, Or MP4 Files. (Max Video Size 100MB)</p>
                           <Button 
-                            className="mt-5 bg-[var(--primary)] hover:bg-[var(--primary-600)] text-[var(--primary-foreground)]"
+                            className="mt-5 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
                             onClick={() => fileInputRef.current?.click()}
                           >
                             Upload Your Meeting
@@ -294,7 +295,7 @@ export default function UploadsPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-full">
-                      <ListToolbar controls={controls as any} hideType />
+                      <ListToolbar controls={controls as any} hideType gridCols={gridCols} setGridCols={setGridCols} />
                     </div>
                   </div>
                 </div>
@@ -317,17 +318,21 @@ export default function UploadsPage() {
                       <div className="mb-4 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-800">
                         <strong>AI Service:</strong> {llmError}
                       </div>
-                    )}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      )}
+                    <div className={`grid gap-4 ${gridCols === 1 ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
                       {meetings.map((meeting) => (
                         <MeetingCard key={meeting._id} data={formatMeetingForCard(meeting)} />
                       ))}
                     </div>
 
-                    <div className="mt-6 flex items-center justify-center gap-4">
-                      <Pagination page={controls.page} totalPages={totalPages} onPageChange={(p) => controls.setPage(p)} />
-                      {controls.isFetching && <IconLoader2 className="h-4 w-4 animate-spin text-[var(--primary)]" />}
-                    </div>
+                    <ModernPagination
+                      currentPage={controls.page}
+                      totalPages={totalPages}
+                      totalItems={totalPages * controls.pageSize}
+                      itemsPerPage={controls.pageSize}
+                      onPageChange={(p) => controls.setPage(p)}
+                      className="mt-6"
+                    />
                   </>
                 )}
               </div>

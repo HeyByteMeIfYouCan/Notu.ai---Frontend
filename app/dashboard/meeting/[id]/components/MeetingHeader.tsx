@@ -99,26 +99,29 @@ export function MeetingHeader({
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-background border-b">
-      <div className="flex items-center justify-between px-4 lg:px-6 py-3">
-        <div className="flex items-center gap-4 flex-1 mr-4 overflow-hidden">
-          {/* Back button to dashboard */}
+    <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
+      <div className="flex items-center justify-between px-4 lg:px-6 py-4">
+        <div className="flex items-center gap-3 flex-1 mr-4 overflow-hidden">
+          {/* Back button */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-9 w-9 shrink-0"
+            className="h-9 w-9 shrink-0 hover:bg-accent transition-colors"
             onClick={() => router.push('/dashboard/meeting')}
           >
             <IconChevronLeft className="h-5 w-5 text-muted-foreground" />
           </Button>
+          
           <div className="flex flex-col flex-1 overflow-hidden">
-            <h1 className="text-lg font-semibold truncate text-foreground">{title}</h1>
-            <p className="text-xs text-muted-foreground truncate max-w-2xl">{description || 'No description available'}</p>
+            <h1 className="text-xl font-bold truncate text-foreground">{title}</h1>
+            {description && (
+              <p className="text-sm text-muted-foreground truncate max-w-2xl">{description}</p>
+            )}
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Online Presence Avatars - Always show */}
+          {/* Online Presence */}
           <OnlinePresence
             resourceType="meeting"
             resourceId={meetingId}
@@ -127,33 +130,35 @@ export function MeetingHeader({
             maxAvatars={4}
           />
           
-          {/* Share Button - Admin+ only */}
+          {/* Share Button */}
           {permissions.showShareButton && (
             <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
               <DialogTrigger asChild>
-                <Button className="bg-primary hover:opacity-90 text-primary-foreground rounded-full px-4 h-9 flex items-center gap-2 font-semibold transition-opacity" 
-                       onClick={() => onGenerateShareLink()}>
-                  <IconShare className="h-4 w-4" />
+                <Button 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 px-4 font-medium transition-colors" 
+                  onClick={() => onGenerateShareLink()}
+                >
+                  <IconShare className="h-4 w-4 mr-2" />
                   Share
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Share Meeting</DialogTitle>
+                  <DialogTitle className="text-foreground">Share Meeting</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Link Akses Collab (Logged in Only)</label>
+                    <label className="text-sm font-medium text-foreground">Collaboration Link</label>
                     <div className="flex gap-2">
                       <Input 
                         readOnly 
-                        value={shareToken ? `${window.location.origin}/dashboard/join/meeting/${shareToken}` : "Link belum digenerate..."} 
-                        className="bg-muted"
+                        value={shareToken ? `${window.location.origin}/dashboard/join/meeting/${shareToken}` : "Generating link..."} 
+                        className="bg-muted border-border"
                       />
-                      <Button size="icon" variant="outline" onClick={() => {
+                      <Button size="icon" variant="outline" className="border-border hover:bg-accent" onClick={() => {
                         if (shareToken) {
                           navigator.clipboard.writeText(`${window.location.origin}/dashboard/join/meeting/${shareToken}`)
-                          toast.success("Link disalin")
+                          toast.success("Link copied")
                         }
                       }}>
                         <IconCopy className="h-4 w-4" />
@@ -161,147 +166,137 @@ export function MeetingHeader({
                     </div>
                   </div>
 
-                    <div className="space-y-3 pt-4 border-t">
-                      <h3 className="text-sm font-medium">Manajemen Member</h3>
-                      <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
-                        {/* Owner Section */}
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-primary/5 border border-primary/10">
-                          <div className="flex items-center gap-2">
-                            {user?.image ? (
-                              <img src={user.image} className="w-8 h-8 rounded-full" alt="" />
+                  <div className="space-y-3 pt-4 border-t border-border">
+                    <h3 className="text-sm font-semibold text-foreground">Members</h3>
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                      {/* Owner */}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10">
+                        <div className="flex items-center gap-3">
+                          {user?.image ? (
+                            <img src={user.image} className="w-8 h-8 rounded-full" alt="" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                              {(user?.name || 'O')[0]}
+                            </div>
+                          )}
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground">{user?.name || 'Owner'} (You)</span>
+                            <span className="text-xs text-muted-foreground">Owner</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Collaborators */}
+                      {collaborators?.map((col) => (
+                        <div key={col.user._id} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors">
+                          <div className="flex items-center gap-3">
+                            {col.user.image ? (
+                              <img src={col.user.image} className="w-8 h-8 rounded-full" alt="" />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                                {(user?.name || 'O')[0]}
+                              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-foreground">
+                                {col.user.name?.[0] || 'U'}
                               </div>
                             )}
                             <div className="flex flex-col">
-                              <span className="text-sm font-medium">{user?.name || 'Owner'} (Anda)</span>
-                              <span className="text-xs text-muted-foreground">Owner</span>
+                              <span className="text-sm font-medium text-foreground">{col.user.name}</span>
+                              <span className="text-xs text-muted-foreground">{col.user.email}</span>
                             </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <select 
+                              value={col.role}
+                              onChange={(e) => onUpdateRole(col.user._id, e.target.value)}
+                              className="text-xs bg-transparent border border-border rounded px-2 py-1 focus:ring-2 focus:ring-primary cursor-pointer text-foreground hover:bg-accent"
+                              disabled={!permissions.canManageCollaborators}
+                            >
+                              {assignableRoles.map(r => (
+                                <option key={r} value={r}>{getRoleLabel(r)}</option>
+                              ))}
+                            </select>
+                            {permissions.canManageCollaborators && (
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => onRemoveMember(col.user._id)}>
+                                <IconPlus className="h-4 w-4 rotate-45" />
+                              </Button>
+                            )}
                           </div>
                         </div>
-                        
-                        {/* Collaborators */}
-                        {collaborators?.map((col) => (
-                          <div key={col.user._id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors">
-                            <div className="flex items-center gap-2">
-                              {col.user.image ? (
-                                <img src={col.user.image} className="w-8 h-8 rounded-full" alt="" />
-                              ) : (
-                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600">
-                                  {col.user.name?.[0] || 'U'}
-                                </div>
-                              )}
-                              <div className="flex flex-col">
-                                <span className="text-sm font-medium text-foreground">{col.user.name}</span>
-                                <span className="text-xs text-muted-foreground">{col.user.email}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <select 
-                                value={col.role}
-                                onChange={(e) => onUpdateRole(col.user._id, e.target.value)}
-                                className="text-xs bg-transparent border-none focus:ring-0 cursor-pointer text-muted-foreground hover:text-foreground"
-                                disabled={!permissions.canManageCollaborators}
-                              >
-                                {assignableRoles.map(r => (
-                                  <option key={r} value={r}>{getRoleLabel(r)}</option>
-                                ))}
-                              </select>
-                              {permissions.canManageCollaborators && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onRemoveMember(col.user._id)}>
-                                  <IconPlus className="h-4 w-4 rotate-45" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      ))}
                     </div>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
           )}
           
-          {/* Copy Link - Editor+ only */}
+          {/* Copy Link */}
           {permissions.showCopyLink && (
-            <Button variant="outline" size="icon" className="rounded-full h-9 w-9" onClick={() => {
+            <Button variant="outline" size="icon" className="h-9 w-9 border-border hover:bg-accent" onClick={() => {
               const shareUrl = shareToken ? `${window.location.origin}/dashboard/join/meeting/${shareToken}` : window.location.href
               navigator.clipboard.writeText(shareUrl)
-              toast.success(shareToken ? "Link kolaborasi disalin" : "Link meeting disalin")
+              toast.success("Link copied")
             }}>
               <IconLink className="h-4 w-4" />
             </Button>
           )}
 
-          {/* Info Button - Everyone can view */}
+          {/* Info Button */}
           <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 hover:bg-primary/5 hover:text-primary text-muted-foreground transition-all duration-200">
+              <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
                 <IconInfoCircle className="h-4 w-4" />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Informasi Meeting</DialogTitle>
+                <DialogTitle className="text-foreground">Meeting Information</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <IconPencil className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Judul</div>
-                      <div className="text-sm font-semibold text-foreground truncate">{title}</div>
-                    </div>
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Title</div>
+                    <div className="text-sm font-semibold text-foreground">{title}</div>
                   </div>
                   
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <IconChecks className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Deskripsi</div>
-                      <div className="text-sm text-foreground">{description || 'Tidak ada deskripsi'}</div>
-                    </div>
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Description</div>
+                    <div className="text-sm text-foreground">{description || 'No description'}</div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Dibuat</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Created</div>
                       <div className="text-sm font-semibold text-foreground">
                         {createdAt ? new Date(createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                       </div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Durasi</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Duration</div>
                       <div className="text-sm font-semibold text-foreground">
                         {duration ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, '0')}` : '-'}
                       </div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Segmen</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Segments</div>
                       <div className="text-sm font-semibold text-foreground">{segments?.length || 0}</div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Kolaborator</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Members</div>
                       <div className="text-sm font-semibold text-foreground">{collaborators?.length || 0}</div>
                     </div>
                   </div>
 
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Role Anda</div>
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Your Role</div>
                     <div className="text-sm font-semibold text-primary">{getRoleLabel(userRole || 'owner')}</div>
                   </div>
 
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Meeting ID</div>
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Meeting ID</div>
                     <div className="flex items-center gap-2">
                       <code className="text-xs font-mono text-foreground/70 truncate flex-1">{meetingId}</code>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                      <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-accent" onClick={() => {
                         navigator.clipboard.writeText(meetingId)
-                        toast.success("Meeting ID disalin")
+                        toast.success("Meeting ID copied")
                       }}>
                         <IconCopy className="h-3 w-3" />
                       </Button>
@@ -312,60 +307,42 @@ export function MeetingHeader({
             </DialogContent>
           </Dialog>
 
-          {/* Notion Connect - Admin+ only */}
-          {permissions.showNotionConnect && (
-            <Button variant="outline" className="rounded-lg h-9 px-3 flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M4 4h16v16H4V4z"/>
-              </svg>
-              <span className="text-sm">Notion</span>
-              <span className="text-xs text-muted-foreground">Connect</span>
-            </Button>
-          )}
-
-          {/* Export Dropdown - Everyone can export, but media only for editor+ */}
+          {/* Export Dropdown */}
           {permissions.showExportDropdown && (
             <>
               <div className="h-4 w-px bg-border mx-1"></div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-primary/5 hover:text-primary text-muted-foreground transition-all duration-200">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
                     <IconDownload className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 p-1 rounded-xl shadow-xl border-border/40 backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="px-2 py-1.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Format Ekspor</div>
-                  <DropdownMenuItem onClick={() => onExport('txt')} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-lg hover:bg-primary/5 focus:bg-primary/5 text-sm group">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400 group-hover:bg-primary transition-colors"></div>
-                    <span>Teks (.txt)</span>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase">Export Format</div>
+                  <DropdownMenuItem onClick={() => onExport('txt')} className="cursor-pointer hover:bg-accent">
+                    <span className="text-sm">Text (.txt)</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onExport('srt')} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-lg hover:bg-primary/5 focus:bg-primary/5 text-sm group">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 group-hover:bg-primary transition-colors"></div>
-                    <span>Subtitle (.srt)</span>
+                  <DropdownMenuItem onClick={() => onExport('srt')} className="cursor-pointer hover:bg-accent">
+                    <span className="text-sm">Subtitle (.srt)</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onExport('vtt')} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-lg hover:bg-primary/5 focus:bg-primary/5 text-sm group">
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400 group-hover:bg-primary transition-colors"></div>
-                    <span>WebVTT (.vtt)</span>
+                  <DropdownMenuItem onClick={() => onExport('vtt')} className="cursor-pointer hover:bg-accent">
+                    <span className="text-sm">WebVTT (.vtt)</span>
                   </DropdownMenuItem>
                   
-                  {/* Media exports only for editor+ */}
                   {permissions.canExportMedia && (
                     <>
-                      <div className="h-px bg-border/50 my-1"></div>
+                      <div className="h-px bg-border my-1"></div>
                       {isVideoFile && (
-                        <DropdownMenuItem onClick={() => onExport('mp4')} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-lg hover:bg-primary/5 focus:bg-primary/5 text-sm group">
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 group-hover:bg-primary transition-colors"></div>
-                          <span>Video (.mp4)</span>
+                        <DropdownMenuItem onClick={() => onExport('mp4')} className="cursor-pointer hover:bg-accent">
+                          <span className="text-sm">Video (.mp4)</span>
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => onExport('mp3')} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-lg hover:bg-primary/5 focus:bg-primary/5 text-sm group">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 group-hover:bg-primary transition-colors"></div>
-                        <span>Audio (.mp3)</span>
+                      <DropdownMenuItem onClick={() => onExport('mp3')} className="cursor-pointer hover:bg-accent">
+                        <span className="text-sm">Audio (.mp3)</span>
                       </DropdownMenuItem>
-                      <div className="h-px bg-border/50 my-1"></div>
-                      <DropdownMenuItem onClick={() => onExport('json')} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-lg hover:bg-primary/5 focus:bg-primary/5 text-sm group italic">
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary transition-colors"></div>
-                        <span className="text-muted-foreground">Advanced (JSON)</span>
+                      <div className="h-px bg-border my-1"></div>
+                      <DropdownMenuItem onClick={() => onExport('json')} className="cursor-pointer hover:bg-accent">
+                        <span className="text-sm text-muted-foreground">Advanced (JSON)</span>
                       </DropdownMenuItem>
                     </>
                   )}
@@ -374,22 +351,12 @@ export function MeetingHeader({
             </>
           )}
 
-          {/* Copy Summary - Editor+ only */}
-          {permissions.showEditActions && (
-            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => {
-              navigator.clipboard.writeText(summary)
-              toast.success("Summary berhasil disalin")
-            }}>
-              <IconCopy className="h-4 w-4" />
-            </Button>
-          )}
-
-          {/* Delete Button - Owner only */}
+          {/* Delete Button */}
           {permissions.showDeleteButton && (
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-50" 
+              className="h-9 w-9 text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors" 
               onClick={handleDelete}
               disabled={isDeleting}
             >
@@ -397,15 +364,16 @@ export function MeetingHeader({
             </Button>
           )}
 
-          <div className="flex items-center gap-2 ml-2">
-            <div className="text-right">
+          {/* User Profile */}
+          <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
+            <div className="hidden sm:block text-right">
               <div className="text-sm font-semibold text-foreground">{user?.name || 'User'}</div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider font-extrabold">{user?.plan || 'Free'}</div>
+              <div className="text-xs text-muted-foreground">{user?.plan || 'Free'}</div>
             </div>
             {user?.image ? (
-              <img src={user.image} className="w-9 h-9 rounded-full border border-border shadow-sm" alt="" />
+              <img src={user.image} className="w-9 h-9 rounded-full border border-border" alt="" />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground text-sm font-semibold shadow-sm">
+              <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
                 {user?.name?.[0] || 'U'}
               </div>
             )}

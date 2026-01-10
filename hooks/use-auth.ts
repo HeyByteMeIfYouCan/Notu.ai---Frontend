@@ -62,7 +62,7 @@ interface AuthApi {
   getMeetingAnalytics: (id: string) => Promise<any>
   getMeetingStatus: (id: string) => Promise<any>
   createMeeting: (data: any) => Promise<any>
-  createOnlineMeeting: (data: { meetingUrl: string; platform?: string; duration?: number }) => Promise<any>
+  createOnlineMeeting: (data: { title: string; meetingLink: string; platform?: string; duration?: number }) => Promise<any>
   updateMeeting: (id: string, data: any) => Promise<any>
   deleteMeeting: (id: string) => Promise<any>
   deleteBoard: (id: string) => Promise<any>
@@ -110,6 +110,10 @@ interface AuthApi {
   revokeBoardShareLink: (id: string) => Promise<any>
   updateBoardCollaboratorRole: (id: string, userId: string, role: string) => Promise<any>
   removeBoardCollaborator: (id: string, userId: string) => Promise<any>
+  // Extended Analytics
+  getGlobalAnalytics: () => Promise<any>
+  getDetailAnalyticsList: (params?: { page?: number; limit?: number; sortBy?: string; filter?: string; search?: string }) => Promise<any>
+  getMeetingDetailAnalytics: (meetingId: string) => Promise<any>
 }
 
 export function useApiWithAuth() {
@@ -148,7 +152,7 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.createMeeting(backendToken, data))
     },
-    createOnlineMeeting: (data: { meetingUrl: string; platform?: string; duration?: number }) => {
+    createOnlineMeeting: (data: { title: string; meetingLink: string; platform?: string; duration?: number }) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.createOnlineMeeting(backendToken, data))
     },
@@ -338,6 +342,20 @@ export function useApiWithAuth() {
     deleteBoard: (id: string) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.deleteBoard(backendToken, id))
+    },
+
+    // Extended Analytics
+    getGlobalAnalytics: () => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getGlobalAnalytics(backendToken))
+    },
+    getDetailAnalyticsList: (params?: { page?: number; limit?: number; sortBy?: string; filter?: string; search?: string }) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getDetailAnalyticsList(backendToken, params))
+    },
+    getMeetingDetailAnalytics: (meetingId: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getMeetingDetailAnalytics(backendToken, meetingId))
     },
   }) as AuthApi, [backendToken, guard])
 

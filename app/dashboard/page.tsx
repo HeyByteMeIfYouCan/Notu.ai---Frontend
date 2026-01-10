@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import MeetingCard from "@/components/custom/MeetingCard"
-import Pagination from "@/components/custom/Pagination"
-import { IconCamera, IconMicrophone, IconFileUpload, IconChartBar, IconSearch, IconDotsVertical, IconChevronRight, IconChevronDown, IconList, IconGrid4x4, IconLoader2, IconLayoutGrid } from "@tabler/icons-react"
+import { ModernPagination } from "@/components/custom/ModernPagination"
+import { IconCamera, IconMicrophone, IconFileUpload, IconChartBar, IconSearch, IconDotsVertical, IconChevronRight, IconChevronDown, IconLoader2 } from "@tabler/icons-react"
 import { OnlineMeetingDialog } from "@/components/dialogs/online-meeting-dialog"
 import { RealtimeMeetingDialog } from "@/components/dialogs/realtime-meeting-dialog"
 import { useAuth, useApiWithAuth } from "@/hooks/use-auth"
@@ -28,25 +28,25 @@ import { ApiError } from "@/lib/api"
 const quickActions = [
   {
     title: "Take Notes From Online Meeting",
-    description: "Using Online Bot For Google Meet",
+    description: "Join Google Meet dengan bot otomatis",
     icon: IconCamera,
     color: "bg-[var(--primary)]/10",
   },
   {
     title: "Take Notes From Realtime Meeting",
-    description: "Using Online Bot For Google Meet",
+    description: "Record dan transkripsi secara real-time",
     icon: IconMicrophone,
     color: "bg-[var(--primary)]/10",
   },
   {
     title: "Take Notes From Upload File",
-    description: "Using Online Bot For Google Meet",
+    description: "Upload audio atau video untuk dianalisis",
     icon: IconFileUpload,
     color: "bg-[var(--primary)]/10",
   },
   {
     title: "Analytics Your Meeting",
-    description: "Using Online Bot For Google Meet",
+    description: "Lihat statistik dan insights meeting Anda",
     icon: IconChartBar,
     color: "bg-[var(--primary)]/10",
   },
@@ -75,6 +75,7 @@ export default function Page() {
   const [isLoadingMeetings, setIsLoadingMeetings] = useState(true)
   const [llmError, setLlmError] = useState<string | null>(null)
   const [totalPages, setTotalPages] = useState(1)
+  const [gridCols, setGridCols] = useState<1 | 2>(2)
 
   const controls = useListParams({ defaultPageSize: 10 })
   
@@ -232,9 +233,9 @@ export default function Page() {
                 <h2 className="mb-2 text-xl font-bold text-[var(--foreground)]">Meeting History</h2>
                 <p className="mb-6 text-sm text-[var(--muted-foreground)]">Cari Meeting Anda Yang Telah Dibuat</p>
 
-                {/* Search and Filter Bar (shared) */}
+                {/* Search and Filter Bar */}
                 <div className="mb-6">
-                  <ListToolbar controls={controls as any} />
+                  <ListToolbar controls={controls as any} gridCols={gridCols} setGridCols={setGridCols} />
                 </div>
 
                 {/* Meeting Cards Grid */}
@@ -255,16 +256,20 @@ export default function Page() {
                           <strong>AI Service:</strong> {llmError}
                         </div>
                       )}
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className={`grid gap-4 ${gridCols === 1 ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
                       {meetings.map((meeting) => (
                         <MeetingCard key={meeting._id} data={formatMeetingForCard(meeting)} />
                       ))}
                     </div>
                     {/* Pagination controls */}
-                    <div className="mt-6 flex items-center justify-center gap-4">
-                      <Pagination page={controls.page} totalPages={totalPages} onPageChange={(p) => controls.setPage(p)} />
-                      {controls.isFetching && <IconLoader2 className="h-4 w-4 animate-spin text-[var(--primary)]" />}
-                    </div>
+                    <ModernPagination
+                      currentPage={controls.page}
+                      totalPages={totalPages}
+                      totalItems={totalPages * controls.pageSize}
+                      itemsPerPage={controls.pageSize}
+                      onPageChange={(p) => controls.setPage(p)}
+                      className="mt-6"
+                    />
                   </>
                 )}
               </div>

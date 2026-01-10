@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { IconDots, IconVideo, IconLoader2, IconUpload, IconBrandGoogle, IconBrandZoom, IconExternalLink, IconShare, IconPin, IconPinFilled, IconInfoCircle, IconTrash, IconCopy } from '@tabler/icons-react'
+import { IconDots, IconVideo, IconLoader2, IconUpload, IconBrandGoogle, IconExternalLink, IconShare, IconPin, IconPinFilled, IconInfoCircle, IconTrash, IconCopy, IconMicrophone } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { getPermissions, getRoleLabel } from '@/lib/permissions'
 import { useApiWithAuth } from '@/hooks/use-auth'
@@ -169,7 +169,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <IconVideo className="h-4 w-4 text-muted-foreground" />
+              {/* <IconVideo className="h-4 w-4 text-muted-foreground" /> */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                   <Button
@@ -247,7 +247,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
               const isUpload = data.type === 'upload' || data.platform === 'Upload'
               if (isUpload) return <IconUpload className="h-4 w-4" />
               if (data.platform === 'Google Meet') return <IconBrandGoogle className="h-4 w-4" />
-              if (data.platform === 'Zoom') return <IconBrandZoom className="h-4 w-4" />
+              if (data.platform === 'Microphone') return <IconMicrophone className="h-4 w-4" />
               return <IconVideo className="h-4 w-4" />
             })()}
             <span>{data.platform || 'Google Meet'} • {data.date}</span>

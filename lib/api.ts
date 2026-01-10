@@ -146,7 +146,7 @@ class ApiClient {
     });
   }
 
-  async createOnlineMeeting(token: string, data: { meetingUrl: string; platform?: string; duration?: number }) {
+  async createOnlineMeeting(token: string, data: { title: string; meetingLink: string; platform?: string; duration?: number }) {
     return this.request('/api/meetings/online', {
       method: 'POST',
       token,
@@ -191,7 +191,7 @@ class ApiClient {
       if (data.language) formData.append('language', data.language);
       if (data.aiNotes) formData.append('aiNotes', JSON.stringify(data.aiNotes));
       if (data.processingTime) formData.append('processingTime', data.processingTime.toString());
-      
+
       const response = await fetch(`${this.baseUrl}/api/meetings/realtime`, {
         method: 'POST',
         headers: {
@@ -199,14 +199,14 @@ class ApiClient {
         },
         body: formData,
       });
-      
+
       const result = await response.json();
       if (!response.ok) {
         throw new ApiError(result.message || 'API request failed', response.status, result.__llm_diagnostics || result.diagnostics || null);
       }
       return result;
     }
-    
+
     // Fallback to JSON request without audio
     return this.request('/api/meetings/realtime', {
       method: 'POST',
@@ -393,6 +393,25 @@ class ApiClient {
   async getRecentActivity(token: string, limit?: number) {
     const queryString = limit ? `?limit=${limit}` : '';
     return this.request(`/api/analytics/activity${queryString}`, { token });
+  }
+
+  async getGlobalAnalytics(token: string) {
+    return this.request('/api/analytics/global', { token });
+  }
+
+  async getDetailAnalyticsList(token: string, params?: { page?: number; limit?: number; sortBy?: string; filter?: string; search?: string }) {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.filter) queryParams.append('filter', params.filter);
+    if (params?.search) queryParams.append('search', params.search);
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+    return this.request(`/api/analytics/meetings${queryString}`, { token });
+  }
+
+  async getMeetingDetailAnalytics(token: string, meetingId: string) {
+    return this.request(`/api/analytics/meetings/${meetingId}/detail`, { token });
   }
 
   // Upload endpoint with real progress tracking using XMLHttpRequest

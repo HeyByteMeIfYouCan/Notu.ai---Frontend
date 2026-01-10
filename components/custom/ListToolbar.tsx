@@ -10,7 +10,19 @@ type Controls = ReturnType<typeof import("@/hooks/use-list-params").default>
 
 type TypeOption = { value: string; label: string }
 
-export default function ListToolbar({ controls, typeOptions, hideType }: { controls: Controls; typeOptions?: TypeOption[]; hideType?: boolean }) {
+export default function ListToolbar({ 
+  controls, 
+  typeOptions, 
+  hideType,
+  gridCols,
+  setGridCols
+}: { 
+  controls: Controls; 
+  typeOptions?: TypeOption[]; 
+  hideType?: boolean;
+  gridCols?: 1 | 2;
+  setGridCols?: (cols: 1 | 2) => void;
+}) {
   const defaultTypes: TypeOption[] = [
     { value: 'all', label: 'Semua Jenis' },
     { value: 'online', label: 'Online' },
@@ -66,14 +78,26 @@ export default function ListToolbar({ controls, typeOptions, hideType }: { contr
         </Select>
       )}
 
-      <div className="flex items-center rounded-md border bg-white p-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--muted-foreground)]">
-          <IconList className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--muted-foreground)]">
-          <IconLayoutGrid className="h-4 w-4" />
-        </Button>
-      </div>
+      {gridCols !== undefined && setGridCols && (
+        <div className="flex items-center rounded-md border bg-muted p-1">
+          <Button 
+            variant={gridCols === 1 ? "default" : "ghost"} 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => setGridCols(1)}
+          >
+            <IconList className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={gridCols === 2 ? "default" : "ghost"} 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => setGridCols(2)}
+          >
+            <IconLayoutGrid className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

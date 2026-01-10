@@ -137,14 +137,21 @@ export function MeetingAnalytics({
                     const bgColor = colors[index % colors.length]
                     const textColor = textColors[index % textColors.length]
                     
+                    // Check if speaker follows SPEAKER_N pattern
+                    const speakerPattern = /^SPEAKER[_\s]*(\d+)$/i;
+                    const match = item.speaker.match(speakerPattern);
+                    
+                    // Display logic: show number if SPEAKER_N, else show first letter
+                    const displayText = match ? match[1] : item.speaker.charAt(0).toUpperCase();
+                    
                     return (
                       <div 
                         key={index} 
                         className="grid grid-cols-4 gap-2 items-center group/speaker hover:bg-muted/50 rounded-lg p-2 -mx-2 transition-all cursor-default relative"
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <div className={`w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold shadow-sm transition-transform group-hover/speaker:scale-110`}>
-                            {item.speaker.charAt(item.speaker.length - 1)}
+                          <div className={`w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold shadow-sm transition-transform group-hover/speaker:scale-110 flex-shrink-0`}>
+                            {displayText}
                           </div>
                           <span className={`text-xs truncate font-medium ${textColor} group-hover/speaker:font-semibold transition-all`}>
                             {item.speaker}
@@ -260,7 +267,7 @@ export function MeetingAnalytics({
                       <Button 
                         size="sm" 
                         variant="secondary" 
-                        className="h-7 text-[10px] px-3 font-extrabold uppercase tracking-tight rounded-lg bg-background border border-primary/10 text-primary hover:bg-primary hover:text-primary-foreground shadow-sm transition-all" 
+                        className="h-7 text-[10px] px-3 font-extrabold uppercase tracking-tight rounded-lg bg-background border border-primary/10 text-primary hover:bg-primary hover:text-white shadow-sm transition-all" 
                         onClick={() => {
                           // Use explicit board existence (`hasBoard`) to decide Open vs Create UI
                           if (hasBoard) {

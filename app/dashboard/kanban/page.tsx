@@ -15,6 +15,7 @@ import useListParams from "@/hooks/use-list-params"
 import { IconPlus, IconLayoutBoard } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
+import { ModernPagination } from "@/components/custom/ModernPagination"
 
 interface Board {
   _id: string
@@ -36,6 +37,7 @@ export default function KanbanListPage() {
   const [boards, setBoards] = useState<Board[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
     const loadBoards = async () => {
@@ -47,7 +49,9 @@ export default function KanbanListPage() {
         const payload = res?.data || res
         // Handle both array and object response
         const boardsData = Array.isArray(payload) ? payload : (payload?.data || [])
+        const pagination = payload?.pagination || {}
         setBoards(boardsData)
+        setTotalPages(pagination.totalPages || 1)
       } catch (error) {
         console.error(error)
         toast.error("Failed to load boards")
@@ -69,9 +73,9 @@ export default function KanbanListPage() {
     }
   }
 
-  // Use userRole from backend for reliable ownership detection
-  const myBoards = boards.filter(b => b.userRole === 'owner')
-  const sharedBoards = boards.filter(b => b.userRole && b.userRole !== 'owner')
+  // Determine layout buckets
+  const pinnedBoards = boards.filter(b => b.pinned)
+  const unpinnedBoards = boards.filter(b => !b.pinned)
 
   return (
     <SidebarProvider
@@ -84,11 +88,11 @@ export default function KanbanListPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex min-h-screen flex-col bg-slate-50/50">
-          <div className="flex flex-1 flex-col p-6 lg:p-10 gap-8 max-w-7xl mx-auto w-full">
+          <div className="flex flex-1 flex-col p-6 lg:p-10 gap-6 max-w-7xl mx-auto w-full">
             <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight" style={{ color: 'var(--foreground)' }}>Kanban Boards</h1>
-                    <p className="mt-2 font-medium" style={{ color: 'var(--kanban-muted)' }}>Manage and collaborate on meeting tasks efficiently.</p>
+                  <div className="space-y-1">
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Kanban Boards</h1>
+                    <p className="text-sm text-muted-foreground">Manage and collaborate on meeting tasks efficiently.</p>
                   </div>
                   <div className="flex items-center gap-3">
                       <div className="hidden sm:block">
@@ -116,67 +120,85 @@ export default function KanbanListPage() {
                             <SelectItem value="manual">Manual</SelectItem>
                           </SelectContent>
                         </Select>
+
+                        <Select value={String(controls.pageSize)} onValueChange={(v:any)=>controls.setPageSize(Number(v))}>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder={`${controls.pageSize} / page`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="10">10 / page</SelectItem>
+                            <SelectItem value="20">20 / page</SelectItem>
+                            <SelectItem value="50">50 / page</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <Button onClick={() => setIsModalOpen(true)} size="lg" className="rounded-full px-6 shadow-lg" style={{ background: 'var(--kanban-primary)', color: 'var(--kanban-primary-foreground)' }}>
-                          <IconPlus className="mr-2 h-5 w-5" /> New Board
+                      <Button 
+                        onClick={() => setIsModalOpen(true)} 
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                          <IconPlus className="mr-2 h-4 w-4" /> New Board
                         </Button>
                     </div>
             </div>
 
             {isLoading ? (
-              <div className="flex h-[400px] items-center justify-center rounded-2xl border-2 border-dashed bg-white">
+              <div className="flex h-[400px] items-center justify-center rounded-lg border-2 border-dashed border-border bg-card">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
-                  <p className="text-sm font-medium text-slate-500">Loading your boards...</p>
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                  <p className="text-sm font-medium text-muted-foreground">Loading your boards...</p>
                 </div>
               </div>
             ) : boards.length === 0 ? (
-              <div className="flex h-[400px] flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white text-center p-10">
-                <div className="p-4 rounded-full bg-slate-50 mb-4">
-                  <IconLayoutBoard className="h-10 w-10 text-slate-400" />
+              <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card text-center p-10">
+                <div className="p-4 rounded-full bg-muted mb-4">
+                  <IconLayoutBoard className="h-10 w-10 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">No boards found</h3>
-                <p className="text-slate-500 max-w-xs mt-2">Generate a board from your meeting notes to get started with task management.</p>
+                <h3 className="text-lg font-bold text-foreground">No boards found</h3>
+                <p className="text-muted-foreground max-w-xs mt-2">Generate a board from your meeting notes to get started with task management.</p>
                 <Button variant="outline" className="mt-6 font-semibold" onClick={() => router.push('/dashboard/meeting')}>
                   Go to Meetings
                 </Button>
               </div>
             ) : (
               <div className="space-y-8 w-full">
-                {controls.filter === 'all' && (
+                {/* Pinned Section */}
+                {pinnedBoards.length > 0 && (
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>My Boards</h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[var(--kanban-column-bg)] text-[var(--kanban-muted)] text-[11px] font-bold">{myBoards.length}</span>
+                      <h2 className="text-xl font-semibold text-foreground">Pinned Boards</h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">{pinnedBoards.length}</span>
                     </div>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {myBoards.map((b) => <BoardCard key={b._id} board={b} />)}
+                      {pinnedBoards.map((b) => <BoardCard key={b._id} board={b} />)}
                     </div>
                   </section>
                 )}
 
-                {controls.filter === 'all' && sharedBoards.length > 0 && (
+                {/* Main List - Unpinned */}
+                {unpinnedBoards.length > 0 && (
                   <section className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Shared with me</h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[var(--kanban-column-bg)] text-[var(--kanban-muted)] text-[11px] font-bold">{sharedBoards.length}</span>
+                     <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-semibold text-foreground">
+                        {controls.filter === 'all' ? 'All Boards' : (controls.filter === 'mine' ? 'My Boards' : 'Shared with me')}
+                      </h2>
+                      <span className="px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">{unpinnedBoards.length}</span>
                     </div>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {sharedBoards.map((b) => <BoardCard key={b._id} board={b} />)}
+                      {unpinnedBoards.map((b) => <BoardCard key={b._id} board={b} />)}
                     </div>
                   </section>
                 )}
 
-                {controls.filter !== 'all' && (
-                  <section>
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{controls.filter === 'mine' ? 'My Boards' : 'Shared with me'}</h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[var(--kanban-column-bg)] text-[var(--kanban-muted)] text-[11px] font-bold">{controls.filter === 'mine' ? myBoards.length : sharedBoards.length}</span>
-                    </div>
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-4">
-                      {(controls.filter === 'mine' ? myBoards : sharedBoards).map((b) => <BoardCard key={b._id} board={b} />)}
-                    </div>
-                  </section>
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <ModernPagination
+                    currentPage={controls.page}
+                    totalPages={totalPages}
+                    totalItems={totalPages * controls.pageSize}
+                    itemsPerPage={controls.pageSize}
+                    onPageChange={(p) => controls.setPage(p)}
+                    className="mt-6"
+                  />
                 )}
               </div>
             )}

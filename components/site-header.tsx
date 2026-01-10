@@ -181,9 +181,9 @@ export function SiteHeader() {
         {/* Center - Search and Upgrade */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-[var(--accent-foreground)]">1</div>
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-400 text-xs font-semibold text-[var(--accent-foreground)]">1</div>
             <span className="text-sm text-[var(--muted-foreground)] hidden sm:inline">Free meetings</span>
-            <Button className="bg-[var(--accent)] hover:brightness-90 text-[var(--accent-foreground)] text-xs sm:text-sm">Upgrade</Button>
+            <Button className="bg-green-400 hover:brightness-90 text-[var(--accent-foreground)] text-xs sm:text-sm">Upgrade</Button>
           </div>
           <Separator
             orientation="vertical"

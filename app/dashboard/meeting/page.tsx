@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button"
 import { IconSearch, IconMicrophone, IconPlus, IconLoader2 } from "@tabler/icons-react"
 import { SiteHeader } from "@/components/site-header"
 import MeetingCard from "@/components/custom/MeetingCard"
-import Pagination from "@/components/custom/Pagination"
+import { ModernPagination } from "@/components/custom/ModernPagination"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import useListParams from "@/hooks/use-list-params"
 import ListToolbar from "@/components/custom/ListToolbar"
 import { normalizeMeetingsResponse } from "@/lib/meetings"
 import { ApiError } from "@/lib/api"
+import { OnlineMeetingDialog } from "@/components/dialogs/online-meeting-dialog"
+import { RealtimeMeetingDialog } from "@/components/dialogs/realtime-meeting-dialog"
 
 interface Meeting {
   _id: string
@@ -37,6 +39,9 @@ export default function MeetingPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [totalPages, setTotalPages] = useState(1)
   const [llmError, setLlmError] = useState<string | null>(null)
+  const [isOnlineMeetingOpen, setIsOnlineMeetingOpen] = useState(false)
+  const [isRealtimeMeetingOpen, setIsRealtimeMeetingOpen] = useState(false)
+  const [gridCols, setGridCols] = useState<1 | 2>(2)
 
   // default to all (online + realtime) meetings on this page and do not expose upload
   const controls = useListParams({ defaultPageSize: 10, defaultType: 'all' })
@@ -128,11 +133,17 @@ export default function MeetingPage() {
                   <p className="mb-6 text-sm text-[var(--muted-foreground)]">Berikan Link Google Meet Anda, Dan Biarkan Notu Meringkas Poin Poin Meeting Anda</p>
 
                   <div className="flex gap-4">
-                    <Button className="bg-[var(--primary)] hover:brightness-90 text-[var(--primary-foreground)] px-6 py-3">
+                    <Button 
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 transition-colors"
+                      onClick={() => setIsOnlineMeetingOpen(true)}
+                    >
                       <IconPlus className="mr-2 h-4 w-4" />
                       Add To Live Meet
                     </Button>
-                    <Button className="bg-muted text-[var(--primary)] px-6 py-3">
+                    <Button 
+                      className="bg-muted hover:bg-muted/80 text-primary px-6 py-3 transition-colors"
+                      onClick={() => setIsRealtimeMeetingOpen(true)}
+                    >
                       <IconMicrophone className="mr-2 h-4 w-4" />
                       Realtime Meet
                     </Button>
@@ -140,13 +151,13 @@ export default function MeetingPage() {
                 </div>
               </div>
 
-              {/* Meeting History Section */}
+              {/* Meeting List */}
               <div className="px-4 lg:px-6">
-                <h2 className="mb-2 text-xl font-bold text-[var(--foreground)]">Meeting History</h2>
+                <h2 className="mb-2 text-xl font-bold text-foreground">Your Meetings</h2>
                 <p className="mb-6 text-sm text-[var(--muted-foreground)]">Cari Meeting Anda Yang Telah Dibuat</p>
 
                 <div className="mb-6">
-                  <ListToolbar controls={controls as any} typeOptions={[{ value: 'all', label: 'Semua Jenis' }, { value: 'online', label: 'Online' }, { value: 'realtime', label: 'Realtime' }]} />
+                  <ListToolbar controls={controls as any} gridCols={gridCols} setGridCols={setGridCols} typeOptions={[{ value: 'all', label: 'Semua Jenis' }, { value: 'online', label: 'Online' }, { value: 'realtime', label: 'Realtime' }]} />
                 </div>
 
                 {isLoading ? (
@@ -165,16 +176,20 @@ export default function MeetingPage() {
                         <strong>AI Service:</strong> {llmError}
                       </div>
                     )}
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className={`grid gap-4 ${gridCols === 1 ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
                       {meetings.map((meeting) => (
                         <MeetingCard key={meeting._id} data={formatMeetingForCard(meeting)} />
                       ))}
                     </div>
 
-                    <div className="mt-6 flex items-center justify-center gap-4">
-                      <Pagination page={controls.page} totalPages={totalPages} onPageChange={(p) => controls.setPage(p)} />
-                      {controls.isFetching && <IconLoader2 className="h-4 w-4 animate-spin text-[var(--primary)]" />}
-                    </div>
+                    <ModernPagination
+                      currentPage={controls.page}
+                      totalPages={totalPages}
+                      totalItems={totalPages * controls.pageSize}
+                      itemsPerPage={controls.pageSize}
+                      onPageChange={(p) => controls.setPage(p)}
+                      className="mt-6"
+                    />
                   </>
                 )}
               </div>
@@ -182,6 +197,14 @@ export default function MeetingPage() {
           </div>
         </div>
       </SidebarInset>
+      <OnlineMeetingDialog
+        isOpen={isOnlineMeetingOpen}
+        onClose={() => setIsOnlineMeetingOpen(false)}
+      />
+      <RealtimeMeetingDialog
+        isOpen={isRealtimeMeetingOpen}
+        onClose={() => setIsRealtimeMeetingOpen(false)}
+      />
     </SidebarProvider>
   )
 }
