@@ -219,6 +219,22 @@ class ApiClient {
     return this.request(`/api/meetings/${id}/status`, { token });
   }
 
+  async stopBotSession(token: string, id: string, reason?: string) {
+    return this.request(`/api/meetings/${id}/bot/stop`, {
+      method: 'POST',
+      token,
+      body: { reason },
+    });
+  }
+
+  async finalizeBotMeeting(token: string, id: string, options?: { enableDiarization?: boolean; enableAiNotes?: boolean }) {
+    return this.request(`/api/meetings/${id}/bot/finalize`, {
+      method: 'POST',
+      token,
+      body: options,
+    });
+  }
+
   async retryTranscription(token: string, id: string) {
     return this.request(`/api/meetings/${id}/retry`, {
       method: 'POST',

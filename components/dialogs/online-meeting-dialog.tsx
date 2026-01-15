@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { IconCopy, IconLoader2, IconExternalLink } from "@tabler/icons-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -17,9 +17,10 @@ import { BotLiveTranscript } from "@/components/custom/BotLiveTranscript"
 interface OnlineMeetingDialogProps {
   isOpen: boolean
   onClose: () => void
+  meetingId?: string | null  // Optional: for reopening existing meeting
 }
 
-export function OnlineMeetingDialog({ isOpen, onClose }: OnlineMeetingDialogProps) {
+export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetingDialogProps) {
   const [meetingName, setMeetingName] = useState("")
   const [meetingLink, setMeetingLink] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -30,6 +31,18 @@ export function OnlineMeetingDialog({ isOpen, onClose }: OnlineMeetingDialogProp
   
   const { api, isReady } = useApiWithAuth()
   const router = useRouter()
+
+  // Auto-switch to live mode if reopen with meeting ID
+  useEffect(() => {
+    if (isOpen && meetingId) {
+      setActiveMeetingId(meetingId)
+      setMode('live')
+    } else if (isOpen && !meetingId) {
+      // Reset to input mode for new meeting
+      setMode('input')
+      setActiveMeetingId(null)
+    }
+  }, [isOpen, meetingId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,7 +62,7 @@ export function OnlineMeetingDialog({ isOpen, onClose }: OnlineMeetingDialogProp
       const response = await api.createOnlineMeeting({
         title: meetingName || "Online Meeting",
         meetingLink: meetingLink,
-        platform: 'google_meet',
+        platform: 'Google Meet',
       })
       
       const newMeetingId = response.data?.meeting?._id || response.meeting?._id

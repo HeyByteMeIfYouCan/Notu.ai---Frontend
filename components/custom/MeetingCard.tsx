@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { IconDots, IconVideo, IconLoader2, IconUpload, IconBrandGoogle, IconExternalLink, IconShare, IconPin, IconPinFilled, IconInfoCircle, IconTrash, IconCopy, IconMicrophone } from '@tabler/icons-react'
+import { IconDots, IconVideo, IconLoader2, IconUpload, IconBrandGoogle, IconExternalLink, IconShare, IconPin, IconPinFilled, IconInfoCircle, IconTrash, IconCopy, IconMicrophone, IconMessageCircle } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { getPermissions, getRoleLabel } from '@/lib/permissions'
 import { useApiWithAuth } from '@/hooks/use-auth'
@@ -39,6 +39,7 @@ interface Props {
   isPinned?: boolean
   onPinChange?: (id: string, pinned: boolean) => void
   onDelete?: (id: string) => void
+  onViewLiveTranscript?: (id: string) => void
 }
 
 const MeetingCard = ({ data }: { data: Props }) => {
@@ -185,6 +186,14 @@ const MeetingCard = ({ data }: { data: Props }) => {
                     <IconExternalLink className="h-4 w-4 mr-2" />
                     Buka
                   </DropdownMenuItem>
+                  
+                  {/* View Live Transcript - for active bot meetings */}
+                  {(data.status === 'recording' || data.status === 'in_meeting') && data.type === 'online' && (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); data.onViewLiveTranscript?.(String(data.id)) }} className="cursor-pointer">
+                      <IconMessageCircle className="h-4 w-4 mr-2" />
+                      Lihat Live Transcript
+                    </DropdownMenuItem>
+                  )}
                   
                   {/* Share - Owner/Admin only */}
                   {(data.userRole === 'owner' || data.userRole === 'admin') && (

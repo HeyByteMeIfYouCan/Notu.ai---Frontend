@@ -24,6 +24,8 @@ import ListToolbar from "@/components/custom/ListToolbar"
 import { normalizeMeetingsResponse } from "@/lib/meetings"
 import { useRouter } from "next/navigation"
 import { ApiError } from "@/lib/api"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { BotLiveTranscript } from "@/components/custom/BotLiveTranscript"
 
 const quickActions = [
   {
@@ -71,6 +73,8 @@ interface Meeting {
 export default function Page() {
   const [isOnlineMeetingOpen, setIsOnlineMeetingOpen] = useState(false)
   const [isRealtimeMeetingOpen, setIsRealtimeMeetingOpen] = useState(false)
+  const [isLiveTranscriptOpen, setIsLiveTranscriptOpen] = useState(false)
+  const [meetingIdToView, setMeetingIdToView] = useState<string | null>(null)
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [isLoadingMeetings, setIsLoadingMeetings] = useState(true)
   const [llmError, setLlmError] = useState<string | null>(null)
@@ -159,6 +163,10 @@ export default function Page() {
     userRole: meeting.userRole,
     isPinned: meeting.pinned || false,
     shareToken: meeting.shareToken,
+    onViewLiveTranscript: (id: string) => {
+      setMeetingIdToView(id)
+      setIsLiveTranscriptOpen(true)
+    },
   })
 
   // No client-side filtering; server returns filtered/paginated results.
@@ -285,6 +293,27 @@ export default function Page() {
           isOpen={isRealtimeMeetingOpen}
           onClose={() => setIsRealtimeMeetingOpen(false)}
         />
+        
+        {/* Live Transcript Modal */}
+        <Dialog open={isLiveTranscriptOpen} onOpenChange={setIsLiveTranscriptOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Live Transcription</DialogTitle>
+            </DialogHeader>
+            {meetingIdToView && (
+              <BotLiveTranscript 
+                meetingId={meetingIdToView}
+                onComplete={() => {
+                  setIsLiveTranscriptOpen(false)
+                  setMeetingIdToView(null)
+                }}
+                onError={(err) => {
+                  console.error('Live transcript error:', err)
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
     </SidebarProvider>
   )
 }

@@ -9,7 +9,20 @@ export interface BotTranscriptSegment {
 }
 
 export interface BotSessionStatus {
-  status: 'pending' | 'bot_joining' | 'bot_in_meeting' | 'recording' | 'processing' | 'completed' | 'failed';
+  status:
+  | 'pending'
+  | 'joining'
+  | 'bot_joining'
+  | 'waiting_admission'
+  | 'disabling_media'
+  | 'bot_in_meeting'
+  | 'in_meeting'
+  | 'enabling_captions'
+  | 'recording'
+  | 'processing'
+  | 'leaving'
+  | 'completed'
+  | 'failed';
   currentPreview: string;
   chunksProcessed: number;
   duration: number;
@@ -131,19 +144,43 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
 
       console.log('[Bot] Caption added:', `${data.segment.speaker}: ${data.segment.text.substring(0, 50)}`);
 
-      // Add caption to segments
-      setSegments(prev => [...prev, {
-        chunkIndex: data.segment.start,
-        text: `${data.segment.speaker}: ${data.segment.text}`,
-        timestamp: new Date(),
-        isInterim: false,
-      }]);
+      const fullText = `${data.segment.speaker}: ${data.segment.text}`;
 
-      // Update preview text with latest caption
-      setPreviewText(prev => {
-        const newText = `${data.segment.speaker}: ${data.segment.text}`;
-        return prev ? `${prev}\n${newText}` : newText;
+      // Update segments with merge logic + duplicate detection
+      setSegments(prev => {
+        // Check for exact duplicates in last 3 segments
+        const isDuplicate = prev.slice(-3).some(seg => seg.text === fullText);
+        if (isDuplicate) {
+          console.log('[Bot] Skipping duplicate caption');
+          return prev;
+        }
+
+        const last = prev[prev.length - 1];
+        const isSameSpeaker = last && last.text.startsWith(data.segment.speaker);
+        // If same speaker and new text is likely an update (longer or distinct enough but close in time)
+        // We use a simple heuristic: same speaker within 10 seconds = update
+        const isRecent = last && (new Date().getTime() - new Date(last.timestamp).getTime() < 10000);
+
+        if (isSameSpeaker && isRecent) {
+          // Update in place
+          return [...prev.slice(0, -1), {
+            ...last,
+            text: fullText,
+            chunkIndex: data.segment.start, // Update index if needed
+          }];
+        }
+
+        // New segment
+        return [...prev, {
+          chunkIndex: data.segment.start,
+          text: fullText,
+          timestamp: new Date(),
+          isInterim: false,
+        }];
       });
+
+      // Update preview text (just show the latest active caption)
+      setPreviewText(fullText);
 
       onPreviewUpdate?.(data.segment.text, data.segment.start);
     });
@@ -189,7 +226,7 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
       socket.off('bot_error');
       socketListenersSetupRef.current = false;
     };
-  }, [meetingId, onStatusUpdate, onPreviewUpdate, onComplete, onError, previewText]);
+  }, [meetingId]); // Only re-run if meetingId changes - prevents socket flapping
 
   // Join bot live room
   const joinLiveRoom = useCallback(() => {

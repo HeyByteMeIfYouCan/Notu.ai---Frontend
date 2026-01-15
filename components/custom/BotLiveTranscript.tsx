@@ -31,10 +31,16 @@ interface BotLiveTranscriptProps {
 
 const statusLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending: { label: "Menunggu", color: "bg-yellow-500", icon: <IconClock className="h-4 w-4" /> },
+  joining: { label: "Bot Memulai", color: "bg-blue-400", icon: <IconRobot className="h-4 w-4 animate-pulse" /> },
   bot_joining: { label: "Bot Bergabung", color: "bg-blue-500", icon: <IconRobot className="h-4 w-4 animate-pulse" /> },
+  waiting_admission: { label: "Menunggu Host", color: "bg-orange-500", icon: <IconClock className="h-4 w-4 animate-pulse" /> },
+  disabling_media: { label: "Mematikan Mic/Cam", color: "bg-blue-400", icon: <IconMicrophoneOff className="h-4 w-4" /> },
   bot_in_meeting: { label: "Bot di Meeting", color: "bg-green-500", icon: <IconRobot className="h-4 w-4" /> },
+  in_meeting: { label: "Bot di Meeting", color: "bg-green-500", icon: <IconRobot className="h-4 w-4" /> },
+  enabling_captions: { label: "Mengaktifkan CC", color: "bg-purple-400", icon: <IconBrain className="h-4 w-4 animate-pulse" /> },
   recording: { label: "Merekam", color: "bg-red-500", icon: <IconMicrophone className="h-4 w-4 animate-pulse" /> },
   processing: { label: "Memproses", color: "bg-purple-500", icon: <IconBrain className="h-4 w-4 animate-pulse" /> },
+  leaving: { label: "Keluar Meeting", color: "bg-gray-500", icon: <IconRobot className="h-4 w-4" /> },
   completed: { label: "Selesai", color: "bg-green-600", icon: <IconCheck className="h-4 w-4" /> },
   failed: { label: "Gagal", color: "bg-red-600", icon: <IconX className="h-4 w-4" /> },
 }
@@ -49,7 +55,36 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
   const { api, isReady } = useApiWithAuth()
   const [isStopping, setIsStopping] = useState(false)
   const [isFinalizing, setIsFinalizing] = useState(false)
+  const [meetingStatus, setMeetingStatus] = useState<string | null>(null)
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true)
+  const [completedTranscript, setCompletedTranscript] = useState<any>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const stopToastShownRef = useRef(false) // Prevent duplicate toasts
+
+  // Fetch meeting status first to determine if it's live or completed
+  useEffect(() => {
+    const fetchMeetingStatus = async () => {
+      if (!meetingId || !isReady) return
+      
+      setIsLoadingStatus(true)
+      try {
+        const meeting = await api.getMeeting(meetingId)
+        setMeetingStatus(meeting.status)
+        
+        // If completed, load the transcript data
+        if (meeting.status === 'completed') {
+          setCompletedTranscript(meeting)
+        }
+      } catch (err: any) {
+        console.error('Failed to fetch meeting status:', err)
+        onError?.(err.message || 'Gagal memuat status meeting')
+      } finally {
+        setIsLoadingStatus(false)
+      }
+    }
+
+    fetchMeetingStatus()
+  }, [meetingId, isReady])
 
   const {
     isConnected,
@@ -74,22 +109,38 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
     },
   })
 
-  // Join live room on mount
+  // The hook already joins the meeting room via socket.emit('join_meeting')
+  // joinLiveRoom is redundant and causes flapping - skip it
+  // Just track when we should show live vs completed
+  const liveRoomJoinedRef = useRef(false)
+  
   useEffect(() => {
-    if (meetingId && isReady) {
+    if (meetingId && !liveRoomJoinedRef.current) {
+      liveRoomJoinedRef.current = true
       joinLiveRoom()
     }
     return () => {
-      leaveLiveRoom()
+      if (liveRoomJoinedRef.current) {
+        leaveLiveRoom()
+        liveRoomJoinedRef.current = false
+      }
     }
-  }, [meetingId, isReady, joinLiveRoom, leaveLiveRoom])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetingId]) // Only depend on meetingId to prevent flapping
 
   // Auto-scroll to bottom when new segments arrive
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      // ScrollArea uses internal viewport, find it and scroll
+      const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      } else {
+        // Fallback for regular div
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
     }
-  }, [segments])
+  }, [segments, completedTranscript])
 
   const handleStop = async () => {
     if (!isReady) return
@@ -97,7 +148,12 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
     setIsStopping(true)
     try {
       await api.stopBotSession(meetingId, 'user_requested')
-      toast.info("Bot dihentikan")
+      
+      // Only show toast once
+      if (!stopToastShownRef.current) {
+        toast.info("Bot dihentikan")
+        stopToastShownRef.current = true
+      }
     } catch (err: any) {
       toast.error(err.message || "Gagal menghentikan bot")
     } finally {
@@ -105,28 +161,78 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
     }
   }
 
-  const handleFinalize = async () => {
-    if (!isReady) return
-    
-    setIsFinalizing(true)
-    try {
-      await api.finalizeBotMeeting(meetingId, {
-        enableDiarization: true,
-        enableAiNotes: true,
-      })
-      toast.success("Transkripsi sedang difinalisasi...")
-    } catch (err: any) {
-      toast.error(err.message || "Gagal finalisasi")
-    } finally {
-      setIsFinalizing(false)
-    }
+  // If loading status, show spinner
+  if (isLoadingStatus) {
+    return (
+      <Card className="w-full">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center py-12">
+            <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
+  // If meeting is completed, show completed transcript view
+  if (meetingStatus === 'completed' && completedTranscript) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <IconRobot className="h-6 w-6 text-primary" />
+              <CardTitle className="text-lg">Transcript Selesai</CardTitle>
+            </div>
+            <Badge variant="secondary" className="gap-1 bg-green-600 text-white">
+              <IconCheck className="h-4 w-4" />
+              Completed
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        <Separator />
+        
+        <CardContent className="pt-4">
+          <ScrollArea 
+            className="h-[300px] w-full rounded-md border p-4 bg-muted/30"
+            ref={scrollRef}
+          >
+            {completedTranscript.segments && completedTranscript.segments.length > 0 ? (
+              <div className="space-y-2">
+                {completedTranscript.segments.map((segment: any, index: number) => (
+                  <div 
+                    key={index}
+                    className="p-2 rounded bg-background/50"
+                  >
+                    <p className="text-sm font-medium text-primary mb-1">{segment.speaker || 'Speaker'}</p>
+                    <p className="text-sm leading-relaxed">{segment.text}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <IconMicrophoneOff className="h-8 w-8 mb-2" />
+                <p className="text-sm">Tidak ada transkripsi</p>
+              </div>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    )
+  }
+
+
   const statusInfo = statusLabels[status] || statusLabels.pending
-  const isActive = ['bot_joining', 'bot_in_meeting', 'recording'].includes(status)
+  const isActive = ['joining', 'bot_joining', 'waiting_admission', 'disabling_media', 'bot_in_meeting', 'in_meeting', 'enabling_captions', 'recording'].includes(status)
   const canStop = isActive && !isStopping
-  const canFinalize = status === 'completed' && !isFinalizing
+
   const accumulatedText = getAccumulatedText()
+
+  // Show transcript if we have data OR if status indicates we should be recording
+  // Also show immediately if we have segments/preview (captions might arrive before status update)
+  const hasData = segments.length > 0 || previewText.length > 0
+  const showTranscript = hasData || ['enabling_captions', 'bot_in_meeting', 'in_meeting', 'recording', 'processing', 'completed'].includes(status)
 
   return (
     <Card className="w-full">
@@ -188,12 +294,44 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
             className="h-[300px] w-full rounded-md border p-4 bg-muted/30"
             ref={scrollRef}
           >
-            {segments.length === 0 && !previewText ? (
+            {!showTranscript ? (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                {status === 'waiting_admission' ? (
+                  <>
+                    <IconClock className="h-8 w-8 mb-2 animate-pulse text-orange-500" />
+                    <p className="text-sm font-medium">Menunggu Host</p>
+                    <p className="text-xs mt-1">Bot menunggu persetujuan untuk masuk...</p>
+                  </>
+                ) : status === 'joining' || status === 'bot_joining' ? (
+                  <>
+                    <IconRobot className="h-8 w-8 mb-2 animate-pulse text-blue-500" />
+                    <p className="text-sm font-medium">Bot Sedang Bergabung</p>
+                    <p className="text-xs mt-1">Mematikan mic/camera...</p>
+                  </>
+                ) : status === 'disabling_media' ? (
+                  <>
+                    <IconMicrophoneOff className="h-8 w-8 mb-2 text-blue-400" />
+                    <p className="text-sm font-medium">Mematikan Mic & Camera</p>
+                  </>
+                ) : status === 'enabling_captions' ? (
+                  <>
+                    <IconBrain className="h-8 w-8 mb-2 animate-pulse text-purple-500" />
+                    <p className="text-sm font-medium">Mengaktifkan Caption</p>
+                    <p className="text-xs mt-1">Menyiapkan transkripsi...</p>
+                  </>
+                ) : (
+                  <>
+                    <IconLoader2 className="h-8 w-8 mb-2 animate-spin" />
+                    <p className="text-sm">Memulai bot...</p>
+                  </>
+                )}
+              </div>
+            ) : segments.length === 0 && !previewText ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 {isActive ? (
                   <>
                     <IconMicrophone className="h-8 w-8 mb-2 animate-pulse" />
-                    <p className="text-sm">Menunggu audio...</p>
+                    <p className="text-sm">Menunggu caption dari Google Meet...</p>
                   </>
                 ) : (
                   <>
@@ -262,21 +400,7 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
                 Stop Bot
               </Button>
             )}
-            
-            {canFinalize && (
-              <Button 
-                size="sm"
-                onClick={handleFinalize}
-                disabled={isFinalizing}
-              >
-                {isFinalizing ? (
-                  <IconLoader2 className="h-4 w-4 animate-spin mr-1" />
-                ) : (
-                  <IconBrain className="h-4 w-4 mr-1" />
-                )}
-                Finalize dengan AI
-              </Button>
-            )}
+
           </div>
         </div>
       </CardContent>

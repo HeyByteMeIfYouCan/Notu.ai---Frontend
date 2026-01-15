@@ -114,6 +114,8 @@ interface AuthApi {
   getGlobalAnalytics: () => Promise<any>
   getDetailAnalyticsList: (params?: { page?: number; limit?: number; sortBy?: string; filter?: string; search?: string }) => Promise<any>
   getMeetingDetailAnalytics: (meetingId: string) => Promise<any>
+  stopBotSession: (id: string, reason?: string) => Promise<any>
+  finalizeBotMeeting: (id: string, options?: any) => Promise<any>
 }
 
 export function useApiWithAuth() {
@@ -353,9 +355,13 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.getDetailAnalyticsList(backendToken, params))
     },
-    getMeetingDetailAnalytics: (meetingId: string) => {
+    stopBotSession: (id: string, reason?: string) => {
       if (!backendToken) throw new Error("Not authenticated")
-      return guard(api.getMeetingDetailAnalytics(backendToken, meetingId))
+      return guard(api.stopBotSession(backendToken, id, reason))
+    },
+    finalizeBotMeeting: (id: string, options?: any) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.finalizeBotMeeting(backendToken, id, options))
     },
   }) as AuthApi, [backendToken, guard])
 

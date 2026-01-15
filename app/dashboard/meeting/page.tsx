@@ -18,6 +18,8 @@ import { normalizeMeetingsResponse } from "@/lib/meetings"
 import { ApiError } from "@/lib/api"
 import { OnlineMeetingDialog } from "@/components/dialogs/online-meeting-dialog"
 import { RealtimeMeetingDialog } from "@/components/dialogs/realtime-meeting-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { BotLiveTranscript } from "@/components/custom/BotLiveTranscript"
 
 interface Meeting {
   _id: string
@@ -41,6 +43,8 @@ export default function MeetingPage() {
   const [llmError, setLlmError] = useState<string | null>(null)
   const [isOnlineMeetingOpen, setIsOnlineMeetingOpen] = useState(false)
   const [isRealtimeMeetingOpen, setIsRealtimeMeetingOpen] = useState(false)
+  const [isLiveTranscriptOpen, setIsLiveTranscriptOpen] = useState(false)
+  const [meetingIdToView, setMeetingIdToView] = useState<string | null>(null)
   const [gridCols, setGridCols] = useState<1 | 2>(2)
 
   // default to all (online + realtime) meetings on this page and do not expose upload
@@ -104,6 +108,10 @@ export default function MeetingPage() {
     userRole: meeting.userRole,
     isPinned: meeting.pinned || false,
     shareToken: meeting.shareToken,
+    onViewLiveTranscript: (id: string) => {
+      setMeetingIdToView(id)
+      setIsLiveTranscriptOpen(true)
+    },
   })
 
   return (
@@ -205,6 +213,27 @@ export default function MeetingPage() {
         isOpen={isRealtimeMeetingOpen}
         onClose={() => setIsRealtimeMeetingOpen(false)}
       />
+      
+      {/* Live Transcript Modal */}
+      <Dialog open={isLiveTranscriptOpen} onOpenChange={setIsLiveTranscriptOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Live Transcription</DialogTitle>
+          </DialogHeader>
+          {meetingIdToView && (
+            <BotLiveTranscript 
+              meetingId={meetingIdToView}
+              onComplete={() => {
+                setIsLiveTranscriptOpen(false)
+                setMeetingIdToView(null)
+              }}
+              onError={(err) => {
+                console.error('Live transcript error:', err)
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   )
 }
