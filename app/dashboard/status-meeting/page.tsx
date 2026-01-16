@@ -177,7 +177,9 @@ export default function StatusMeetingPage() {
         search: debouncedSearch,
         status: statusFilter !== 'all' ? statusFilter : undefined,
         type: typeParam,
-        platform: platformParam
+        platform: platformParam,
+        // Status page should sort by pure latest, not pinned first
+        sortByPinned: 'false'
       }
       
       // Note: Backend 'type' might map to 'platform' or 'type'. 
@@ -581,7 +583,7 @@ export default function StatusMeetingPage() {
                     variant="outline" 
                     onClick={handleRefresh} 
                     disabled={isRefreshing}
-                    className="border-border hover:bg-accent hover:text-accent-foreground transition-all"
+                    className="border-border hover:bg-accent bg-background-2 hover:text-accent-foreground transition-all"
                   >
                     <IconRefresh className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                     Refresh
@@ -602,7 +604,7 @@ export default function StatusMeetingPage() {
                   </div>
 
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] bg-background-2">
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -614,7 +616,7 @@ export default function StatusMeetingPage() {
                   </Select>
 
                   <Select value={platformFilter} onValueChange={setPlatformFilter}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] bg-background-2">
                       <SelectValue placeholder="All Platforms" />
                     </SelectTrigger>
                     <SelectContent>
@@ -630,7 +632,7 @@ export default function StatusMeetingPage() {
                     setPageSize(Number(val))
                     setCurrentPage(1) // Reset to first page when changing page size
                   }}>
-                    <SelectTrigger className="w-[130px]">
+                    <SelectTrigger className="w-[130px] bg-background-2">
                       <SelectValue placeholder="10 / page" />
                     </SelectTrigger>
                     <SelectContent>

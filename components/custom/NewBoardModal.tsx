@@ -45,10 +45,10 @@ export default function NewBoardModal({ isOpen, onClose }: NewBoardModalProps) {
         const payload = res?.data || res
         const list = payload?.meetings || payload || []
 
-        // Backend now provides `actionItemCount` and `hasBoard` for each meeting
+        // Backend now provides `actionItemsCount` and `hasBoard` for each meeting
         // Keep only meetings that have action items and do not already have a board
         const filtered = (list || []).filter((m: any) => {
-          const actionCount = m.actionItemCount || (m.actionItems && m.actionItems.length) || 0
+          const actionCount = m.actionItemsCount || (m.actionItems && m.actionItems.length) || 0
           const hasBoard = !!m.hasBoard
           return actionCount > 0 && !hasBoard
         })

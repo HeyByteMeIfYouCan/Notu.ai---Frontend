@@ -355,6 +355,10 @@ export function useApiWithAuth() {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.getDetailAnalyticsList(backendToken, params))
     },
+    getMeetingDetailAnalytics: (meetingId: string) => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getMeetingDetailAnalytics(backendToken, meetingId))
+    },
     stopBotSession: (id: string, reason?: string) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.stopBotSession(backendToken, id, reason))

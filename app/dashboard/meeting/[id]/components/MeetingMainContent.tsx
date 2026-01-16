@@ -105,7 +105,7 @@ export function MeetingMainContent({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto bg-background-2">
       {/* Meeting Header Info */}
       <div className="px-6 py-4 border-b group">
         <div className="flex items-start justify-between">

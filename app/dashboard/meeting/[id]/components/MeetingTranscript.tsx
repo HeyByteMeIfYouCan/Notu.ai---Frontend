@@ -139,6 +139,13 @@ export function MeetingTranscript({
     )
   }, [transcriptSegments, popupCurrentTime])
 
+  // Find current segment for subtitle in mini player
+  const currentMiniSegment = useMemo(() => {
+    return transcriptSegments.find(
+      (seg: any) => seg.start <= currentTime && seg.end >= currentTime
+    )
+  }, [transcriptSegments, currentTime])
+
   // Update popup current time from video
   useEffect(() => {
     if (!isVideoPopupOpen || !videoRef.current) return
@@ -211,14 +218,14 @@ export function MeetingTranscript({
   }
 
   return (
-    <div className="w-80 border-l hidden xl:flex xl:flex-col">
+    <div className="w-80 border-l hidden xl:flex xl:flex-col bg-background-2">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
         <TabsList className="w-full rounded-none border-b">
           <TabsTrigger value="transcript" className="flex-1">Transkrip</TabsTrigger>
           {/* Only show Ask AI tab if user has permission */}
           {canAskAI && (
             <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-1.5">
-              <div className="w-5 h-5 rounded bg-purple-600 flex items-center justify-center text-[10px] text-white">AI</div>
+              <div className="w-5 h-5 rounded bg-primary flex items-center justify-center text-[10px] text-primary-foreground">AI</div>
               Ask AI
             </TabsTrigger>
           )}
@@ -236,6 +243,16 @@ export function MeetingTranscript({
                   />
                 )}
                 
+                {/* Subtitle Overlay for Mini Player */}
+                {subtitlesEnabled && currentMiniSegment && (
+                  <div className="absolute bottom-12 left-0 right-0 flex justify-center px-2 pointer-events-none">
+                    <div className="bg-black/80 text-white px-3 py-1.5 rounded-lg max-w-[95%] text-center text-[10px] leading-relaxed">
+                      <span className="font-semibold text-accent">{currentMiniSegment.speaker}: </span>
+                      <span className="text-primary-foreground/90">{currentMiniSegment.text}</span>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Video Controls Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2">
                   {/* Progress Bar */}
@@ -250,7 +267,7 @@ export function MeetingTranscript({
                     }}
                   >
                     <div 
-                      className="h-full bg-purple-500 rounded-full transition-all relative group-hover/bar:bg-purple-400"
+                      className="h-full bg-primary rounded-full transition-all relative group-hover/bar:bg-primary/80"
                       style={{ width: `${totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0}%` }}
                     >
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg" />
@@ -324,7 +341,7 @@ export function MeetingTranscript({
               <button
                 onClick={() => setAutoFollow(!autoFollow)}
                 className={`flex items-center gap-2 text-xs px-2 py-1 rounded font-medium transition-colors ${
-                  autoFollow ? 'bg-purple-100 text-primary' : 'bg-muted text-muted-foreground'
+                  autoFollow ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {autoFollow ? "Auto Follow On" : "Auto Follow Off"}
@@ -341,8 +358,8 @@ export function MeetingTranscript({
                     key={index} 
                     className={`rounded-xl p-3 cursor-pointer transition-all group bg-card ${
                       isActive 
-                        ? 'border-2 border-primary shadow-md' 
-                        : 'border border-border hover:border-primary/30 hover:shadow-sm'
+                        ? 'border-2 border-primary shadow-md bg-primary/10' 
+                        : 'border-2 border-border hover:border-primary/30 hover:shadow-sm bg-background'
                     }`}
                     onClick={() => jumpToTimestamp(segment.start)}
                   >
@@ -377,7 +394,7 @@ export function MeetingTranscript({
                           }`}>{formatTime(segment.start)}</span>
                         </div>
                         <p className={`text-sm leading-relaxed ${
-                          isActive ? 'text-foreground' : 'text-muted-foreground'
+                          isActive ? 'text-primary' : 'text-muted-foreground'
                         }`}>{segment.text}</p>
                       </div>
                     </div>
@@ -547,13 +564,13 @@ export function MeetingTranscript({
                   <h4 className="font-semibold text-base text-foreground">Transkrip</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">{transcriptSegments.length} segmen</p>
                 </div>
-                <button 
+                {/* <button 
                   onClick={handlePopupClose}
                   className="p-2 hover:bg-muted rounded-lg transition-colors"
                   title="Tutup"
                 >
                   <IconX className="h-5 w-5 text-muted-foreground" />
-                </button>
+                </button> */}
               </div>
               <div 
                 ref={popupSegmentsRef}

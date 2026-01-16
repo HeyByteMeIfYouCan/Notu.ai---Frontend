@@ -3,6 +3,7 @@ import Image from "next/image";
 import Page from "./dashboard/page";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -55,13 +56,13 @@ function SiteHeader() {
         <div className="flex items-center gap-2">
           {atTop ? (
             <>
-              <button className="h-8 px-3 rounded-md text-sm text-white/90 hover:text-white">Log in</button>
-              <button className="h-9 px-4 rounded-md bg-white text-[#060818] text-sm font-medium hover:bg-white/90">Coba Gratis</button>
+              <Link href="/login" className="h-10 px-4 rounded-md text-sm bg-primary text-primary-foreground hover:bg-primary/90 grid place-items-center">Log in</Link>
+              <button className="h-10 px-4 rounded-md bg-white text-[#060818] text-sm font-medium hover:bg-white/90">Coba Gratis</button>
             </>
           ) : (
             <>
-              <button className="h-8 px-3 rounded-md text-sm text-[#0f1222]/80 hover:text-[#0f1222]">Log in</button>
-              <button className="h-9 px-4 rounded-md bg-[#0f1222] text-white text-sm font-medium hover:bg-[#121533]">Coba Gratis</button>
+              <Link href="/login" className="h-10 px-4 rounded-md text-sm text-[#0f1222]/80 hover:text-[#0f1222] grid place-items-center">Log in</Link>
+              <button className="h-10 px-4 rounded-md bg-[#0f1222] text-white text-sm font-medium hover:bg-[#121533]">Coba Gratis</button>
             </>
           )}
         </div>
@@ -87,7 +88,7 @@ function HeroSection() {
             <Button variant="secondary">Uji coba gratis</Button>
           </div>
           <div className="mt-10 mx-auto max-w-4xl overflow-hidden rounded-[6px] ring-1 ring-white/10">
-            <Image src="/hero-feature.png" alt="Hero Feature" width={1600} height={900} className="w-full h-auto" />
+            <Image src="/hero-features.png" alt="Hero Feature" width={1600} height={900} className="w-full h-auto" />
           </div>
         </div>
       </div>

@@ -100,7 +100,7 @@ export default function KanbanListPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Select value={controls.filter} onValueChange={(v:any)=>controls.setFilter(v)}>
-                          <SelectTrigger className="w-[160px]">
+                          <SelectTrigger className="w-[160px] bg-background-2">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -111,7 +111,7 @@ export default function KanbanListPage() {
                         </Select>
 
                         <Select value={controls.source || 'all'} onValueChange={(v:any)=>controls.setSource(v)}>
-                          <SelectTrigger className="w-[160px]">
+                          <SelectTrigger className="w-[160px] bg-background-2">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -122,11 +122,12 @@ export default function KanbanListPage() {
                         </Select>
 
                         <Select value={String(controls.pageSize)} onValueChange={(v:any)=>controls.setPageSize(Number(v))}>
-                          <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder={`${controls.pageSize} / page`} />
+                          <SelectTrigger className="w-[120px] bg-background-2">
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="10">10 / page</SelectItem>
+                            <SelectItem value="12">12 / page</SelectItem>
                             <SelectItem value="20">20 / page</SelectItem>
                             <SelectItem value="50">50 / page</SelectItem>
                           </SelectContent>

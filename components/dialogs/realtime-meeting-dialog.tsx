@@ -284,7 +284,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
             </div>
             
             {/* Close button - disabled when locked */}
-            {!isLocked && (
+            {/* {!isLocked && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -293,7 +293,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
               >
                 <X className="h-4 w-4" />
               </Button>
-            )}
+            )} */}
             {isLocked && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 dark:bg-primary/20 rounded-full">
                 <Lock className="h-3.5 w-3.5 text-primary" />
