@@ -61,6 +61,7 @@ interface AuthApi {
   getMeeting: (id: string) => Promise<any>
   getMeetingAnalytics: (id: string) => Promise<any>
   getMeetingStatus: (id: string) => Promise<any>
+  getMeetingStats: () => Promise<any>
   createMeeting: (data: any) => Promise<any>
   createOnlineMeeting: (data: { title: string; meetingLink: string; platform?: string; duration?: number }) => Promise<any>
   updateMeeting: (id: string, data: any) => Promise<any>
@@ -149,6 +150,10 @@ export function useApiWithAuth() {
     getMeetingStatus: (id: string) => {
       if (!backendToken) throw new Error("Not authenticated")
       return guard(api.getMeetingStatus(backendToken, id))
+    },
+    getMeetingStats: () => {
+      if (!backendToken) throw new Error("Not authenticated")
+      return guard(api.getMeetingStats(backendToken))
     },
     createMeeting: (data: any) => {
       if (!backendToken) throw new Error("Not authenticated")

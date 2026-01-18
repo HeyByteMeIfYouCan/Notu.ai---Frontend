@@ -190,8 +190,8 @@ export function MeetingMainContent({
       <div className="px-6 py-4 space-y-6 pb-24">
         {!isAiContentAvailable ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-gray-50/50 rounded-3xl border border-gray-100 mt-4">
-            <div className="bg-[var(--primary)]/10 p-6 rounded-3xl mb-8">
-              <IconSparkles className="h-16 w-16 text-[var(--primary)]" />
+            <div className="bg-primary/10 p-6 rounded-3xl mb-8">
+              <IconSparkles className="h-16 w-16 text-primary" />
             </div>
             <h3 className="text-2xl font-bold text-foreground mb-4">Ringkasan tidak tersedia</h3>
             <p className="text-base text-muted-foreground max-w-lg mb-10">
@@ -260,10 +260,13 @@ export function MeetingMainContent({
                     </Dialog>
                   )}
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {Object.entries(highlights).map(([header, content]: [string, any]) => (
                     <div key={header}>
-                      <h3 className="font-medium text-sm mb-2 text-[var(--primary)]">{header}</h3>
+                      <div className="flex items-center gap-1 mb-2">
+                        <div className="bg-foreground w-1 h-1 rounded-full"></div>
+                        <h3 className="font-medium text-sm text-primary">{header}</h3>
+                      </div>
                       <div className="prose prose-sm prose-gray max-w-none text-muted-foreground">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                       </div>
@@ -276,14 +279,14 @@ export function MeetingMainContent({
             {/* Action Items */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-semibold text-[var(--primary)]">Action Items</h2>
+                <h2 className="text-base font-semibold text-primary">Action Items</h2>
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-[var(--primary)] disabled:opacity-40" onClick={onRegenerateAi} disabled={!permissions.canRegenerateAI}>
+                  <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-primary disabled:opacity-40" onClick={onRegenerateAi} disabled={!permissions.canRegenerateAI}>
                     <IconRefresh className="h-4 w-4" />
                     <span className="text-xs font-medium">Ulangi Analisis</span>
                   </Button>
                   {!hasSyncedTasks && actionItems.length > 0 && (
-                    <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-[var(--primary)] disabled:opacity-40" onClick={onGenerateKanban} disabled={!permissions.canEdit}>
+                    <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-primary disabled:opacity-40" onClick={onGenerateKanban} disabled={!permissions.canEdit}>
                       <IconLayoutKanban className="h-4 w-4" />
                       <span className="text-xs font-medium">Buat Board</span>
                     </Button>

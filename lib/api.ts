@@ -134,6 +134,10 @@ class ApiClient {
     return this.request(`/api/meetings/${id}`, { token });
   }
 
+  async getMeetingStats(token: string): Promise<{ success: boolean; data: any }> {
+    return this.request('/api/meetings/stats', { token });
+  }
+
   async getMeetingAnalytics(token: string, id: string): Promise<AnalyticsResponse> {
     return this.request(`/api/meetings/${id}/analytics`, { token });
   }

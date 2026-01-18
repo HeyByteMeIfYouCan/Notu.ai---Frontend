@@ -492,6 +492,7 @@ export default function MeetingDetailPage() {
               onDeleteKanban={handleDeleteKanban}
               boardId={meeting?.boardId}
               userRole={meeting?.userRole}
+              meetingId={meetingId}
             />
 
             <MeetingMainContent 

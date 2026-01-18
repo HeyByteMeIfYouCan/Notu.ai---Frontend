@@ -13,8 +13,12 @@ import {
   IconMessage,
   IconChartPie,
   IconTargetArrow,
-  IconPercentage
+  IconPercentage,
+  IconChartBar,
+  IconChartLine,
+  IconChartArea
 } from "@tabler/icons-react"
+import { useState } from "react"
 
 interface GlobalAnalyticsProps {
   data: any
@@ -22,6 +26,8 @@ interface GlobalAnalyticsProps {
 }
 
 export function GlobalAnalytics({ data, isLoading }: GlobalAnalyticsProps) {
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('line')
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -173,12 +179,37 @@ export function GlobalAnalytics({ data, isLoading }: GlobalAnalyticsProps) {
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Meeting Trends - NOW WITH REAL DATA */}
         <Card>
-          <CardHeader>
-            <CardTitle>Meeting Activity</CardTitle>
-            <CardDescription>Last 14 days trend</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Meeting Activity</CardTitle>
+              <CardDescription>Last 14 days trend</CardDescription>
+            </div>
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
+              <button
+                onClick={() => setChartType('line')}
+                className={`p-1.5 rounded-md transition-all ${chartType === 'line' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title="Line Chart"
+              >
+                <IconChartLine className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setChartType('bar')}
+                className={`p-1.5 rounded-md transition-all ${chartType === 'bar' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title="Bar Chart"
+              >
+                <IconChartBar className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setChartType('area')}
+                className={`p-1.5 rounded-md transition-all ${chartType === 'area' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                title="Area Chart"
+              >
+                <IconChartArea className="h-4 w-4" />
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
-            <MeetingTrendsChart data={trends || []} />
+            <MeetingTrendsChart data={trends || []} type={chartType} />
           </CardContent>
         </Card>
 

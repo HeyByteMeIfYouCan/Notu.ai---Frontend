@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
-import { IconMenu2, IconShare, IconCopy, IconLink, IconPlus, IconDownload, IconTrash, IconLoader2, IconPencil, IconInfoCircle, IconChecks, IconChevronLeft } from "@tabler/icons-react"
+import { IconMenu2, IconShare, IconCopy, IconLink, IconPlus, IconDownload, IconTrash, IconLoader2, IconPencil, IconInfoCircle, IconChecks, IconChevronLeft, IconChartBar } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
@@ -106,10 +106,10 @@ export function MeetingHeader({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-9 w-9 shrink-0 hover:bg-accent transition-colors"
-            onClick={() => router.push('/dashboard/meeting')}
+            className="h-9 w-9 shrink-0 hover:bg-accent transition-colors text-muted-foreground hover:text-accent-foreground"
+            onClick={() => router.back()}
           >
-            <IconChevronLeft className="h-5 w-5 text-muted-foreground" />
+            <IconChevronLeft className="h-5 w-5" />
           </Button>
           
           <div className="flex flex-col flex-1 overflow-hidden">
@@ -155,7 +155,7 @@ export function MeetingHeader({
                         value={shareToken ? `${window.location.origin}/dashboard/join/meeting/${shareToken}` : "Generating link..."} 
                         className="bg-muted border-border"
                       />
-                      <Button size="icon" variant="outline" className="border-border hover:bg-accent" onClick={() => {
+                      <Button size="icon" variant="outline" className="border-border hover:bg-accent hover:text-accent-foreground" onClick={() => {
                         if (shareToken) {
                           navigator.clipboard.writeText(`${window.location.origin}/dashboard/join/meeting/${shareToken}`)
                           toast.success("Link copied")
@@ -242,7 +242,7 @@ export function MeetingHeader({
           {/* Info Button */}
           <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+              <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors">
                 <IconInfoCircle className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -307,13 +307,24 @@ export function MeetingHeader({
             </DialogContent>
           </Dialog>
 
+          {/* Detail Analytics Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9 hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors"
+            onClick={() => router.push(`/dashboard/analytics/detail/${meetingId}`)}
+            title="Detail Analytics"
+          >
+            <IconChartBar className="h-4 w-4" />
+          </Button>
+
           {/* Export Dropdown */}
           {permissions.showExportDropdown && (
             <>
               <div className="h-4 w-px bg-border mx-1"></div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors">
                     <IconDownload className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

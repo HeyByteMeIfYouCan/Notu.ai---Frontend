@@ -127,6 +127,15 @@ export default function StatusMeetingPage() {
   const [pagination, setPagination] = useState({ total: 0, pages: 1 })
   const [pageSize, setPageSize] = useState(10)
 
+  // Statistics state
+  const [statusCounts, setStatusCounts] = useState({
+    completed: 0,
+    active: 0,
+    pending: 0,
+    cancelled: 0,
+    failed: 0
+  })
+
   // Filter state
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -231,10 +240,26 @@ export default function StatusMeetingPage() {
     }
   }, [isReady, api, currentPage, pageSize, debouncedSearch, statusFilter, platformFilter])
 
+  const fetchStats = useCallback(async () => {
+    if (!isReady) return
+    try {
+      const response = await api.getMeetingStats()
+      if (response.success && response.data) {
+        setStatusCounts(prev => ({
+           ...prev,
+           ...response.data
+        }))
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error)
+    }
+  }, [isReady, api])
+
   // Initial fetch and page change
   useEffect(() => {
     if (isReady) {
       fetchMeetings(currentPage)
+      fetchStats()
     } else {
       setIsLoading(false)
     }
@@ -383,7 +408,10 @@ export default function StatusMeetingPage() {
   // Polling for active meetings
   useEffect(() => {
     // Poll list refresh (for status changes)
-    const listInterval = setInterval(fetchMeetings, 15000) // Every 15 seconds
+    const listInterval = setInterval(() => {
+      fetchMeetings()
+      fetchStats()
+    }, 15000) // Every 15 seconds
 
     // Poll progress for active meetings (more frequent)
     const activeMeetings = meetings.filter(m => 
@@ -547,13 +575,7 @@ export default function StatusMeetingPage() {
     return `${minutes} min`
   }
 
-  const statusCounts = {
-    completed: meetings.filter(m => m.status === "completed").length,
-    active: meetings.filter(m => m.status === "recording" || m.status === "processing" || m.status === "uploading" || (m.status === "pending" && (m.processingProgress || m.processingLogs?.length))).length,
-    pending: meetings.filter(m => m.status === "pending" && !m.processingProgress && !m.processingLogs?.length).length,
-    cancelled: meetings.filter(m => m.status === "cancelled").length,
-    failed: meetings.filter(m => m.status === "failed").length
-  }
+
 
   return (
     <SidebarProvider
@@ -611,6 +633,7 @@ export default function StatusMeetingPage() {
                       <SelectItem value="all">Semua Status</SelectItem>
                       <SelectItem value="active">Sedang Berjalan</SelectItem>
                       <SelectItem value="completed">Selesai</SelectItem>
+                      <SelectItem value="pending">Menunggu</SelectItem>
                       <SelectItem value="failed">Gagal</SelectItem>
                     </SelectContent>
                   </Select>
@@ -664,7 +687,7 @@ export default function StatusMeetingPage() {
 
               {/* Status Overview */}
               <div className="px-4 lg:px-6">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <Card className="border-border hover:shadow-lg transition-all duration-300">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Selesai</CardTitle>
@@ -701,18 +724,7 @@ export default function StatusMeetingPage() {
                       <p className="text-xs text-muted-foreground mt-1">Dalam antrian</p>
                     </CardContent>
                   </Card>
-                  <Card className="border-border hover:shadow-lg transition-all duration-300">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-foreground">Dibatalkan</CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                        <IconX className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-muted-foreground">{statusCounts.cancelled}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Meeting dibatalkan</p>
-                    </CardContent>
-                  </Card>
+
                   <Card className="border-border hover:shadow-lg transition-all duration-300">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Gagal</CardTitle>

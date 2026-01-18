@@ -38,6 +38,7 @@ interface MeetingAnalyticsProps {
   onDeleteKanban: () => Promise<void>
   boardId?: string | null
   userRole?: string | null
+  meetingId: string
 }
 
 export function MeetingAnalytics({
@@ -46,8 +47,11 @@ export function MeetingAnalytics({
   actionItems,
   hasSyncedTasks,
   onGenerateKanban,
-  onDeleteKanban
-  , boardId, userRole, hasBoard
+  onDeleteKanban,
+  boardId, 
+  userRole, 
+  hasBoard,
+  meetingId
 }: MeetingAnalyticsProps) {
   const router = useRouter()
   const [isDeletingBoard, setIsDeletingBoard] = useState(false)
@@ -92,7 +96,7 @@ export function MeetingAnalytics({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
-            onClick={() => toast.info("Fitur Detail Analytics akan tersedia segera!")}
+            onClick={() => router.push(`/dashboard/analytics/detail/${meetingId}`)}
           >
             <IconChevronRight className="h-4 w-4" />
           </Button>

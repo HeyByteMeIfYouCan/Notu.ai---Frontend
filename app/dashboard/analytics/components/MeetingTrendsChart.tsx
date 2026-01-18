@@ -12,9 +12,10 @@ interface TrendDataPoint {
 interface MeetingTrendsChartProps {
   data: TrendDataPoint[]
   className?: string
+  type?: 'line' | 'bar' | 'area'
 }
 
-export function MeetingTrendsChart({ data, className }: MeetingTrendsChartProps) {
+export function MeetingTrendsChart({ data, className, type = 'line' }: MeetingTrendsChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const chartData = useMemo(() => {
@@ -120,35 +121,35 @@ export function MeetingTrendsChart({ data, className }: MeetingTrendsChartProps)
     <div className={className}>
       {/* Stats Cards Row */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
+        <div className="p-3 rounded-xl bg-linear-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalMeetings}</div>
           <div className="text-xs text-muted-foreground">Total Meetings</div>
         </div>
-        <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20">
+        <div className="p-3 rounded-xl bg-linear-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20">
           <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {Math.floor(totalDuration / 60)}h {totalDuration % 60}m
           </div>
           <div className="text-xs text-muted-foreground">Total Duration</div>
         </div>
-        <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20">
+        <div className="p-3 rounded-xl bg-linear-to-br from-green-500/10 to-green-600/5 border border-green-500/20">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">{avgMeetingsPerDay}</div>
           <div className="text-xs text-muted-foreground">Avg/Day</div>
         </div>
       </div>
 
       {/* Chart Container */}
-      <div className="relative h-44 bg-gradient-to-b from-muted/20 to-transparent rounded-xl p-4">
+      <div className="relative h-44 bg-linear-to-b from-muted/20 to-transparent rounded-xl p-4">
         {/* Hover Info Tooltip */}
         {hoveredData && (
           <div 
-            className="absolute top-0 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground px-4 py-2 rounded-lg shadow-xl border z-20 animate-in fade-in-0 zoom-in-95"
+            className="absolute top-0 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground px-4 py-2 rounded-lg shadow-xl border z-20 animate-in fade-in-0 zoom-in-95 pointer-events-none"
           >
             <div className="text-center">
               <div className="font-semibold text-foreground">{hoveredData.fullDate}</div>
               <div className="flex items-center justify-center gap-4 mt-1 text-sm">
-                <span className="text-blue-600 dark:text-blue-400 font-medium">{hoveredData.count} meetings</span>
+                <span className="text-primary font-medium">{hoveredData.count} meetings</span>
                 <span className="text-muted-foreground">•</span>
-                <span className="text-purple-600 dark:text-purple-400">{hoveredData.duration} min</span>
+                <span className="text-muted-foreground">{hoveredData.duration} min</span>
               </div>
             </div>
           </div>
@@ -169,15 +170,13 @@ export function MeetingTrendsChart({ data, className }: MeetingTrendsChartProps)
         >
           {/* Gradient Definitions */}
           <defs>
-            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+              <stop offset="90%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
             </linearGradient>
-            <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="hsl(217, 91%, 60%)" />
-              <stop offset="50%" stopColor="hsl(var(--primary))" />
-              <stop offset="100%" stopColor="hsl(280, 87%, 55%)" />
+            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
             </linearGradient>
             <filter id="glow">
               <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -188,26 +187,31 @@ export function MeetingTrendsChart({ data, className }: MeetingTrendsChartProps)
             </filter>
           </defs>
           
-          {/* Area Fill */}
-          <path
-            d={areaPath}
-            fill="url(#chartGradient)"
-            className="transition-all duration-300"
-          />
+          {/* Area Fill - For Area chart or Line chart background */}
+          {(type === 'area' || type === 'line') && (
+             <path
+             d={areaPath}
+             fill="url(#areaGradient)"
+             opacity={type === 'line' ? 0.3 : 0.8}
+             className="transition-all duration-300"
+           />
+          )}
+
+          {/* Line Chart */}
+          {(type === 'line' || type === 'area') && (
+            <path
+              d={curvePath}
+              fill="none"
+              stroke="hsl(var(--primary))"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="url(#glow)"
+              className="transition-all duration-300"
+            />
+          )}
           
-          {/* Main Curve Line */}
-          <path
-            d={curvePath}
-            fill="none"
-            stroke="url(#lineGradient)"
-            strokeWidth="0.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            filter="url(#glow)"
-            className="transition-all duration-300"
-          />
-          
-          {/* Data Points */}
+          {/* Data Points / Bars */}
           {chartData.map((d, i) => {
             const width = 100 / chartData.length
             const x = (i * width) + (width / 2)
@@ -226,39 +230,44 @@ export function MeetingTrendsChart({ data, className }: MeetingTrendsChartProps)
                   onMouseEnter={() => setHoveredIndex(i)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 />
+
+                {/* Bar Chart */}
+                {type === 'bar' && (
+                  <rect
+                    x={(i * width) + (width * 0.2)} 
+                    y={d.normalizedY}
+                    width={width * 0.6}
+                    height={d.height}
+                    rx="1"
+                    fill={isHovered ? "hsl(var(--primary))" : "url(#barGradient)"}
+                    className="transition-all duration-300"
+                    opacity={isHovered ? 1 : 0.8}
+                  />
+                )}
                 
-                {/* Vertical line on hover */}
-                {isHovered && (
+                {/* Vertical line on hover (Line/Area only) */}
+                {isHovered && type !== 'bar' && (
                   <line
                     x1={x} y1="0" x2={x} y2="100"
                     stroke="hsl(var(--primary))"
-                    strokeWidth="0.3"
+                    strokeWidth="0.5"
                     strokeDasharray="2 2"
                     opacity="0.5"
                   />
                 )}
                 
-                {/* Data point outer glow */}
-                {isHovered && (
+                {/* Data point (Line/Area only) */}
+                {(type === 'line' || type === 'area') && (
                   <circle
                     cx={x}
                     cy={d.normalizedY}
-                    r="3"
-                    fill="hsl(var(--primary))"
-                    opacity="0.3"
+                    r={isHovered ? "2.5" : "1.5"}
+                    fill={isHovered ? "hsl(var(--primary-foreground))" : "hsl(var(--primary))"}
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="1"
+                    className="transition-all duration-200"
                   />
                 )}
-                
-                {/* Data point */}
-                <circle
-                  cx={x}
-                  cy={d.normalizedY}
-                  r={isHovered ? "1.5" : "0.8"}
-                  fill={isHovered ? "hsl(var(--primary-foreground))" : "hsl(var(--primary))"}
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="0.5"
-                  className="transition-all duration-200"
-                />
               </g>
             )
           })}
