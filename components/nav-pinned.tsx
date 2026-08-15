@@ -65,19 +65,30 @@ interface PinnedBoard {
   shareToken?: string;
 }
 
+// Global in-memory cache to prevent flickering / loader flash during page navigation
+let globalPinnedMeetingsCache: PinnedMeeting[] | null = null;
+let globalPinnedBoardsCache: PinnedBoard[] | null = null;
+
 export function NavPinned() {
   const pathname = usePathname();
   const { isMobile } = useSidebar();
   const { api, isReady } = useApiWithAuth();
-  const [pinnedMeetings, setPinnedMeetings] = useState<PinnedMeeting[]>([]);
-  const [pinnedBoards, setPinnedBoards] = useState<PinnedBoard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [pinnedMeetings, setPinnedMeetings] = useState<PinnedMeeting[]>(
+    globalPinnedMeetingsCache || []
+  );
+  const [pinnedBoards, setPinnedBoards] = useState<PinnedBoard[]>(
+    globalPinnedBoardsCache || []
+  );
+  const [isLoading, setIsLoading] = useState(
+    globalPinnedMeetingsCache === null && globalPinnedBoardsCache === null
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [infoDialog, setInfoDialog] = useState<{ type: 'meeting' | 'board'; item: PinnedMeeting | PinnedBoard } | null>(null);
 
   useEffect(() => {
     if (isReady) {
-      fetchPinnedItems();
+      const needsLoading = globalPinnedMeetingsCache === null && globalPinnedBoardsCache === null;
+      fetchPinnedItems(needsLoading);
     }
   }, [isReady]);
 
@@ -86,19 +97,23 @@ export function NavPinned() {
     const unsubscribe = pinEvents.subscribe((event) => {
       if (event.type === 'meeting') {
         if (event.pinned) {
-          // Refetch to get the new pinned meeting
-          fetchPinnedItems();
+          fetchPinnedItems(false);
         } else {
-          // Remove unpinned meeting from local state
-          setPinnedMeetings((prev) => prev.filter((m) => m._id !== event.id));
+          setPinnedMeetings((prev) => {
+            const next = prev.filter((m) => m._id !== event.id);
+            globalPinnedMeetingsCache = next;
+            return next;
+          });
         }
       } else if (event.type === 'board') {
         if (event.pinned) {
-          // Refetch to get the new pinned board
-          fetchPinnedItems();
+          fetchPinnedItems(false);
         } else {
-          // Remove unpinned board from local state
-          setPinnedBoards((prev) => prev.filter((b) => b._id !== event.id));
+          setPinnedBoards((prev) => {
+            const next = prev.filter((b) => b._id !== event.id);
+            globalPinnedBoardsCache = next;
+            return next;
+          });
         }
       }
     });
@@ -106,9 +121,11 @@ export function NavPinned() {
     return () => unsubscribe();
   }, []);
 
-  const fetchPinnedItems = async () => {
+  const fetchPinnedItems = async (showLoading = false) => {
     try {
-      setIsLoading(true);
+      if (showLoading) {
+        setIsLoading(true);
+      }
       const [meetingsRes, boardsRes] = await Promise.all([
         api.getPinnedMeetings(),
         api.getPinnedBoards(),
@@ -118,12 +135,18 @@ export function NavPinned() {
       const meetingsData = meetingsRes?.data || meetingsRes || [];
       const boardsData = boardsRes?.data || boardsRes || [];
       
-      setPinnedMeetings(Array.isArray(meetingsData) ? meetingsData : []);
-      setPinnedBoards(Array.isArray(boardsData) ? boardsData : []);
+      const nextMeetings = Array.isArray(meetingsData) ? meetingsData : [];
+      const nextBoards = Array.isArray(boardsData) ? boardsData : [];
+
+      globalPinnedMeetingsCache = nextMeetings;
+      globalPinnedBoardsCache = nextBoards;
+
+      setPinnedMeetings(nextMeetings);
+      setPinnedBoards(nextBoards);
     } catch (error) {
       console.error("Failed to fetch pinned items:", error);
-      setPinnedMeetings([]);
-      setPinnedBoards([]);
+      if (globalPinnedMeetingsCache === null) setPinnedMeetings([]);
+      if (globalPinnedBoardsCache === null) setPinnedBoards([]);
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +155,11 @@ export function NavPinned() {
   const handleUnpinMeeting = async (id: string) => {
     try {
       await api.toggleMeetingPin(id);
-      setPinnedMeetings((prev) => prev.filter((m) => m._id !== id));
+      setPinnedMeetings((prev) => {
+        const next = prev.filter((m) => m._id !== id);
+        globalPinnedMeetingsCache = next;
+        return next;
+      });
       // Emit event for card sync
       pinEvents.emit({ type: 'meeting', id, pinned: false });
       toast.success("Berhasil unpin meeting");
@@ -144,7 +171,11 @@ export function NavPinned() {
   const handleUnpinBoard = async (id: string) => {
     try {
       await api.toggleBoardPin(id);
-      setPinnedBoards((prev) => prev.filter((b) => b._id !== id));
+      setPinnedBoards((prev) => {
+        const next = prev.filter((b) => b._id !== id);
+        globalPinnedBoardsCache = next;
+        return next;
+      });
       // Emit event for card sync
       pinEvents.emit({ type: 'board', id, pinned: false });
       toast.success("Berhasil unpin kanban");
@@ -175,7 +206,11 @@ export function NavPinned() {
     setDeletingId(id);
     try {
       await api.deleteMeeting(id);
-      setPinnedMeetings((prev) => prev.filter((m) => m._id !== id));
+      setPinnedMeetings((prev) => {
+        const next = prev.filter((m) => m._id !== id);
+        globalPinnedMeetingsCache = next;
+        return next;
+      });
       toast.success("Meeting berhasil dihapus");
     } catch (error: any) {
       toast.error(error.message || "Gagal menghapus meeting");
@@ -190,7 +225,11 @@ export function NavPinned() {
     setDeletingId(id);
     try {
       await api.deleteBoard(id);
-      setPinnedBoards((prev) => prev.filter((b) => b._id !== id));
+      setPinnedBoards((prev) => {
+        const next = prev.filter((b) => b._id !== id);
+        globalPinnedBoardsCache = next;
+        return next;
+      });
       toast.success("Board berhasil dihapus");
     } catch (error: any) {
       toast.error(error.message || "Gagal menghapus board");
