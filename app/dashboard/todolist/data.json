@@ -1,0 +1,25 @@
+{
+  "todoLists": [
+    {
+      "id": "mobile-app",
+      "title": "Mobile App",
+      "description": "Mobile app development tasks",
+      "tasks": [
+        {
+          "id": "1",
+          "title": "Review Q4 performance metrics",
+          "description": "Analyze quarterly results and prepare summary report",
+          "assignee": "Sarah Wilson",
+          "dueDate": "Dec 25, 2024",
+          "tags": ["Analytics", "Reporting"]
+        }
+      ]
+    },
+    {
+      "id": "website-redesign",
+      "title": "Website Redesign",
+      "description": "Website redesign project tasks",
+      "tasks": []
+    }
+  ]
+}
