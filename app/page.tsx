@@ -4,13 +4,13 @@ import Page from "./dashboard/page";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { motion } from "motion/react";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <HeroSection />
-      <MarqueeBar />
       <StepsSection />
       <WhySection />
       <AllInOneSection />
@@ -25,72 +25,155 @@ export default function Home() {
 
 function SiteHeader() {
   const [atTop, setAtTop] = useState(true);
+  const [activeSection, setActiveSection] = useState("home");
 
   useEffect(() => {
-    const handleScroll = () => setAtTop(window.scrollY < 8);
+    const handleScroll = () => {
+      setAtTop(window.scrollY < 20);
+      
+      // Scroll spy logic
+      const sections = document.querySelectorAll("section[id]");
+      let current = "";
+      sections.forEach((section) => {
+        const sectionTop = (section as HTMLElement).offsetTop;
+        if (window.scrollY >= sectionTop - 250) {
+          current = section.getAttribute("id") || "";
+        }
+      });
+      if (current) setActiveSection(current);
+    };
+
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const navLinks = [
+    { id: "home", label: "Beranda" },
+    { id: "how", label: "Solusi" },
+    { id: "features", label: "Fitur" },
+    { id: "faq", label: "FAQ" },
+    { id: "pricing", label: "Harga" }
+  ];
+
   return (
-    <header
-      className={
-        `fixed top-0 left-0 w-full z-30 transition-colors duration-300 border-b ` +
-        (atTop
-          ? "bg-transparent backdrop-blur-none border-transparent text-white"
-          : "bg-white backdrop-blur supports-[backdrop-filter]:bg-white/70 border-border text-[#0f1222]")
-      }
+    <motion.header 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className={`fixed top-0 left-0 w-full z-50 transition-colors duration-200 border-b ${
+        atTop
+          ? "bg-transparent border-transparent"
+          : "bg-[#060818]/95 backdrop-blur-sm border-white/10 shadow-sm"
+      }`}
     >
-      <div className="mx-auto w-full container  px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img src={"/logo.png"} width={30} height={30} alt="logo" />
-          <span className="font-semibold">Notu.ai</span>
-        </div>
-        <nav className={`hidden md:flex items-center gap-6 text-sm ${atTop ? "text-white/80" : "text-[#0f1222]/80"}`}>
-          <a className={atTop ? "hover:text-white" : "hover:text-[#0f1222]"} href="#features">Solusi</a>
-          <a className={atTop ? "hover:text-white" : "hover:text-[#0f1222]"} href="#how">Fitur</a>
-          <a className={atTop ? "hover:text-white" : "hover:text-[#0f1222]"} href="#pricing">Harga</a>
-          <a className={atTop ? "hover:text-white" : "hover:text-[#0f1222]"} href="#faq">FAQ</a>
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between h-[4.5rem]">
+        <a href="#home" className="flex items-center gap-3 cursor-pointer">
+          <img src={"/logo.png"} width={36} height={36} alt="logo" className="rounded-md" />
+          <span className="font-bold tracking-tight text-2xl text-white">Notu.ai</span>
+        </a>
+        
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+          {navLinks.map((link) => (
+            <a
+              key={link.id}
+              href={`#${link.id}`}
+              onClick={() => setActiveSection(link.id)}
+              className={`transition-colors relative py-1 ${
+                activeSection === link.id 
+                  ? "text-white font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary after:rounded-full" 
+                  : "text-white/70 hover:text-white"
+              }`}
+            >
+              {link.label}
+            </a>
+          ))}
         </nav>
-        <div className="flex items-center gap-2">
-          {atTop ? (
-            <>
-              <Link href="/login" className="h-10 px-4 rounded-md text-sm bg-primary text-primary-foreground hover:bg-primary/90 grid place-items-center">Log in</Link>
-              <button className="h-10 px-4 rounded-md bg-white text-[#060818] text-sm font-medium hover:bg-white/90">Coba Gratis</button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="h-10 px-4 rounded-md text-sm text-[#0f1222]/80 hover:text-[#0f1222] grid place-items-center">Log in</Link>
-              <button className="h-10 px-4 rounded-md bg-[#0f1222] text-white text-sm font-medium hover:bg-[#121533]">Coba Gratis</button>
-            </>
-          )}
+
+        <div className="flex items-center gap-4">
+          <Link href="/login" className="h-10 px-4 flex items-center justify-center rounded-md text-sm font-semibold text-white/80 hover:text-white hover:bg-white/5 transition-colors hidden sm:flex">
+            Log in
+          </Link>
+          <Link href="/login">
+            <Button className="h-10 px-6 bg-white text-[#0f1222] hover:bg-white/90 rounded-md font-semibold transition-colors shadow-sm">
+              Coba Gratis
+            </Button>
+          </Link>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-[#060818]">
-      {/* <StarBackground /> */}
-      <div className="bg-[url(/hero-bg.png)]">
-        <div className="relative mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-semibold text-white max-w-xl mx-auto">
-            Asisten AI untuk catat otomatis meeting anda
-          </h1>
-          <p className="mt-3 text-sm md:text-base text-white/70 max-w-2xl mx-auto">
+    <section id="home" className="relative overflow-hidden bg-[#060818]">
+      <StarBackground />
+      <div className="bg-[url(/hero-bg.png)] bg-cover bg-center">
+        <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 pb-16 md:pt-40 md:pb-24 text-center">
+          
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-white/80 mb-8 backdrop-blur-sm"
+          >
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+            Notu 2.0 Kini Tersedia
+          </motion.div>
+
+          <motion.h1 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-tight"
+          >
+            Asisten AI untuk <br className="hidden md:block"/> catat otomatis meeting Anda
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+            className="mt-6 text-lg md:text-xl text-white/70 max-w-2xl mx-auto"
+          >
             Fokus pada percakapan, biarkan Notu menangkap ringkasan, aksi, dan insight secara real‑time.
-          </p>
-          <div className="mt-6 flex items-center justify-center gap-3">
-            <Button>Mulai sekarang</Button>
-            <Button variant="secondary">Uji coba gratis</Button>
-          </div>
-          <div className="mt-10 mx-auto max-w-4xl overflow-hidden rounded-[6px] ring-1 ring-white/10">
-            <Image src="/hero-features.png" alt="Hero Feature" width={1600} height={900} className="w-full h-auto" />
-          </div>
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <Link href="/login">
+              <Button size="lg" className="h-12 px-8 text-base">Mulai sekarang</Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="secondary" size="lg" className="h-12 px-8 text-base">Uji coba gratis</Button>
+            </Link>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
+            className="mt-16 md:mt-24 mx-auto max-w-5xl"
+          >
+            {/* Elegant Glassmorphism Frame around the dashboard image */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-2 shadow-[0_0_80px_-20px_rgba(107,78,255,0.4)] backdrop-blur-md">
+              <div className="overflow-hidden rounded-lg border border-white/5 bg-[#060818]">
+                <Image src="/hero-features.png" alt="Hero Feature" width={1600} height={900} className="w-full h-auto object-cover" priority />
+              </div>
+            </div>
+          </motion.div>
         </div>
+        
+        {/* Seamlessly integrated Marquee inside Hero */}
+        <MarqueeBar />
+
+        {/* Soft bottom edge to blend with the next section */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent absolute bottom-0 left-0" />
       </div>
     </section>
   );
@@ -116,41 +199,43 @@ function StarBackground() {
 
 function MarqueeBar() {
   const logos = [
-    { src: "/next.svg", alt: "Next.js" },
-    { src: "/vercel.svg", alt: "Vercel" },
-    { src: "/globe.svg", alt: "Globe" },
-    { src: "/window.svg", alt: "Window" },
-    { src: "/file.svg", alt: "File" },
-    { src: "/file.svg", alt: "File" },
-    { src: "/file.svg", alt: "File" },
-    { src: "/file.svg", alt: "File" },
-    { src: "/file.svg", alt: "File" },
-    { src: "/file.svg", alt: "File" },
-    { src: "/file.svg", alt: "File" },
+    { src: "https://cdn.simpleicons.org/github", alt: "GitHub" },
+    { src: "https://cdn.simpleicons.org/stripe", alt: "Stripe" },
+    { src: "https://cdn.simpleicons.org/notion", alt: "Notion" },
+    { src: "https://cdn.simpleicons.org/figma", alt: "Figma" },
+    { src: "https://cdn.simpleicons.org/dropbox", alt: "Dropbox" },
+    { src: "https://cdn.simpleicons.org/zoom", alt: "Zoom" },
+    { src: "https://cdn.simpleicons.org/vercel", alt: "Vercel" },
+    { src: "https://cdn.simpleicons.org/google", alt: "Google" },
   ];
   return (
-    <div className="bg-accent">
-      <div className="relative overflow-hidden py-4 container mx-auto">
-          <div className="[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-            <div className="flex items-center gap-20 sm:gap-12 md:gap-14 will-change-transform whitespace-nowrap animate-[trusted-marquee_28s_linear_infinite] lg:w-[160%] w-[500%]">
-              <div className="flex items-center gap-20 sm:gap-12 md:gap-14 w-1/2">
-                {logos.map((l, i) => (
-                  <div key={`t-a-${l.alt}-${i}`} className="h-10 sm:h-12 md:h-14 flex items-center">
-                    <img src={l.src} alt={l.alt} className="h-8 sm:h-10 md:h-12 w-auto opacity-80 brightness-0 invert" />
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-20 sm:gap-12 md:gap-14 w-1/2">
-                {logos.map((l, i) => (
-                  <div key={`t-b-${l.alt}-${i}`} className="h-10 sm:h-12 md:h-14 flex items-center">
-                    <img src={l.src} alt={l.alt} className="h-8 sm:h-10 md:h-12 w-auto opacity-80 brightness-0 invert" />
-                  </div>
-                ))}
+    <div className="w-full relative z-10 pt-4 pb-16">
+      <div className="container mx-auto px-4 text-center">
+        <p className="text-xs uppercase tracking-[0.2em] text-white/40 font-semibold mb-8">
+          Dipercaya oleh tim inovatif di seluruh dunia
+        </p>
+        <div className="relative overflow-hidden">
+            <div className="[mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+              <div className="flex items-center gap-16 md:gap-24 will-change-transform whitespace-nowrap animate-[trusted-marquee_28s_linear_infinite] lg:w-[160%] w-[500%]">
+                <div className="flex items-center justify-around gap-12 md:gap-20 w-1/2">
+                  {logos.map((l, i) => (
+                    <div key={`t-a-${l.alt}-${i}`} className="h-16 flex items-center">
+                      <img src={l.src} alt={l.alt} className="h-10 sm:h-11 w-auto opacity-40 hover:opacity-100 transition-opacity duration-300 brightness-0 invert" />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-around gap-12 md:gap-20 w-1/2">
+                  {logos.map((l, i) => (
+                    <div key={`t-b-${l.alt}-${i}`} className="h-16 flex items-center">
+                      <img src={l.src} alt={l.alt} className="h-10 sm:h-11 w-auto opacity-40 hover:opacity-100 transition-opacity duration-300 brightness-0 invert" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          <style>{"@keyframes trusted-marquee {0%{transform:translateX(0)}100%{transform:translateX(-50%)}}"}</style>
+        </div>
       </div>
+      <style>{"@keyframes trusted-marquee {0%{transform:translateX(0)}100%{transform:translateX(-50%)}}"}</style>
     </div>
   );
 }
@@ -205,23 +290,51 @@ function StepsSection(){
     {t:"Tindak lanjuti hasil meeting", d:"Distribusikan ringkasan, integrasikan ke tools, dan pantau progres.", i:"/hownotu-3.png"},
   ];
   return (
-    <section id="how" className="mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-14 md:py-20">
-      {/* <SectionTitle center eyebrow="How notu make meetings" title="effortless?" /> */}
-      <div className="text-center leading-normal text-2xl lg:text-4xl font-bold">
+    <section id="how" className="relative mx-auto w-full px-4 sm:px-6 lg:px-8 py-20 md:py-32 overflow-hidden bg-slate-50/50">
+      {/* Subtle background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+        className="text-center leading-tight text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight"
+      >
         <h2>How notu make meetings</h2>
-        <h2><span className="text-accent">effortless</span>?</h2>
-      </div>
-      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <h2><span className="text-primary">effortless</span>?</h2>
+      </motion.div>
+      
+      <div className="mx-auto max-w-7xl mt-16 md:mt-24 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 relative z-10">
         {items.map((it,idx)=> (
-          <article key={idx} className="flex flex-col items-center text-center relative">
-            <div className="relative">
-              <Image src={it.i} alt={it.t} width={300} height={300} />
-              {idx === 0 && <Image src="/hownout-directionline-1.png" alt="" width={150} height={150} className="absolute top-1/2 left-[90%] hidden lg:block" />}
-              {idx === 1 && <Image src="/hownout-directionline-2.png" alt="" width={150} height={150} className="absolute top-1/2 left-[90%] hidden lg:block" />}
+          <motion.article 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.7, delay: idx * 0.2, type: "spring", bounce: 0.3 }}
+            key={idx} 
+            className="flex flex-col items-center text-center relative bg-white/80 backdrop-blur-md rounded-3xl p-6 lg:p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(107,78,255,0.2)] transition-all duration-300 z-10"
+          >
+            {/* Elegant SVG Gap Connector - Perfectly bridges the grid gap */}
+            {idx < items.length - 1 && (
+              <div className="hidden lg:block absolute top-1/2 -translate-y-1/2 left-full w-8 z-[-1] pointer-events-none">
+                <svg width="100%" height="2" viewBox="0 0 32 2" fill="none" className="overflow-visible">
+                  <line x1="0" y1="1" x2="32" y2="1" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" className="text-primary/30" />
+                </svg>
+              </div>
+            )}
+            
+            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-accent text-white font-bold flex items-center justify-center mb-6 text-base shadow-lg shadow-primary/20 ring-4 ring-white">
+              0{idx + 1}
             </div>
-            <h3 className="mt-4 font-semibold">{it.t}</h3>
-            <p className="mt-2 text-sm text-gray-600">{it.d}</p>
-          </article>
+            
+            <div className="relative w-full h-[200px] sm:h-[240px] mb-8">
+              <Image src={it.i} alt={it.t} fill className="object-contain drop-shadow-sm hover:scale-105 transition-transform duration-500" />
+            </div>
+            
+            <h3 className="font-semibold text-xl text-[#0f1222]">{it.t}</h3>
+            <p className="mt-3 text-sm md:text-base text-gray-500 leading-relaxed max-w-[280px]">{it.d}</p>
+          </motion.article>
         ))}
       </div>
     </section>
@@ -449,16 +562,18 @@ function PricingSection(){
                       </li>
                     ))}
                   </ul>
-                  <div className="flex-1 flex items-end">
-                    <button
-                      className={
-                        isHighlight
-                        ? "mt-6 h-10 w-full rounded-md text-sm font-medium bg-white text-[#060818]"
-                        : "mt-6 h-10 w-full rounded-md text-sm font-medium bg-transparent border border-[#0f1222]/20 text-[#0f1222]"
-                      }
-                      >
-                      {t.cta}
-                    </button>
+                  <div className="flex-1 flex items-end mt-6">
+                    <Link href="/login" className="w-full">
+                      <button
+                        className={
+                          isHighlight
+                          ? "h-10 w-full rounded-md text-sm font-medium bg-white text-[#060818]"
+                          : "h-10 w-full rounded-md text-sm font-medium bg-transparent border border-[#0f1222]/20 text-[#0f1222]"
+                        }
+                        >
+                        {t.cta}
+                      </button>
+                    </Link>
                   </div>
                 </div>
               );
