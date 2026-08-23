@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart, Star, ChevronDown } from "lucide-react";
+import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart, Star, ChevronDown, Check } from "lucide-react";
 import styles from "./styles/WhySection.module.scss";
 import allInOneStyles from "./styles/AllInOneSection.module.scss";
 import trustStyles from "./styles/TrustSection.module.scss";
 import testimonialStyles from "./styles/TestimonialSection.module.scss";
 import faqStyles from "./styles/FaqSection.module.scss";
+import pricingStyles from "./styles/PricingSection.module.scss";
 
 export default function Home() {
   return (
@@ -806,62 +807,79 @@ function PricingSection(){
         "Export PDF/TXT",
         "Diarization (bisa bedakan siapa yang bicara)",
         "Dashboard analytics",
-        "Integrasi dengan platform Notion",
       ],
       cta: "Mulai Sekarang",
       highlight: false,
     },
   ];
   return (
-    <section id="pricing" className="relative bg-[#000212]">
-      {/* <StarBackground /> */}
-      <div className="bg-[url(/startfromhere-bg.png)] bg-no-repeat bg-cover min-h-screen">
-        <div className="relative mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="text-center text-xl md:text-2xl font-semibold text-white">Notu meeting dimulai dari sini!</h2>
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {tiers.map((t,i)=> {
-              const isHighlight = t.highlight;
-              return (
-                <div
-                  key={i}
-                  className={
-                    `${isHighlight
-                      ? "rounded-[8px] border-0 bg-accent text-white p-6 shadow-[0_0_40px_0_rgba(107,78,255,0.35)]"
-                      : "rounded-[8px] border border-white/15 bg-white text-[#0f1222] p-6"}
-                        flex flex-col
-                      `
-                  }
-                >
-                  <h3 className={isHighlight?"text-white font-semibold":"text-[#0f1222] font-semibold"}>{t.name}</h3>
-                  <div className="mt-2 flex items-end gap-1">
-                    <p className={isHighlight?"text-white text-2xl md:text-3xl font-semibold":"text-[#0f1222] text-2xl md:text-3xl font-semibold"}>{t.price}</p>
-                    {t.cycle && <span className={isHighlight?"text-white/80":"text-[#0f1222]/80"}>{t.cycle}</span>}
+    <section id="pricing" className={pricingStyles.pricingSection}>
+      <div className={pricingStyles.pricingSection__container}>
+        
+        <motion.div 
+          className={pricingStyles.pricingSection__header}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className={pricingStyles.pricingSection__badge}>Pricing</span>
+          <h2 className={pricingStyles.pricingSection__title}>
+            Harga Sederhana & Transparan
+          </h2>
+          <p className={pricingStyles.pricingSection__description}>
+            Pilih paket yang paling sesuai dengan kebutuhan produktivitas meeting Anda. Tingkatkan (upgrade) kapan saja.
+          </p>
+        </motion.div>
+
+        <div className={pricingStyles.pricingSection__grid}>
+          {tiers.map((t, i) => {
+            const isHighlight = t.highlight;
+            return (
+              <motion.div
+                key={i}
+                className={`${pricingStyles.pricingSection__card} ${isHighlight ? pricingStyles['pricingSection__card--highlighted'] : ''}`}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+              >
+                {isHighlight && (
+                  <div className={pricingStyles.pricingSection__popularBadge}>
+                    Pilihan Terpopuler
                   </div>
-                  <ul className={`mt-4 space-y-6 text-sm ${isHighlight?"text-white/90":"text-[#0f1222]/80"}`}>
-                    {t.features.map((f,idx)=> (
-                      <li key={idx} className="flex gap-2 items-center">
-                        <span className={isHighlight?"bg-white w-6 h-6 grid place-items-center rounded-full text-accent":"bg-accent w-6 h-6 grid place-items-center rounded-full text-white"}>✓</span>
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex-1 flex items-end mt-6">
-                    <Link href="/login" className="w-full">
-                      <button
-                        className={
-                          isHighlight
-                          ? "h-10 w-full rounded-md text-sm font-medium bg-white text-[#060818]"
-                          : "h-10 w-full rounded-md text-sm font-medium bg-transparent border border-[#0f1222]/20 text-[#0f1222]"
-                        }
-                        >
-                        {t.cta}
-                      </button>
-                    </Link>
-                  </div>
+                )}
+                
+                <h3 className={pricingStyles.pricingSection__planName}>{t.name}</h3>
+                
+                <div className={pricingStyles.pricingSection__priceWrapper}>
+                  <span className={pricingStyles.pricingSection__price}>{t.price}</span>
+                  {t.cycle && <span className={pricingStyles.pricingSection__cycle}>{t.cycle}</span>}
                 </div>
-              );
-            })}
-          </div>
+                
+                <div className={pricingStyles.pricingSection__divider} />
+
+                <ul className={pricingStyles.pricingSection__featureList}>
+                  {t.features.map((f, idx) => (
+                    <li key={idx} className={pricingStyles.pricingSection__featureItem}>
+                      <Check strokeWidth={3} className={pricingStyles.pricingSection__checkIcon} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link href="/login" className="w-full mt-auto">
+                  <Button 
+                    size="lg" 
+                    variant={isHighlight ? "default" : "outline"} 
+                    className={`w-full rounded-full ${isHighlight ? 'shadow-lg shadow-primary/30' : ''}`}
+                  >
+                    {t.cta}
+                  </Button>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

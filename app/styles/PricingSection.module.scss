@@ -1,0 +1,193 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-accent-light: color-mix(in oklch, var(--primary) 10%, transparent);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+$color-card-bg: var(--card);
+$color-card-border: var(--border);
+
+.pricingSection {
+  position: relative;
+  overflow: hidden;
+  padding: 8rem 1rem;
+  background-image: url('/startfromhere-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  @media (min-width: 768px) {
+    padding: 10rem 2rem;
+  }
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 0.35rem 1rem;
+    background: $color-accent-light;
+    color: $color-accent;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: $color-text-main;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    margin: 0 0 1.5rem;
+    
+    @media (min-width: 1024px) {
+      font-size: 3.5rem;
+    }
+  }
+
+  &__description {
+    font-size: 1.125rem;
+    color: $color-text-muted;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  &__grid {
+    display: grid;
+    gap: 2rem;
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(3, 1fr);
+      align-items: center; // This makes the middle one able to be taller via padding
+    }
+  }
+
+  &__card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.03);
+
+    &:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+      border-color: color-mix(in oklch, var(--primary) 30%, transparent);
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    &--highlighted {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid $color-accent;
+      box-shadow: 0 20px 50px -10px color-mix(in oklch, var(--primary) 20%, transparent);
+      padding: 4rem 2rem; // Taller
+      
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 30px 60px -15px color-mix(in oklch, var(--primary) 30%, transparent);
+        background: #ffffff;
+      }
+    }
+  }
+
+  &__popularBadge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, $color-accent, color-mix(in oklch, $color-accent 80%, black));
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  &__planName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-text-main;
+    margin-bottom: 1rem;
+  }
+
+  &__priceWrapper {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 2rem;
+    gap: 0.25rem;
+  }
+
+  &__price {
+    font-size: 3rem;
+    font-weight: 900;
+    color: $color-text-main;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    
+    @media (min-width: 768px) {
+      font-size: 3.5rem;
+    }
+  }
+
+  &__cycle {
+    color: $color-text-muted;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  &__divider {
+    height: 1px;
+    width: 100%;
+    background: color-mix(in oklch, $color-card-border 40%, transparent);
+    margin: 2rem 0;
+  }
+
+  &__featureList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    flex-grow: 1;
+  }
+
+  &__featureItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    color: color-mix(in oklch, $color-text-main 80%, transparent);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  &__checkIcon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: $color-accent;
+    margin-top: 2px;
+  }
+}

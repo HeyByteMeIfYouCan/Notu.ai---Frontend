@@ -114,6 +114,7 @@ $color-bg-subtle: color-mix(in oklch, var(--card) 95%, var(--muted) 5%);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    min-height: 380px; // Fixes layout shifting (bouncing) during AnimatePresence crossfades
   }
 
   // Creative Sleek Row Design instead of Grid Boxes
