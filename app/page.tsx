@@ -402,7 +402,7 @@ function WhySection(){
             transition={{ duration: 0.6 }}
           >
             <h2 className={styles.whySection__title}>
-              <span>Kenapa</span> anda harus menggunakan Notu?
+              Kenapa anda harus menggunakan <span>Notu?</span>
             </h2>
           </motion.div>
           

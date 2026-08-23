@@ -19,10 +19,9 @@ $color-text-muted: var(--muted-foreground);
 @mixin hover-lift {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   &:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 15px 35px -5px $color-accent-glow;
-    border-color: rgba(107, 78, 255, 0.4);
-    background: rgba(255, 255, 255, 0.9);
+    // Subtle lift and elegant shadow, strictly NO neon borders or glow
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -85,18 +84,20 @@ $color-text-muted: var(--muted-foreground);
 
   &__title {
     font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1.2;
+    font-weight: 800;
+    line-height: 1.15;
     color: $color-text-main;
     margin-bottom: 2.5rem;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
     
     @media (min-width: 1024px) {
-      font-size: 3rem;
+      font-size: 3.5rem;
     }
 
     span {
       color: $color-accent;
+      display: inline-block;
     }
   }
 
@@ -108,6 +109,7 @@ $color-text-muted: var(--muted-foreground);
     padding: 0;
     margin: 0;
     
+    // Clean 2x2 Grid Layout
     @media (min-width: 640px) {
       grid-template-columns: repeat(2, 1fr);
     }
@@ -124,22 +126,11 @@ $color-text-muted: var(--muted-foreground);
     flex-direction: column;
     position: relative;
     overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, transparent, $color-accent, transparent);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    &:hover::before {
-      opacity: 1;
-    }
+    gap: 1rem;
+    
+    // Minimalist glass border instead of solid box
+    border: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
+    background: color-mix(in oklch, var(--card) 40%, transparent);
   }
 
   &__iconWrapper {
@@ -161,20 +152,21 @@ $color-text-muted: var(--muted-foreground);
   }
   
   &__card:hover &__iconWrapper {
-    transform: scale(1.1) rotate(5deg);
-    background: $color-accent;
-    color: white;
+    transform: scale(1.05);
+    background: color-mix(in oklch, var(--primary) 20%, transparent);
+    // Remove the aggressive solid background change, just deepen the tint
   }
 
   &__cardTitle {
-    font-size: 1.125rem;
+    font-size: 1.25rem; // Slightly larger for better hierarchy
     font-weight: 600;
     color: $color-text-main;
     margin: 0 0 0.5rem 0;
+    letter-spacing: -0.01em; // Modern tight tracking
   }
 
   &__cardDesc {
-    font-size: 0.875rem;
+    font-size: 0.95rem; // Slightly larger readability
     color: $color-text-muted;
     line-height: 1.6;
     margin: 0;
