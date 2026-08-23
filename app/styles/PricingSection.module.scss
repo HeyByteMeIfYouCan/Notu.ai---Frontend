@@ -69,60 +69,68 @@ $color-card-border: var(--border);
   &__grid {
     display: grid;
     gap: 2rem;
+    position: relative;
+    z-index: 1;
     
     @media (min-width: 1024px) {
       grid-template-columns: repeat(3, 1fr);
-      align-items: center; // This makes the middle one able to be taller via padding
+      align-items: center; 
     }
   }
 
   &__card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.35); // True Glassmorphism (very translucent)
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 24px;
-    padding: 3rem 2rem;
+    border-radius: 32px; // Rounder, softer corners
+    padding: 3.5rem 2.5rem;
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.03);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 0 20px rgba(255, 255, 255, 0.5);
 
     &:hover {
       transform: translateY(-8px);
-      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-      border-color: color-mix(in oklch, var(--primary) 30%, transparent);
-      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 0 30px rgba(255, 255, 255, 0.8);
+      border-color: #ffffff;
+      background: rgba(255, 255, 255, 0.45);
     }
 
     &--highlighted {
-      background: rgba(255, 255, 255, 0.9);
-      border: 2px solid $color-accent;
-      box-shadow: 0 20px 50px -10px color-mix(in oklch, var(--primary) 20%, transparent);
-      padding: 4rem 2rem; // Taller
+      background: rgba(15, 18, 34, 0.95); // Dark Mode Inverted Contrast
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid color-mix(in oklch, $color-accent 50%, transparent);
+      box-shadow: 0 30px 60px rgba(10, 12, 25, 0.3), inset 0 0 40px rgba(107, 78, 255, 0.1);
+      padding: 4.5rem 2.5rem; // Taller and grander
       
       &:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 30px 60px -15px color-mix(in oklch, var(--primary) 30%, transparent);
-        background: #ffffff;
+        transform: translateY(-12px);
+        box-shadow: 0 40px 80px rgba(10, 12, 25, 0.4), inset 0 0 60px rgba(107, 78, 255, 0.2);
+        border-color: $color-accent;
+        background: rgba(20, 24, 45, 0.98);
       }
     }
   }
 
   &__popularBadge {
     position: absolute;
-    top: -14px;
+    top: -16px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, $color-accent, color-mix(in oklch, $color-accent 80%, black));
+    background: $color-accent;
     color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 0.5rem 1.5rem;
     border-radius: 100px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 20px rgba(107, 78, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
   }
 
   &__planName {
@@ -130,6 +138,10 @@ $color-card-border: var(--border);
     font-weight: 700;
     color: $color-text-main;
     margin-bottom: 1rem;
+    
+    &--highlighted {
+      color: #ffffff;
+    }
   }
 
   &__priceWrapper {
@@ -149,28 +161,40 @@ $color-card-border: var(--border);
     @media (min-width: 768px) {
       font-size: 3.5rem;
     }
+
+    &--highlighted {
+      color: #ffffff;
+    }
   }
 
   &__cycle {
     color: $color-text-muted;
     font-weight: 500;
     font-size: 1rem;
+    
+    &--highlighted {
+      color: rgba(255, 255, 255, 0.8);
+    }
   }
 
   &__divider {
     height: 1px;
     width: 100%;
-    background: color-mix(in oklch, $color-card-border 40%, transparent);
-    margin: 2rem 0;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 2.5rem 0;
+    
+    &--highlighted {
+      background: rgba(255, 255, 255, 0.1);
+    }
   }
 
   &__featureList {
     list-style: none;
     padding: 0;
-    margin: 0 0 3rem;
+    margin: 0 0 3.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
     flex-grow: 1;
   }
 
@@ -178,16 +202,21 @@ $color-card-border: var(--border);
     display: flex;
     align-items: flex-start;
     gap: 1rem;
-    color: color-mix(in oklch, $color-text-main 80%, transparent);
-    font-size: 0.95rem;
+    color: $color-text-main;
+    font-size: 1rem;
     line-height: 1.5;
+    font-weight: 500;
+    
+    &--highlighted {
+      color: rgba(255, 255, 255, 0.8);
+    }
   }
 
   &__checkIcon {
     flex-shrink: 0;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     color: $color-accent;
-    margin-top: 2px;
+    margin-top: 1px;
   }
 }

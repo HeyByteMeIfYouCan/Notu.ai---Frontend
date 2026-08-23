@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart, Star, ChevronDown, Check } from "lucide-react";
+import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart, Star, ChevronDown, Check, CheckCircle2 } from "lucide-react";
 import styles from "./styles/WhySection.module.scss";
 import allInOneStyles from "./styles/AllInOneSection.module.scss";
 import trustStyles from "./styles/TrustSection.module.scss";
@@ -850,19 +850,19 @@ function PricingSection(){
                   </div>
                 )}
                 
-                <h3 className={pricingStyles.pricingSection__planName}>{t.name}</h3>
+                <h3 className={`${pricingStyles.pricingSection__planName} ${isHighlight ? pricingStyles['pricingSection__planName--highlighted'] : ''}`}>{t.name}</h3>
                 
                 <div className={pricingStyles.pricingSection__priceWrapper}>
-                  <span className={pricingStyles.pricingSection__price}>{t.price}</span>
-                  {t.cycle && <span className={pricingStyles.pricingSection__cycle}>{t.cycle}</span>}
+                  <span className={`${pricingStyles.pricingSection__price} ${isHighlight ? pricingStyles['pricingSection__price--highlighted'] : ''}`}>{t.price}</span>
+                  {t.cycle && <span className={`${pricingStyles.pricingSection__cycle} ${isHighlight ? pricingStyles['pricingSection__cycle--highlighted'] : ''}`}>{t.cycle}</span>}
                 </div>
                 
-                <div className={pricingStyles.pricingSection__divider} />
+                <div className={`${pricingStyles.pricingSection__divider} ${isHighlight ? pricingStyles['pricingSection__divider--highlighted'] : ''}`} />
 
                 <ul className={pricingStyles.pricingSection__featureList}>
                   {t.features.map((f, idx) => (
-                    <li key={idx} className={pricingStyles.pricingSection__featureItem}>
-                      <Check strokeWidth={3} className={pricingStyles.pricingSection__checkIcon} />
+                    <li key={idx} className={`${pricingStyles.pricingSection__featureItem} ${isHighlight ? pricingStyles['pricingSection__featureItem--highlighted'] : ''}`}>
+                      <CheckCircle2 strokeWidth={2.5} className={pricingStyles.pricingSection__checkIcon} />
                       <span>{f}</span>
                     </li>
                   ))}
