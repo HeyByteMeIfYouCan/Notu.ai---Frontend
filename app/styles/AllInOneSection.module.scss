@@ -1,0 +1,219 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-accent-light: color-mix(in oklch, var(--primary) 10%, transparent);
+$color-accent-glow: color-mix(in oklch, var(--primary) 25%, transparent);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+$color-bg-subtle: color-mix(in oklch, var(--card) 95%, var(--muted) 5%);
+
+// Keyframes
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.allInOneSection {
+  position: relative;
+  overflow: hidden;
+  padding: 6rem 1rem;
+  background-color: transparent;
+  
+  @media (min-width: 768px) {
+    padding: 8rem 2rem;
+  }
+
+  // Radial Spotlight background
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, $color-accent-light 0%, transparent 60%);
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &__container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    gap: 4rem;
+    align-items: center;
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 6rem;
+    }
+  }
+
+  &__imageWrapper {
+    order: 2;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: float 6s ease-in-out infinite; // Floating image
+    
+    @media (min-width: 1024px) {
+      order: 1; // IMAGE ON THE LEFT
+    }
+
+    img {
+      width: 100%;
+      max-width: 650px;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 30px 60px rgba(0,0,0,0.1));
+    }
+  }
+
+  &__content {
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    
+    @media (min-width: 1024px) {
+      order: 2; // CONTENT ON THE RIGHT
+    }
+  }
+  
+  &__header {
+    margin-bottom: 3rem;
+  }
+
+  &__title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: $color-text-main;
+    letter-spacing: -0.03em;
+    text-wrap: balance; // Better readability layout
+    
+    @media (min-width: 1024px) {
+      font-size: 3.5rem;
+    }
+
+    span {
+      // Creative gradient text using global theme colors
+      background: linear-gradient(135deg, $color-accent 0%, color-mix(in oklch, var(--primary) 70%, white) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+  }
+
+  &__featuresList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  // Creative Sleek Row Design instead of Grid Boxes
+  &__featureRow {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: transparent;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: default;
+
+    // The expanding neon border
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 0; // Starts hidden
+      background: $color-accent;
+      border-radius: 4px;
+      transition: height 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 10px $color-accent-glow;
+    }
+
+    &--active {
+      background: $color-bg-subtle;
+      transform: translateX(10px);
+      
+      &::before {
+        height: 70%;
+        box-shadow: 0 0 15px $color-accent;
+      }
+      
+      .allInOneSection__iconWrapper {
+        background: $color-accent;
+        color: white;
+        transform: scale(1.1) rotate(-5deg);
+      }
+    }
+
+    &:hover {
+      background: $color-bg-subtle;
+      transform: translateX(10px); 
+      
+      &::before {
+        height: 70%; 
+        box-shadow: 0 0 15px $color-accent;
+      }
+      
+      .allInOneSection__iconWrapper {
+        background: $color-accent;
+        color: white;
+        transform: scale(1.1) rotate(-5deg);
+      }
+    }
+  }
+
+  &__iconWrapper {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: $color-bg-subtle;
+    color: $color-text-main;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &__textGroup {
+    display: flex;
+    flex-direction: column;
+    padding-top: 0.25rem; // Alignment with icon
+  }
+
+  &__cardTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-text-main;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  &__cardDesc {
+    font-size: 1rem;
+    color: $color-text-muted;
+    line-height: 1.6;
+    margin: 0;
+    text-wrap: pretty;
+  }
+}

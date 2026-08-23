@@ -4,7 +4,10 @@ import Page from "./dashboard/page";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
+import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart } from "lucide-react";
+import styles from "./styles/WhySection.module.scss";
+import allInOneStyles from "./styles/AllInOneSection.module.scss";
 
 export default function Home() {
   return (
@@ -343,62 +346,207 @@ function StepsSection(){
 
 function WhySection(){
   const points = [
-    {t:"Real time data", d:"Highlight, ringkasan, dan action items tersedia saat meeting berlangsung."},
-    {t:"AI Driven Accuracy", d:"Model bahasa disesuaikan konteks organisasi anda."},
-    {t:"Safety Security", d:"Data dienkripsi, kontrol akses granular.", },
-    {t:"Integration", d:"Otomatis kirimkan ke Notion, Slack, Jira, dan lainnya."},
+    { 
+      t: "Real time data", 
+      d: "Highlight, ringkasan, dan action items tersedia saat meeting berlangsung.",
+      icon: <Activity />
+    },
+    { 
+      t: "AI Driven Accuracy", 
+      d: "Model bahasa disesuaikan konteks organisasi anda.",
+      icon: <Zap />
+    },
+    { 
+      t: "Safety Security", 
+      d: "Data dienkripsi, kontrol akses granular.",
+      icon: <ShieldCheck />
+    },
+    { 
+      t: "Integration", 
+      d: "Otomatis kirimkan ke Notion, Slack, Jira, dan lainnya.",
+      icon: <Share2 />
+    },
   ];
+
   return (
-    <section id="features" className="mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-6 md:py-4">
-      <div className="grid gap-10 lg:grid-cols-2 items-start">
-        <div className="order-2">
-          {/* <SectionTitle title="Why you should use Notu?" /> */}
-          <div className="leading-normal text-2xl lg:text-4xl font-bold">
-            <h2><span className="text-accent">Kenapa</span> anda harus menggunakan Notu?</h2>
-          </div>
-          <ul className="mt-4 grid gap-4 sm:grid-cols-2">
-            {points.map((p, i)=> (
-              <li key={i} className="rounded-[6px] border border-border bg-card p-5">
-                <h4 className="font-semibold">{p.t}</h4>
-                <p className="mt-1 text-sm text-gray-600">{p.d}</p>
-              </li>
+    <section id="features" className={styles.whySection}>
+      <div className={`${styles.whySection__bgBlob} ${styles['whySection__bgBlob--topRight']}`} />
+      <div className={`${styles.whySection__bgBlob} ${styles['whySection__bgBlob--bottomLeft']}`} />
+      
+      <div className={styles.whySection__container}>
+        <div className={styles.whySection__content}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className={styles.whySection__title}>
+              <span>Kenapa</span> anda harus menggunakan Notu?
+            </h2>
+          </motion.div>
+          
+          <ul className={styles.whySection__grid}>
+            {points.map((p, i) => (
+              <motion.li 
+                key={i} 
+                className={styles.whySection__card}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+              >
+                <div className={styles.whySection__iconWrapper}>
+                  {p.icon}
+                </div>
+                <h4 className={styles.whySection__cardTitle}>{p.t}</h4>
+                <p className={styles.whySection__cardDesc}>{p.d}</p>
+              </motion.li>
             ))}
           </ul>
         </div>
-        <div className="order-1">
-          <Image src="/whyyoushouldusenotu.png" alt="Why Notu" width={500} height={500} />
-        </div>
+        
+        <motion.div 
+          className={styles.whySection__imageWrapper}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          <Image src="/whyyoushouldusenotu.png" alt="Why Notu" width={550} height={550} priority />
+        </motion.div>
       </div>
     </section>
   );
 }
 
 function AllInOneSection(){
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
   const cards = [
-    {t:"Integrated with Online Meeting", d:"Terhubung langsung dengan Google Meet, Zoom, dan lainnya."},
-    {t:"Sharing your meeting transcripts", d:"Bagikan ringkasan dan transkrip ke tim hanya dengan sekali klik."},
-    {t:"Analytics your meeting", d:"Pantau metrik meeting dan engagement secara berkala."},
+    {
+      t: "Integrated with Online Meeting", 
+      d: "Terhubung langsung dengan ekosistem favorit Anda seperti Google Meet, Zoom, dan Microsoft Teams. Kami menyinkronkan rekaman dan transkrip secara real-time tanpa setup yang rumit.",
+      icon: <Link2 />,
+      image: "/allinonemeeting.png"
+    },
+    {
+      t: "Sharing your meeting transcripts", 
+      d: "Bagikan ringkasan cerdas, action items, dan transkrip utuh ke seluruh anggota tim hanya dengan satu kali klik. Notu secara otomatis merapikan insight agar mudah dibaca.",
+      icon: <Users />,
+      image: "/Dashboard Todolist.png"
+    },
+    {
+      t: "Analytics your meeting", 
+      d: "Pantau metrik krusial seperti tingkat engagement peserta, dominasi pembicaraan, dan sentimen secara berkala. Dashboard analitik interaktif kami membantu Anda mengambil keputusan berbasis data.",
+      icon: <BarChart />,
+      image: "/hero-features.png"
+    },
   ];
+
+  // Auto-rotate tabs
+  useEffect(() => {
+    if (isHovered) return;
+    
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % cards.length);
+    }, 3000); 
+    
+    return () => clearInterval(interval);
+  }, [isHovered, cards.length]);
+
   return (
-    <section className="mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-14">
-      <div className="leading-normal text-2xl lg:text-4xl font-bold">
-            <h2><span className="text-accent">All in one</span> meeting</h2>
-            <h2>intelligence?</h2>
-      </div>
-      <div className="mt-8 grid gap-6 lg:grid-cols-2 items-start lg:order-1 order-2">
-        <div className="rounded-[6px] border border-border bg-card p-6 order-2">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {cards.map((c,i)=> (
-              <article key={i} className="rounded-[6px] border border-gray-200 p-4">
-                <h4 className="font-semibold">{c.t}</h4>
-                <p className="mt-1 text-sm text-gray-600">{c.d}</p>
-              </article>
-            ))}
+    <section className={allInOneStyles.allInOneSection}>
+      <div className={allInOneStyles.allInOneSection__container}>
+        
+        {/* Left Side: Image with Crossfade */}
+        <div 
+          className={allInOneStyles.allInOneSection__imageWrapper}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIndex}
+              initial={{ opacity: 0, scale: 0.95, x: -20 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.95, x: 20 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <Image 
+                src={cards[activeIndex].image} 
+                width={650} 
+                height={650} 
+                alt={cards[activeIndex].t} 
+                priority 
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Right Side: Content & Features */}
+        <div 
+          className={allInOneStyles.allInOneSection__content}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <motion.div 
+            className={allInOneStyles.allInOneSection__header}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className={allInOneStyles.allInOneSection__title}>
+              <span>All in one</span> meeting intelligence
+            </h2>
+          </motion.div>
+
+          <div className={allInOneStyles.allInOneSection__featuresList}>
+            {cards.map((c, i) => {
+              const isActive = activeIndex === i;
+              
+              return (
+                <motion.article 
+                  key={i} 
+                  className={`${allInOneStyles.allInOneSection__featureRow} ${isActive ? allInOneStyles["allInOneSection__featureRow--active"] : ""}`}
+                  initial={{ opacity: 0, x: 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: i * 0.15 + 0.2 }}
+                  onClick={() => setActiveIndex(i)}
+                  style={{ cursor: "pointer", opacity: isActive ? 1 : 0.6 }}
+                >
+                  <div className={allInOneStyles.allInOneSection__iconWrapper}>
+                    {c.icon}
+                  </div>
+                  <div className={allInOneStyles.allInOneSection__textGroup}>
+                    <h4 className={allInOneStyles.allInOneSection__cardTitle}>{c.t}</h4>
+                    
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                          animate={{ height: "auto", opacity: 1, marginTop: "0.5rem" }}
+                          exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                          transition={{ duration: 0.4, ease: "easeInOut" }}
+                          style={{ overflow: "hidden" }}
+                        >
+                          <p className={allInOneStyles.allInOneSection__cardDesc}>
+                            {c.d}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    
+                  </div>
+                </motion.article>
+              );
+            })}
           </div>
         </div>
-        <div className="lg:order-2 order-1 grid place-items-center">
-          <Image src={"/allinonemeeting.png"} width={500} height={500} alt="All in one meeting image" />
-        </div>
+
       </div>
     </section>
   );

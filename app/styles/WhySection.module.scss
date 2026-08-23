@@ -1,0 +1,202 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-accent-light: color-mix(in oklch, var(--primary) 10%, transparent);
+$color-accent-glow: color-mix(in oklch, var(--primary) 25%, transparent);
+$color-card-bg: color-mix(in oklch, var(--card) 70%, transparent);
+$color-card-border: color-mix(in oklch, var(--border) 40%, transparent);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+
+// Mixins
+@mixin glassmorphism {
+  background: $color-card-bg;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid $color-card-border;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.05);
+}
+
+@mixin hover-lift {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 15px 35px -5px $color-accent-glow;
+    border-color: rgba(107, 78, 255, 0.4);
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
+
+// Block: .whySection
+.whySection {
+  position: relative;
+  overflow: hidden;
+  padding: 4rem 1rem;
+  background-color: transparent; // blends with page background
+  
+  @media (min-width: 768px) {
+    padding: 6rem 2rem;
+  }
+
+  // Background abstract shapes for the glass effect to reflect on
+  &__bgBlob {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: $color-accent;
+    filter: blur(120px);
+    opacity: 0.15;
+    border-radius: 50%;
+    z-index: -1;
+    pointer-events: none;
+    
+    &--topRight {
+      top: -10%;
+      right: -10%;
+    }
+    
+    &--bottomLeft {
+      bottom: -10%;
+      left: -10%;
+    }
+  }
+
+  &__container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 3rem;
+    align-items: center;
+    max-width: 1280px;
+    margin: 0 auto;
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+    }
+  }
+
+  // Element: Title area
+  &__content {
+    order: 2;
+    @media (min-width: 1024px) {
+      order: 1;
+    }
+  }
+
+  &__title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: $color-text-main;
+    margin-bottom: 2.5rem;
+    letter-spacing: -0.025em;
+    
+    @media (min-width: 1024px) {
+      font-size: 3rem;
+    }
+
+    span {
+      color: $color-accent;
+    }
+  }
+
+  // Element: Grid for cards
+  &__grid {
+    display: grid;
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  // Element: Card
+  &__card {
+    @include glassmorphism;
+    @include hover-lift;
+    
+    padding: 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, $color-accent, transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+
+  &__iconWrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: $color-accent-light;
+    color: $color-accent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+  
+  &__card:hover &__iconWrapper {
+    transform: scale(1.1) rotate(5deg);
+    background: $color-accent;
+    color: white;
+  }
+
+  &__cardTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $color-text-main;
+    margin: 0 0 0.5rem 0;
+  }
+
+  &__cardDesc {
+    font-size: 0.875rem;
+    color: $color-text-muted;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  &__imageWrapper {
+    order: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    @media (min-width: 1024px) {
+      order: 2;
+    }
+
+    img {
+      width: 100%;
+      max-width: 550px;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.08));
+    }
+  }
+}
