@@ -127,7 +127,7 @@ function HeroSection() {
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-white/80 mb-8 backdrop-blur-sm"
           >
             <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-            Notu 2.0 Kini Tersedia
+            Notu 1.0 Kini Telah Tersedia!
           </motion.div>
 
           <motion.h1 

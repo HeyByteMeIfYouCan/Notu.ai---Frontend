@@ -74,7 +74,8 @@ $color-card-border: var(--border);
     
     @media (min-width: 1024px) {
       grid-template-columns: repeat(3, 1fr);
-      align-items: center; 
+      align-items: stretch; // Make left and right cards exactly the same height
+      gap: 0; // Remove gap so they can attach
     }
   }
 
@@ -83,19 +84,33 @@ $color-card-border: var(--border);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 32px; // Rounder, softer corners
+    border-radius: 32px; 
     padding: 3.5rem 2.5rem;
     display: flex;
     flex-direction: column;
     position: relative;
+    z-index: 1;
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 0 20px rgba(255, 255, 255, 0.5);
+
+    @media (min-width: 1024px) {
+      // Create seamless overlapping attachment without losing rounded corners
+      &:first-child {
+        margin-right: -1.5rem;
+        padding-right: 3.5rem; // Compensate overlap
+      }
+      &:last-child {
+        margin-left: -1.5rem;
+        padding-left: 3.5rem;
+      }
+    }
 
     &:hover {
       transform: translateY(-8px);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 0 30px rgba(255, 255, 255, 0.8);
       border-color: #ffffff;
       background: rgba(255, 255, 255, 0.45);
+      z-index: 2; // Stay below the middle card even on hover
     }
 
     &--highlighted {
@@ -105,12 +120,19 @@ $color-card-border: var(--border);
       border: 1px solid color-mix(in oklch, $color-accent 50%, transparent);
       box-shadow: 0 30px 60px rgba(10, 12, 25, 0.3), inset 0 0 40px rgba(107, 78, 255, 0.1);
       padding: 4.5rem 2.5rem; // Taller and grander
+      z-index: 10; // Ensure it sits strictly on top of left/right cards
+      border-radius: 32px !important; // Keep rounded
+      
+      @media (min-width: 1024px) {
+        margin: -2rem 0; // Make the middle card physically taller than the stretched side cards
+      }
       
       &:hover {
         transform: translateY(-12px);
         box-shadow: 0 40px 80px rgba(10, 12, 25, 0.4), inset 0 0 60px rgba(107, 78, 255, 0.2);
         border-color: $color-accent;
         background: rgba(20, 24, 45, 0.98);
+        z-index: 11;
       }
     }
   }
