@@ -48,12 +48,12 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
     e.preventDefault()
     
     if (!meetingLink) {
-      toast.error("Silahkan masukkan link meeting")
+      toast.error("Tempel link meeting dulu, ya")
       return
     }
 
     if (!isReady) {
-      toast.error("Silahkan login terlebih dahulu")
+      toast.error("Login dulu biar Notu bisa ikut meeting, ya")
       return
     }
 
@@ -68,7 +68,7 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
       const newMeetingId = response.data?.meeting?._id || response.meeting?._id
       if (newMeetingId) {
         setActiveMeetingId(newMeetingId)
-        toast.success("Bot berhasil dikirim ke meeting!")
+        toast.success("Notu berhasil bergabung dengan meeting.")
         setMode('live')
         // Do NOT redirect immediately; let user watch live or navigate manually
       } else {
@@ -104,15 +104,17 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[650px]">
+      <DialogContent className="overflow-hidden border-[var(--border)] p-0 sm:max-w-[650px]">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28" style={{ background: "radial-gradient(ellipse at 78% 0%, color-mix(in oklch, var(--primary) 16%, transparent), transparent 68%)" }} />
+        <div className="relative p-6">
         <DialogHeader>
-          <DialogTitle>
-            {mode === 'live' ? "Live Meeting" : "Take Notes From Online Meeting"}
+          <DialogTitle className="text-xl font-semibold tracking-[-0.025em]">
+            {mode === 'live' ? "Notu sedang mengikuti meeting" : "Undang Notu ke meeting"}
           </DialogTitle>
           <DialogDescription>
             {mode === 'live' 
-              ? "Bot is active. You can monitor the transcript here or go to the dashboard." 
-              : "Using Online Bot For Google Meet"}
+              ? "Pantau percakapan secara live di sini, atau buka halaman status kapan saja."
+              : "Tempel link Google Meet Anda. Notu akan bergabung dan membantu mencatat percakapan."}
           </DialogDescription>
         </DialogHeader>
 
@@ -126,7 +128,7 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
-                Paste URL Google Meet anda disini
+                Tempel link Google Meet Anda di bawah ini.
               </p>
               <div className="relative">
                 <Input
@@ -150,16 +152,16 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-[var(--primary)] hover:brightness-90 text-[var(--primary-foreground)]"
+              className="h-11 w-full bg-[var(--primary)] text-[var(--primary-foreground)] transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[color-mix(in_oklch,var(--primary)_90%,black)] motion-reduce:transition-none"
               disabled={isLoading || !isReady}
             >
               {isLoading ? (
                 <>
                   <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Mengirim Bot...
+                  Mohon tunggu, Notu sedang bergabung dengan meeting...
                 </>
               ) : (
-                "Mulai"
+                "Kirim Notu ke meeting"
               )}
             </Button>
           </form>
@@ -176,15 +178,16 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
             
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={handleClose}>
-                Close
+                Tutup
               </Button>
               <Button onClick={handleGoToDetails}>
                 <IconExternalLink className="mr-2 h-4 w-4" />
-                Go to Details
+                Buka status meeting
               </Button>
             </div>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   )

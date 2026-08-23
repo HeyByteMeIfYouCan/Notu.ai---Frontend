@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { 
-  IconSparkles, 
+  IconFileDescription,
   IconInfoCircle, 
   IconPencil, 
   IconRefresh, 
@@ -105,9 +105,10 @@ export function MeetingMainContent({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background-2">
+    <div className="flex-1 overflow-y-auto bg-[var(--background)]">
       {/* Meeting Header Info */}
-      <div className="px-6 py-4 border-b group">
+      <div className="group relative overflow-hidden border-b border-[var(--border)] bg-[var(--card)] px-6 py-5">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-1/3" style={{ background: "radial-gradient(ellipse at 80% 50%, color-mix(in oklch, var(--chart-3) 12%, transparent), transparent 68%)" }} />
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -174,7 +175,7 @@ export function MeetingMainContent({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 font-medium px-2 py-1 rounded-md text-sm border border-emerald-100">
+            <div className="flex items-center gap-1 rounded-md border border-[color-mix(in_oklch,var(--chart-2)_24%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_9%,var(--card))] px-2 py-1 text-sm font-medium text-[var(--foreground)]">
               {meeting.platform || "Google Meet"}
             </div>
             {meeting.participants > 0 && (
@@ -187,27 +188,28 @@ export function MeetingMainContent({
       </div>
 
       {/* Main Content Sections */}
-      <div className="px-6 py-4 space-y-6 pb-24">
+      <div className="space-y-6 px-6 py-6 pb-24">
         {!isAiContentAvailable ? (
-          <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-gray-50/50 rounded-3xl border border-gray-100 mt-4">
-            <div className="bg-primary/10 p-6 rounded-3xl mb-8">
-              <IconSparkles className="h-16 w-16 text-primary" />
+          <div className="relative mt-4 flex flex-col items-center justify-center overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-[var(--card)] px-6 py-20 text-center">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1/2" style={{ background: "radial-gradient(ellipse at 50% 0%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 68%)" }} />
+            <div className="relative mb-8 flex size-24 items-center justify-center rounded-[1.5rem] border border-[color-mix(in_oklch,var(--primary)_22%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_8%,var(--card))]">
+              <IconFileDescription className="h-10 w-10 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-4">Ringkasan tidak tersedia</h3>
-            <p className="text-base text-muted-foreground max-w-lg mb-10">
-              Belum ada analisis yang dilakukan untuk pertemuan ini. Klik tombol di bawah untuk membuat ringkasan secara otomatis.
+            <h3 className="relative mb-4 text-2xl font-semibold tracking-[-0.025em] text-foreground">Ringkasan belum tersedia</h3>
+            <p className="relative mb-10 max-w-lg text-base leading-7 text-muted-foreground">
+              Agar lebih mudah dibaca kembali, mari buat poin penting dan ringkasan dari meeting ini.
             </p>
-            <Button size="lg" onClick={onRegenerateAi} className="gap-3 px-12 py-7 text-lg font-bold rounded-2xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
-              <IconSparkles className="h-6 w-6" />
-              Generate Meeting Summary
+            <Button size="lg" onClick={onRegenerateAi} className="relative h-12 gap-3 rounded-xl bg-primary px-8 font-semibold text-primary-foreground transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none">
+              <IconFileDescription className="h-5 w-5" />
+              Buat ringkasan sekarang
             </Button>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Executive Summary */}
-            <div>
+            <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-semibold text-primary">Executive Summary</h2>
+                <h2 className="text-base font-semibold text-primary">Ringkasan utama</h2>
                 {permissions.canEdit && (
                   <Dialog open={editingField === 'executiveSummary'} onOpenChange={(open) => !open && setEditingField(null)}>
                     <DialogTrigger asChild>
@@ -217,7 +219,7 @@ export function MeetingMainContent({
                       </button>
                     </DialogTrigger>
                     <DialogContent className="max-w-3xl">
-                      <DialogHeader><DialogTitle>Edit Executive Summary</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>Edit ringkasan utama</DialogTitle></DialogHeader>
                       <div data-color-mode="light">
                         <MDEditor value={editValue} onChange={(val) => setEditValue(val || "")} height={300} preview="edit" />
                       </div>
@@ -232,13 +234,13 @@ export function MeetingMainContent({
               <div className="prose prose-sm prose-gray max-w-none text-muted-foreground">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{executiveSummary}</ReactMarkdown>
               </div>
-            </div>
+            </section>
 
             {/* Highlights / Notes */}
             {Object.keys(highlights).length > 0 && (
-              <div>
+              <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-base font-semibold text-primary">Catatan Rapat</h2>
+                  <h2 className="text-base font-semibold text-primary">Poin penting</h2>
                   {permissions.canEdit && (
                     <Dialog open={editingField === 'highlights'} onOpenChange={(open) => !open && setEditingField(null)}>
                       <DialogTrigger asChild>
@@ -248,7 +250,7 @@ export function MeetingMainContent({
                         </button>
                       </DialogTrigger>
                       <DialogContent className="max-w-3xl">
-                        <DialogHeader><DialogTitle>Edit Catatan Rapat</DialogTitle></DialogHeader>
+                        <DialogHeader><DialogTitle>Edit poin penting</DialogTitle></DialogHeader>
                         <div data-color-mode="light">
                           <MDEditor value={editValue} onChange={(val) => setEditValue(val || "")} height={400} preview="edit" />
                         </div>
@@ -273,22 +275,22 @@ export function MeetingMainContent({
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
             {/* Action Items */}
-            <div>
+            <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-semibold text-primary">Action Items</h2>
+                <h2 className="text-base font-semibold text-primary">Yang perlu ditindaklanjuti</h2>
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-primary disabled:opacity-40" onClick={onRegenerateAi} disabled={!permissions.canRegenerateAI}>
                     <IconRefresh className="h-4 w-4" />
-                    <span className="text-xs font-medium">Ulangi Analisis</span>
+                    <span className="text-xs font-medium">Analisis ulang</span>
                   </Button>
                   {!hasSyncedTasks && actionItems.length > 0 && (
                     <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-muted-foreground hover:text-primary disabled:opacity-40" onClick={onGenerateKanban} disabled={!permissions.canEdit}>
                       <IconLayoutKanban className="h-4 w-4" />
-                      <span className="text-xs font-medium">Buat Board</span>
+                      <span className="text-xs font-medium">Jadikan board</span>
                     </Button>
                   )}
                 </div>
@@ -296,15 +298,15 @@ export function MeetingMainContent({
               {actionItems.length > 0 ? (
                 <ul className="space-y-3 text-sm text-muted-foreground">
                   {actionItems.map((item, index) => (
-                    <li key={item.id || index} className="flex items-start gap-2 p-2 rounded-lg bg-gray-50">
+                    <li key={item.id || index} className="flex items-start gap-2 rounded-xl border border-[var(--border)] bg-[color-mix(in_oklch,var(--muted)_42%,var(--card))] p-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-foreground">{item.title}</span>
                           {item.priority && (
                              <span className={`text-xs px-2 py-0.5 rounded-full ${
-                               item.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                               item.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                               'bg-gray-100 text-gray-700'
+                               item.priority === 'urgent' ? 'bg-[color-mix(in_oklch,var(--destructive)_10%,var(--card))] text-[var(--destructive)]' :
+                               item.priority === 'high' ? 'bg-[color-mix(in_oklch,var(--chart-4)_12%,var(--card))] text-[var(--foreground)]' :
+                               'bg-[var(--muted)] text-[var(--muted-foreground)]'
                              }`}>
                                {item.priority}
                              </span>
@@ -316,14 +318,14 @@ export function MeetingMainContent({
                   ))}
                 </ul>
               ) : (
-                <div className="text-sm text-muted-foreground">Tidak ada action items</div>
+                <div className="text-sm text-muted-foreground">Belum ada tindak lanjut dari meeting ini.</div>
               )}
-            </div>
+            </section>
 
             {/* Conclusion */}
-            <div>
+            <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-semibold text-primary">Conclusion</h2>
+                <h2 className="text-base font-semibold text-primary">Kesimpulan</h2>
                 {permissions.canEdit && (
                   <Dialog open={editingField === 'conclusion'} onOpenChange={(open) => !open && setEditingField(null)}>
                     <DialogTrigger asChild>
@@ -333,7 +335,7 @@ export function MeetingMainContent({
                       </button>
                     </DialogTrigger>
                     <DialogContent className="max-w-3xl">
-                      <DialogHeader><DialogTitle>Edit Conclusion</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>Edit kesimpulan</DialogTitle></DialogHeader>
                     <div data-color-mode="light">
                       <MDEditor value={editValue} onChange={(val) => setEditValue(val || "")} height={300} preview="edit" />
                     </div>
@@ -346,9 +348,9 @@ export function MeetingMainContent({
                 )}
               </div>
               <div className="prose prose-sm prose-gray max-w-none text-muted-foreground">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{conclusion || "Tidak ada conclusion tersedia"}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{conclusion || "Belum ada kesimpulan untuk meeting ini."}</ReactMarkdown>
               </div>
-            </div>
+            </section>
           </div>
         )}
       </div>

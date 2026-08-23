@@ -69,15 +69,15 @@ export function MeetingAnalytics({
   }
 
   const handleDeleteBoard = async () => {
-    toast.error("Apakah Anda yakin?", {
-      description: "Data tugas di board ini akan hilang.",
+    toast.error("Hapus board ini?", {
+      description: "Seluruh tugas di dalamnya juga akan dihapus.",
       action: {
         label: "Hapus",
         onClick: async () => {
           setIsDeletingBoard(true)
           await onDeleteKanban()
           setIsDeletingBoard(false)
-          toast.success("Kanban board berhasil dihapus")
+          toast.success("Board sudah dihapus")
         }
       },
       duration: 5000
@@ -151,13 +151,13 @@ export function MeetingAnalytics({
                     return (
                       <div 
                         key={index} 
-                        className="grid grid-cols-4 gap-2 items-center group/speaker hover:bg-muted/50 rounded-lg p-2 -mx-2 transition-all cursor-default relative"
+                        className="group/speaker relative -mx-2 grid cursor-default grid-cols-4 items-center gap-2 rounded-lg p-2 transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-muted/50 motion-reduce:transition-none"
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <div className={`w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold shadow-sm transition-transform group-hover/speaker:scale-110 flex-shrink-0`}>
                             {displayText}
                           </div>
-                          <span className={`text-xs truncate font-medium ${textColor} group-hover/speaker:font-semibold transition-all`}>
+                          <span className={`truncate text-xs font-medium ${textColor}`}>
                             {item.speaker}
                           </span>
                         </div>
@@ -168,7 +168,7 @@ export function MeetingAnalytics({
                           {item.talks}x
                         </div>
                         <div className="flex items-center justify-end gap-1.5">
-                          <span className={`text-[11px] font-semibold ${textColor} group-hover/speaker:font-bold transition-all`}>
+                          <span className={`text-[11px] font-semibold ${textColor}`}>
                             {item.total}%
                           </span>
                           <div className="relative w-4 h-4 flex-shrink-0">
@@ -254,7 +254,7 @@ export function MeetingAnalytics({
             <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
               {actionItems.length > 0 && (
                 <>
-                  <div className="flex items-center justify-between bg-primary/5 rounded-xl p-2.5 border border-primary/10 shadow-sm transition-all hover:bg-primary/8">
+                  <div className="flex items-center justify-between rounded-xl border border-primary/10 bg-primary/5 p-2.5 transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/8 motion-reduce:transition-none">
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
                       <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-primary">
@@ -271,7 +271,7 @@ export function MeetingAnalytics({
                       <Button 
                         size="sm" 
                         variant="secondary" 
-                        className="h-7 text-[10px] px-3 font-bold uppercase tracking-tight rounded-lg bg-background border border-primary/10 text-primary hover:bg-primary hover:text-white shadow-sm transition-all" 
+                        className="h-7 rounded-lg border border-primary/10 bg-background px-3 text-[10px] font-bold uppercase tracking-tight text-primary transition-[background-color,color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary hover:text-primary-foreground motion-reduce:transition-none"
                         onClick={() => {
                           // Use explicit board existence (`hasBoard`) to decide Open vs Create UI
                           if (hasBoard) {
@@ -284,7 +284,7 @@ export function MeetingAnalytics({
                             if (bid) router.push(`/dashboard/kanban/${bid}`);
                           } else {
                             if (!permissions.canSyncTasks) {
-                              toast.error('Anda tidak memiliki izin untuk membuat board.');
+                              toast.error('Anda belum memiliki akses untuk membuat board.');
                               return;
                             }
                             onGenerateKanban();
@@ -320,7 +320,7 @@ export function MeetingAnalytics({
                             <TooltipTrigger asChild>
                               <div className="flex items-start justify-between group cursor-default">
                                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                                  <div className={`w-1.5 h-1.5 rounded-full ${colorClass} mt-1.5 flex-shrink-0 group-hover:scale-150 transition-transform shadow-sm`}></div>
+                                  <div className={`mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full ${colorClass} transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-150 motion-reduce:transition-none motion-reduce:transform-none`}></div>
                                   <div className="text-[13px] font-medium leading-tight text-foreground group-hover:text-primary transition-colors truncate">{item.title}</div>
                                 </div>
                                 <span className="text-[11px] font-bold text-foreground/70 ml-3 bg-muted px-1.5 py-0.5 rounded-md min-w-[32px] text-center border border-border/10">{dateStr}</span>

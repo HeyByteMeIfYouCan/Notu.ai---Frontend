@@ -91,7 +91,7 @@ export function MeetingHeader({
   }, [description])
 
   const handleDelete = async () => {
-    if (confirm("Apakah Anda yakin ingin menghapus meeting ini? Semua data terkait termasuk Kanban board akan terhapus.")) {
+    if (confirm("Hapus meeting ini? Seluruh data terkait, termasuk board, tidak dapat dipulihkan.")) {
       setIsDeleting(true)
       await onDeleteMeeting()
       setIsDeleting(false)
@@ -99,7 +99,7 @@ export function MeetingHeader({
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
+    <header className="sticky top-0 z-50 border-b border-border bg-[color-mix(in_oklch,var(--card)_94%,transparent)] backdrop-blur-xl">
       <div className="flex items-center justify-between px-4 lg:px-6 py-4">
         <div className="flex items-center gap-3 flex-1 mr-4 overflow-hidden">
           {/* Back button */}
@@ -113,7 +113,7 @@ export function MeetingHeader({
           </Button>
           
           <div className="flex flex-col flex-1 overflow-hidden">
-            <h1 className="text-xl font-bold truncate text-foreground">{title}</h1>
+            <h1 className="truncate text-xl font-semibold tracking-[-0.025em] text-foreground">{title}</h1>
             {description && (
               <p className="text-sm text-muted-foreground truncate max-w-2xl">{description}</p>
             )}
@@ -135,30 +135,30 @@ export function MeetingHeader({
             <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
               <DialogTrigger asChild>
                 <Button 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 px-4 font-medium transition-colors" 
+                  className="h-9 bg-primary px-4 font-medium text-primary-foreground transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
                   onClick={() => onGenerateShareLink()}
                 >
                   <IconShare className="h-4 w-4 mr-2" />
-                  Share
+                  Bagikan
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="text-foreground">Share Meeting</DialogTitle>
+                  <DialogTitle className="text-foreground">Bagikan meeting ini</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Collaboration Link</label>
+                    <label className="text-sm font-medium text-foreground">Link buat kolaborasi</label>
                     <div className="flex gap-2">
                       <Input 
                         readOnly 
-                        value={shareToken ? `${window.location.origin}/dashboard/join/meeting/${shareToken}` : "Generating link..."} 
+                        value={shareToken ? `${window.location.origin}/dashboard/join/meeting/${shareToken}` : "Link sedang disiapkan..."}
                         className="bg-muted border-border"
                       />
                       <Button size="icon" variant="outline" className="border-border hover:bg-accent hover:text-accent-foreground" onClick={() => {
                         if (shareToken) {
                           navigator.clipboard.writeText(`${window.location.origin}/dashboard/join/meeting/${shareToken}`)
-                          toast.success("Link copied")
+                          toast.success("Link meeting sudah disalin")
                         }
                       }}>
                         <IconCopy className="h-4 w-4" />
@@ -167,7 +167,7 @@ export function MeetingHeader({
                   </div>
 
                   <div className="space-y-3 pt-4 border-t border-border">
-                    <h3 className="text-sm font-semibold text-foreground">Members</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Yang punya akses</h3>
                     <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                       {/* Owner */}
                       <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10">
@@ -180,8 +180,8 @@ export function MeetingHeader({
                             </div>
                           )}
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground">{user?.name || 'Owner'} (You)</span>
-                            <span className="text-xs text-muted-foreground">Owner</span>
+                            <span className="text-sm font-medium text-foreground">{user?.name || 'Pemilik'} (Anda)</span>
+                            <span className="text-xs text-muted-foreground">Pemilik meeting</span>
                           </div>
                         </div>
                       </div>
@@ -233,7 +233,7 @@ export function MeetingHeader({
             <Button variant="outline" size="icon" className="h-9 w-9 border-border hover:bg-accent" onClick={() => {
               const shareUrl = shareToken ? `${window.location.origin}/dashboard/join/meeting/${shareToken}` : window.location.href
               navigator.clipboard.writeText(shareUrl)
-              toast.success("Link copied")
+              toast.success("Link meeting sudah disalin")
             }}>
               <IconLink className="h-4 w-4" />
             </Button>
@@ -248,45 +248,45 @@ export function MeetingHeader({
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-foreground">Meeting Information</DialogTitle>
+                <DialogTitle className="text-foreground">Tentang meeting ini</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-3">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Title</div>
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Judul</div>
                     <div className="text-sm font-semibold text-foreground">{title}</div>
                   </div>
                   
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Description</div>
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Deskripsi</div>
                     <div className="text-sm text-foreground">{description || 'No description'}</div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Created</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Dibuat</div>
                       <div className="text-sm font-semibold text-foreground">
                         {createdAt ? new Date(createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
                       </div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Duration</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Durasi</div>
                       <div className="text-sm font-semibold text-foreground">
                         {duration ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, '0')}` : '-'}
                       </div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Segments</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Segmen</div>
                       <div className="text-sm font-semibold text-foreground">{segments?.length || 0}</div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Members</div>
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Kolaborator</div>
                       <div className="text-sm font-semibold text-foreground">{collaborators?.length || 0}</div>
                     </div>
                   </div>
 
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Your Role</div>
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Akses Anda</div>
                     <div className="text-sm font-semibold text-primary">{getRoleLabel(userRole || 'owner')}</div>
                   </div>
 
@@ -329,7 +329,7 @@ export function MeetingHeader({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase">Export Format</div>
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase">Download sebagai</div>
                   <DropdownMenuItem onClick={() => onExport('txt')} className="cursor-pointer hover:bg-accent">
                     <span className="text-sm">Text (.txt)</span>
                   </DropdownMenuItem>

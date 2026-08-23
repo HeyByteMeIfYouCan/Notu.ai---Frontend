@@ -30,19 +30,19 @@ interface BotLiveTranscriptProps {
 }
 
 const statusLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending: { label: "Menunggu", color: "bg-yellow-500", icon: <IconClock className="h-4 w-4" /> },
-  joining: { label: "Bot Memulai", color: "bg-blue-400", icon: <IconRobot className="h-4 w-4 animate-pulse" /> },
-  bot_joining: { label: "Bot Bergabung", color: "bg-blue-500", icon: <IconRobot className="h-4 w-4 animate-pulse" /> },
-  waiting_admission: { label: "Menunggu Host", color: "bg-orange-500", icon: <IconClock className="h-4 w-4 animate-pulse" /> },
-  disabling_media: { label: "Mematikan Mic/Cam", color: "bg-blue-400", icon: <IconMicrophoneOff className="h-4 w-4" /> },
-  bot_in_meeting: { label: "Bot di Meeting", color: "bg-green-500", icon: <IconRobot className="h-4 w-4" /> },
-  in_meeting: { label: "Bot di Meeting", color: "bg-green-500", icon: <IconRobot className="h-4 w-4" /> },
-  enabling_captions: { label: "Mengaktifkan CC", color: "bg-purple-400", icon: <IconBrain className="h-4 w-4 animate-pulse" /> },
-  recording: { label: "Merekam", color: "bg-red-500", icon: <IconMicrophone className="h-4 w-4 animate-pulse" /> },
-  processing: { label: "Memproses", color: "bg-purple-500", icon: <IconBrain className="h-4 w-4 animate-pulse" /> },
-  leaving: { label: "Keluar Meeting", color: "bg-gray-500", icon: <IconRobot className="h-4 w-4" /> },
-  completed: { label: "Selesai", color: "bg-green-600", icon: <IconCheck className="h-4 w-4" /> },
-  failed: { label: "Gagal", color: "bg-red-600", icon: <IconX className="h-4 w-4" /> },
+  pending: { label: "Menunggu", color: "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]", icon: <IconClock className="h-4 w-4" /> },
+  joining: { label: "Bot Memulai", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
+  bot_joining: { label: "Bot Bergabung", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
+  waiting_admission: { label: "Menunggu Host", color: "border-[color-mix(in_oklch,var(--chart-4)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-4)_10%,var(--card))] text-[var(--foreground)]", icon: <IconClock className="h-4 w-4" /> },
+  disabling_media: { label: "Mematikan Mic/Cam", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconMicrophoneOff className="h-4 w-4" /> },
+  bot_in_meeting: { label: "Bot di Meeting", color: "border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))] text-[var(--foreground)]", icon: <IconRobot className="h-4 w-4" /> },
+  in_meeting: { label: "Bot di Meeting", color: "border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))] text-[var(--foreground)]", icon: <IconRobot className="h-4 w-4" /> },
+  enabling_captions: { label: "Mengaktifkan CC", color: "border-[color-mix(in_oklch,var(--chart-3)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-3)_10%,var(--card))] text-[var(--foreground)]", icon: <IconBrain className="h-4 w-4" /> },
+  recording: { label: "Merekam", color: "border-destructive/25 bg-destructive/10 text-destructive", icon: <IconMicrophone className="h-4 w-4" /> },
+  processing: { label: "Memproses", color: "border-[color-mix(in_oklch,var(--chart-3)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-3)_10%,var(--card))] text-[var(--foreground)]", icon: <IconBrain className="h-4 w-4" /> },
+  leaving: { label: "Keluar Meeting", color: "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]", icon: <IconRobot className="h-4 w-4" /> },
+  completed: { label: "Selesai", color: "border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))] text-[var(--foreground)]", icon: <IconCheck className="h-4 w-4" /> },
+  failed: { label: "Gagal", color: "border-destructive/25 bg-destructive/10 text-destructive", icon: <IconX className="h-4 w-4" /> },
 }
 
 function formatDuration(seconds: number): string {
@@ -151,7 +151,7 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
       
       // Only show toast once
       if (!stopToastShownRef.current) {
-        toast.info("Bot dihentikan")
+        toast.info("Notu sudah keluar dari meeting")
         stopToastShownRef.current = true
       }
     } catch (err: any) {
@@ -164,7 +164,7 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
   // If loading status, show spinner
   if (isLoadingStatus) {
     return (
-      <Card className="w-full">
+      <Card className="w-full border-[var(--border)] shadow-none">
         <CardContent className="pt-6">
           <div className="flex items-center justify-center py-12">
             <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
@@ -177,14 +177,14 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
   // If meeting is completed, show completed transcript view
   if (meetingStatus === 'completed' && completedTranscript) {
     return (
-      <Card className="w-full">
+      <Card className="w-full border-[var(--border)] shadow-none">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <IconRobot className="h-6 w-6 text-primary" />
-              <CardTitle className="text-lg">Transcript Selesai</CardTitle>
+              <CardTitle className="text-lg">Transkripnya sudah siap</CardTitle>
             </div>
-            <Badge variant="secondary" className="gap-1 bg-green-600 text-white">
+            <Badge variant="outline" className="gap-1 border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))] text-[var(--foreground)]">
               <IconCheck className="h-4 w-4" />
               Completed
             </Badge>
@@ -213,7 +213,7 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 <IconMicrophoneOff className="h-8 w-8 mb-2" />
-                <p className="text-sm">Tidak ada transkripsi</p>
+                <p className="text-sm">Belum ada obrolan yang bisa ditampilkan.</p>
               </div>
             )}
           </ScrollArea>
@@ -235,16 +235,17 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
   const showTranscript = hasData || ['enabling_captions', 'bot_in_meeting', 'in_meeting', 'recording', 'processing', 'completed'].includes(status)
 
   return (
-    <Card className="w-full">
+    <Card className="relative w-full overflow-hidden border-[var(--border)] shadow-none">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-24" style={{ background: "radial-gradient(ellipse at 18% 0%, color-mix(in oklch, var(--primary) 13%, transparent), transparent 65%)" }} />
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <IconRobot className="h-6 w-6 text-primary" />
-            <CardTitle className="text-lg">Live Transcription</CardTitle>
+            <CardTitle className="text-lg">Transkrip live</CardTitle>
           </div>
           <div className="flex items-center gap-2">
             {/* Status Badge */}
-            <Badge variant="secondary" className={cn("gap-1", statusInfo.color, "text-white")}>
+            <Badge variant="outline" className={cn("gap-1", statusInfo.color)}>
               {statusInfo.icon}
               {statusInfo.label}
             </Badge>
@@ -274,10 +275,10 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
         <div className="flex items-center gap-2 mb-4">
           <div className={cn(
             "h-2 w-2 rounded-full",
-            isConnected ? "bg-green-500" : "bg-gray-400"
+            isConnected ? "bg-[var(--chart-2)]" : "bg-[var(--muted-foreground)]"
           )} />
           <span className="text-xs text-muted-foreground">
-            {isConnected ? "Terhubung ke live feed" : "Tidak terhubung"}
+            {isConnected ? "Tersambung ke meeting" : "Koneksi ke meeting terputus"}
           </span>
         </div>
 
@@ -298,31 +299,31 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 {status === 'waiting_admission' ? (
                   <>
-                    <IconClock className="h-8 w-8 mb-2 animate-pulse text-orange-500" />
-                    <p className="text-sm font-medium">Menunggu Host</p>
-                    <p className="text-xs mt-1">Bot menunggu persetujuan untuk masuk...</p>
+                    <IconClock className="mb-2 h-8 w-8 text-[var(--chart-4)]" />
+                    <p className="text-sm font-medium">Tinggal tunggu host</p>
+                    <p className="text-xs mt-1">Notu siap masuk begitu host kasih izin.</p>
                   </>
                 ) : status === 'joining' || status === 'bot_joining' ? (
                   <>
-                    <IconRobot className="h-8 w-8 mb-2 animate-pulse text-blue-500" />
-                    <p className="text-sm font-medium">Bot Sedang Bergabung</p>
-                    <p className="text-xs mt-1">Mematikan mic/camera...</p>
+                    <IconRobot className="mb-2 h-8 w-8 text-[var(--primary)]" />
+                    <p className="text-sm font-medium">Notu sedang bergabung</p>
+                    <p className="text-xs mt-1">Mohon tunggu sebentar, Notu sedang menyiapkan semuanya.</p>
                   </>
                 ) : status === 'disabling_media' ? (
                   <>
-                    <IconMicrophoneOff className="h-8 w-8 mb-2 text-blue-400" />
+                    <IconMicrophoneOff className="mb-2 h-8 w-8 text-[var(--primary)]" />
                     <p className="text-sm font-medium">Mematikan Mic & Camera</p>
                   </>
                 ) : status === 'enabling_captions' ? (
                   <>
-                    <IconBrain className="h-8 w-8 mb-2 animate-pulse text-purple-500" />
-                    <p className="text-sm font-medium">Mengaktifkan Caption</p>
-                    <p className="text-xs mt-1">Menyiapkan transkripsi...</p>
+                    <IconBrain className="mb-2 h-8 w-8 text-[var(--chart-3)]" />
+                    <p className="text-sm font-medium">Caption sedang diaktifkan</p>
+                    <p className="text-xs mt-1">Tenang, transkrip live akan segera muncul.</p>
                   </>
                 ) : (
                   <>
                     <IconLoader2 className="h-8 w-8 mb-2 animate-spin" />
-                    <p className="text-sm">Memulai bot...</p>
+                    <p className="text-sm">Mohon tunggu sebentar, Notu sedang bersiap...</p>
                   </>
                 )}
               </div>
@@ -330,13 +331,13 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 {isActive ? (
                   <>
-                    <IconMicrophone className="h-8 w-8 mb-2 animate-pulse" />
-                    <p className="text-sm">Menunggu caption dari Google Meet...</p>
+                    <IconMicrophone className="mb-2 h-8 w-8" />
+                    <p className="text-sm">Silakan mulai berbicara. Notu sedang menunggu caption masuk.</p>
                   </>
                 ) : (
                   <>
                     <IconMicrophoneOff className="h-8 w-8 mb-2" />
-                    <p className="text-sm">Belum ada transkripsi</p>
+                    <p className="text-sm">Belum ada transkrip yang masuk.</p>
                   </>
                 )}
               </div>
@@ -356,7 +357,7 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
                 
                 {/* Current live preview (latest) */}
                 {previewText && isActive && (
-                  <div className="p-2 rounded bg-primary/10 border border-primary/20 animate-pulse">
+                  <div className="rounded-lg border border-primary/20 bg-primary/10 p-2">
                     <p className="text-sm leading-relaxed">{previewText}</p>
                     <span className="text-xs text-primary">Live</span>
                   </div>
@@ -368,8 +369,8 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
           {/* Recording indicator */}
           {status === 'recording' && (
             <div className="absolute top-2 right-2">
-              <div className="flex items-center gap-1 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
-                <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+              <div className="flex items-center gap-1 rounded-full bg-destructive px-2 py-1 text-xs text-destructive-foreground">
+                <span className="h-2 w-2 rounded-sm bg-destructive-foreground" />
                 REC
               </div>
             </div>
@@ -397,7 +398,7 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
                 ) : (
                   <IconPlayerStop className="h-4 w-4 mr-1" />
                 )}
-                Stop Bot
+                Hentikan Notu
               </Button>
             )}
 

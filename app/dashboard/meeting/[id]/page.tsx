@@ -171,7 +171,7 @@ export default function MeetingDetailPage() {
       
       // If current user's role was changed, refetch and show notification
       if (payload.userId === user?.id) {
-        toast.info(`Peran Anda diubah menjadi ${payload.newRole}`, {
+        toast.info(`Akses Anda sekarang ${payload.newRole}`, {
           duration: 4000,
         })
         fetchMeeting()

@@ -7,7 +7,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { IconSearch, IconMicrophone, IconPlus, IconLoader2 } from "@tabler/icons-react"
+import { IconMicrophone, IconPlus, IconLoader2 } from "@tabler/icons-react"
 import { SiteHeader } from "@/components/site-header"
 import MeetingCard from "@/components/custom/MeetingCard"
 import { ModernPagination } from "@/components/custom/ModernPagination"
@@ -91,7 +91,7 @@ export default function MeetingPage() {
 
   const formatMeetingForCard = (meeting: Meeting) => ({
     id: meeting._id,
-    tag: meeting.userRole === 'owner' ? '#My Meeting' : (meeting.userRole ? `#${meeting.userRole}` : '#Meeting'),
+    tag: meeting.userRole === 'owner' ? '#Meeting saya' : (meeting.userRole ? `#${meeting.userRole}` : '#Meeting'),
     platform: meeting.platform || "Google Meet",
     date: new Date(meeting.createdAt).toLocaleDateString('id-ID', {
       weekday: 'long',
@@ -101,8 +101,8 @@ export default function MeetingPage() {
       hour: '2-digit',
       minute: '2-digit'
     }),
-    title: meeting.title || "Untitled Meeting",
-    description: meeting.description || "Meeting sedang diproses...",
+    title: meeting.title || "Meeting tanpa judul",
+    description: meeting.description || "Tenang, Notu sedang menyiapkan meeting ini...",
     type: meeting.type || "online",
     status: meeting.status,
     userRole: meeting.userRole,
@@ -127,42 +127,40 @@ export default function MeetingPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-6 py-6">
-              {/* Generate Your Meeting Section (preserved) */}
+              {/* Generate Your Meeting Section */}
               <div className="px-4 lg:px-6">
-                <div className="mb-8 flex flex-col items-center">
-                  <div className="mb-6 flex items-center bg-white py-8 px-8 rounded-[6px] shadow-lg gap-2">
-                    <div className="h-4 w-4 rounded-full bg-[var(--primary)]"></div>
-                    <div className="h-3 w-16 rounded-full bg-gray-300"></div>
-                    <div className="h-3 w-24 rounded-full bg-gray-300"></div>
-                    <div className="h-3 w-32 rounded-full bg-gray-300"></div>
-                  </div>
+                <div className="relative mb-8 overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-[var(--card)] px-6 py-8 sm:px-9 sm:py-10">
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-[48%] opacity-90" style={{ background: "radial-gradient(ellipse at 70% 48%, color-mix(in oklch, var(--primary) 20%, transparent), transparent 58%), linear-gradient(145deg, transparent 30%, color-mix(in oklch, var(--chart-3) 13%, transparent))" }} />
+                  <svg aria-hidden="true" viewBox="0 0 420 210" className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 text-[var(--primary)] sm:block">
+                    <path d="M8 170c72-7 98-58 162-54 60 4 80 47 142 23 38-15 59-58 108-69" fill="none" stroke="currentColor" strokeOpacity=".13" strokeWidth="1.5" />
+                    <path d="M2 193c90-2 113-46 172-41 64 5 82 38 144 17 42-15 55-44 102-54" fill="none" stroke="currentColor" strokeOpacity=".07" />
+                    <circle cx="169" cy="116" r="5" fill="var(--card)" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="312" cy="139" r="4" fill="var(--card)" stroke="currentColor" strokeWidth="2" />
+                  </svg>
 
-                  <h1 className="mb-4 text-3xl font-bold text-[var(--foreground)]">Generate Your Meeting...</h1>
-                  <p className="mb-6 text-sm text-[var(--muted-foreground)]">Berikan Link Google Meet Anda, Dan Biarkan Notu Meringkas Poin Poin Meeting Anda</p>
+                  <div className="relative z-10 max-w-xl">
+                    <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Siap mulai?</p>
+                    <h1 className="mb-3 text-3xl font-semibold tracking-[-0.035em] text-[var(--foreground)] sm:text-4xl">Meeting jalan, catatan tetap aman.</h1>
+                    <p className="mb-7 max-w-lg text-sm leading-6 text-[var(--muted-foreground)]">Undang Notu ke Google Meet atau rekam langsung dari mikrofon. Anda dapat fokus berdiskusi, sementara Notu membantu menyiapkan catatannya.</p>
 
-                  <div className="flex gap-4">
-                    <Button 
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 transition-colors"
-                      onClick={() => setIsOnlineMeetingOpen(true)}
-                    >
-                      <IconPlus className="mr-2 h-4 w-4" />
-                      Add To Live Meet
-                    </Button>
-                    <Button 
-                      className="bg-muted hover:bg-muted/80 text-primary px-6 py-3 transition-colors"
-                      onClick={() => setIsRealtimeMeetingOpen(true)}
-                    >
-                      <IconMicrophone className="mr-2 h-4 w-4" />
-                      Realtime Meet
-                    </Button>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <Button className="h-11 bg-primary px-5 text-primary-foreground transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none" onClick={() => setIsOnlineMeetingOpen(true)}>
+                        <IconPlus className="mr-2 h-4 w-4" />
+                        Undang Notu ke Google Meet
+                      </Button>
+                      <Button variant="outline" className="h-11 border-[var(--border)] bg-[color-mix(in_oklch,var(--card)_80%,transparent)] px-5 text-[var(--foreground)] transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[color-mix(in_oklch,var(--primary)_28%,var(--border))] hover:bg-[var(--muted)] motion-reduce:transition-none" onClick={() => setIsRealtimeMeetingOpen(true)}>
+                        <IconMicrophone className="mr-2 h-4 w-4" />
+                        Rekam langsung dari mikrofon
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Meeting List */}
               <div className="px-4 lg:px-6">
-                <h2 className="mb-2 text-xl font-bold text-foreground">Your Meetings</h2>
-                <p className="mb-6 text-sm text-[var(--muted-foreground)]">Cari Meeting Anda Yang Telah Dibuat</p>
+                <h2 className="mb-1 text-xl font-semibold tracking-[-0.02em] text-foreground">Semua meeting Anda</h2>
+                <p className="mb-6 text-sm text-[var(--muted-foreground)]">Cari, buka lagi, atau lanjut cek meeting yang masih diproses.</p>
 
                 <div className="mb-6">
                   <ListToolbar controls={controls as any} gridCols={gridCols} setGridCols={setGridCols} typeOptions={[{ value: 'all', label: 'Semua Jenis' }, { value: 'online', label: 'Online' }, { value: 'realtime', label: 'Realtime' }]} />
@@ -175,7 +173,7 @@ export default function MeetingPage() {
                 ) : meetings.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <p className="text-lg font-medium text-[var(--foreground)]">Belum ada meeting</p>
-                    <p className="text-sm text-[var(--muted-foreground)] mt-1">Mulai dengan membuat meeting baru</p>
+                    <p className="text-sm text-[var(--muted-foreground)] mt-1">Mari undang Notu ke meeting pertama Anda.</p>
                   </div>
                 ) : (
                   <>
@@ -218,7 +216,7 @@ export default function MeetingPage() {
       <Dialog open={isLiveTranscriptOpen} onOpenChange={setIsLiveTranscriptOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Live Transcription</DialogTitle>
+            <DialogTitle>Transkrip live</DialogTitle>
           </DialogHeader>
           {meetingIdToView && (
             <BotLiveTranscript 

@@ -225,8 +225,8 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
       <DialogContent 
         className={cn(
           "sm:max-w-[650px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden",
-          "transition-all duration-300 ease-in-out",
-          isLocked && "ring-2 ring-primary/50 shadow-lg shadow-primary/20"
+          "transition-[border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+          isLocked && "border-primary/50 ring-2 ring-primary/20"
         )}
         onPointerDownOutside={(e) => {
           if (isLocked) {
@@ -255,9 +255,9 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cn(
-                "p-2 rounded-full transition-all duration-300",
+                "rounded-xl border p-2 transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
                 isRecording && !isPaused 
-                  ? "bg-primary text-primary-foreground animate-pulse" 
+                  ? "border-primary/30 bg-primary text-primary-foreground"
                   : isPaused 
                     ? "bg-amber-500 text-white"
                     : isProcessingFinal
@@ -268,16 +268,16 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
               </div>
               <div>
                 <DialogTitle className="text-lg font-semibold">
-                  Realtime Transcription
+                  Rekam langsung dari mic
                 </DialogTitle>
                 <DialogDescription className="text-xs mt-0.5">
                   {isLocked ? (
                     <span className="flex items-center gap-1 text-primary dark:text-primary">
                       <Lock className="h-3 w-3" />
-                      Session in progress - locked
+                      Rekaman sedang berlangsung—selesaikan sebelum menutup dialog
                     </span>
                   ) : (
-                    "Record and transcribe live audio"
+                    "Silakan berbicara seperti biasa, Notu akan membantu membuat transkrip"
                   )}
                 </DialogDescription>
               </div>
@@ -297,7 +297,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
             {isLocked && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 dark:bg-primary/20 rounded-full">
                 <Lock className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-medium text-primary">Locked</span>
+                <span className="text-xs font-medium text-primary">Terkunci</span>
               </div>
             )}
           </div>
@@ -308,10 +308,10 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
           {!isRecording && !isProcessingFinal && !finalResult && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
               <label className="text-sm font-medium text-muted-foreground">
-                Meeting Name
+                Nama meeting
               </label>
               <Input
-                placeholder="Enter meeting name (optional)"
+                placeholder="Nama meeting (opsional)"
                 value={meetingName}
                 onChange={(e) => setMeetingName(e.target.value)}
                 className="h-11"
@@ -321,15 +321,15 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
 
           {/* Timer & Status Display */}
           <div className={cn(
-            "flex flex-col items-center justify-center py-6 rounded-xl transition-all duration-300",
+            "relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] py-6 transition-[background-color,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
             isRecording && !isPaused 
-              ? "bg-gradient-to-b from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10" 
+              ? "bg-[color-mix(in_oklch,var(--primary)_9%,var(--card))]"
               : isPaused 
-                ? "bg-gradient-to-b from-amber-50 to-amber-100/50 dark:from-amber-950/50 dark:to-amber-900/20"
+                ? "bg-[color-mix(in_oklch,var(--chart-4)_10%,var(--card))]"
                 : isProcessingFinal
-                  ? "bg-gradient-to-b from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/15"
+                  ? "bg-[color-mix(in_oklch,var(--primary)_7%,var(--card))]"
                   : finalResult
-                    ? "bg-gradient-to-b from-emerald-50 to-emerald-100/50 dark:from-emerald-950/50 dark:to-emerald-900/20"
+                    ? "bg-[color-mix(in_oklch,var(--chart-2)_9%,var(--card))]"
                     : "bg-muted/30"
           )}>
             {/* Audio Visualizer */}
@@ -338,7 +338,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                 {[...Array(12)].map((_, i) => (
                   <div
                     key={i}
-                    className="w-1 bg-primary rounded-full transition-all duration-150"
+                    className="w-1 rounded-full bg-primary transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
                     style={{
                       height: `${Math.max(4, Math.sin((i + audioLevel / 10) * 0.5) * 20 + audioLevel * 0.2 + 8)}px`,
                     }}
@@ -366,33 +366,33 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
             {/* Status Badge */}
             <div className="mt-3 flex items-center gap-2">
               {isRecording && !isPaused && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-full text-sm font-medium animate-pulse">
+                <div className="flex items-center gap-2 rounded-full bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">
                   <span className="w-2 h-2 rounded-full bg-primary-foreground" />
-                  Recording
+                  Sedang merekam
                 </div>
               )}
               {isPaused && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 text-white rounded-full text-sm font-medium">
                   <Pause className="h-3 w-3" />
-                  Paused
+                  Rekaman dijeda
                 </div>
               )}
               {isProcessingFinal && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/80 text-primary-foreground rounded-full text-sm font-medium">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  {processingMessage || 'Processing...'}
+                  {processingMessage || 'Mohon tunggu, Notu sedang merapikan hasilnya...'}
                 </div>
               )}
               {finalResult && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500 text-white rounded-full text-sm font-medium">
                   <Check className="h-3 w-3" />
-                  Complete
+                  Selesai
                 </div>
               )}
               {!isRecording && !isProcessingFinal && !finalResult && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-muted text-muted-foreground rounded-full text-sm">
                   <Mic className="h-3 w-3" />
-                  Ready to record
+                  Siap untuk mulai merekam
                 </div>
               )}
             </div>
@@ -412,11 +412,11 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Volume2 className="h-4 w-4 text-muted-foreground" />
-                  Live Preview
+                  Transkrip sementara
                 </label>
                 {previewText && (
                   <span className="text-xs text-muted-foreground">
-                    {previewText.split(' ').length} words
+                    {previewText.split(' ').length} kata
                   </span>
                 )}
               </div>
@@ -424,8 +424,8 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                 <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                   {previewText || (
                     <span className="text-muted-foreground italic flex items-center gap-2">
-                      <Mic className="h-4 w-4 animate-pulse" />
-                      Start speaking... transcription will appear here
+                      <Mic className="h-4 w-4" />
+                      Silakan mulai berbicara. Transkrip akan muncul di sini.
                     </span>
                   )}
                 </p>
@@ -440,15 +440,15 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
               <div className="flex items-center gap-4 text-sm flex-shrink-0">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Users className="h-4 w-4" />
-                  <span>{finalResult.numSpeakers} speaker(s)</span>
+                  <span>{finalResult.numSpeakers} pembicara</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  <span>{Math.round(finalResult.duration)}s duration</span>
+                  <span>{Math.round(finalResult.duration)} detik</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Sparkles className="h-4 w-4" />
-                  <span>{finalResult.segments.length} segments</span>
+                  <span>{finalResult.segments.length} segmen</span>
                 </div>
               </div>
               
@@ -468,11 +468,11 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
               
               {/* AI Summary */}
               {finalResult.aiNotes?.summary && (
-                <div className="p-3 bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/15 border border-primary/20 rounded-lg flex-shrink-0 max-h-[80px] overflow-y-auto">
+                <div className="max-h-[80px] flex-shrink-0 overflow-y-auto rounded-lg border border-primary/20 bg-[color-mix(in_oklch,var(--primary)_7%,var(--card))] p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Sparkles className="h-3.5 w-3.5 text-primary" />
                     <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-                      AI Summary
+                      Ringkasan cepat
                     </span>
                   </div>
                   <p className="text-xs text-foreground/80 leading-relaxed line-clamp-2">
@@ -489,11 +489,11 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
             {!isRecording && !isProcessingFinal && !finalResult && (
               <Button 
                 onClick={handleStart}
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="h-12 w-full bg-primary text-primary-foreground shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
                 size="lg"
               >
                 <Mic className="h-5 w-5 mr-2" />
-                Start Recording
+                Mulai rekam sekarang
               </Button>
             )}
 
@@ -508,7 +508,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                     className="h-12 px-6 border-2 hover:bg-amber-50 dark:hover:bg-amber-950/50"
                   >
                     <Play className="h-5 w-5 mr-2 text-amber-600" />
-                    Resume
+                    Lanjutkan
                   </Button>
                 ) : (
                   <Button 
@@ -518,16 +518,16 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                     className="h-12 px-6 border-2 hover:bg-amber-50 dark:hover:bg-amber-950/50"
                   >
                     <Pause className="h-5 w-5 mr-2 text-amber-600" />
-                    Pause
+                    Jeda
                   </Button>
                 )}
                 <Button 
                   onClick={handleStop}
-                  className="flex-1 h-12 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+                  className="h-12 flex-1 bg-primary text-primary-foreground shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
                   size="lg"
                 >
                   <Square className="h-4 w-4 mr-2" />
-                  Stop & Process
+                  Selesai dan buat notulen
                 </Button>
                 <Button 
                   onClick={cancelRecording} 
@@ -544,7 +544,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
             {isProcessingFinal && (
               <Button disabled className="w-full h-12" size="lg">
                 <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Processing transcription...
+                Mohon tunggu sebentar, notulen Anda sedang dibuat...
               </Button>
             )}
 
@@ -558,22 +558,22 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                   disabled={isSaving}
                 >
                   <Mic className="h-4 w-4 mr-2" />
-                  New Recording
+                  Rekam meeting lain
                 </Button>
                 <Button 
                   onClick={handleSaveAndClose} 
-                  className="flex-1 h-12 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+                  className="h-12 flex-1 bg-primary shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
                   disabled={isSaving}
                 >
                   {isSaving ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
+                      Mohon tunggu, hasil meeting sedang disimpan...
                     </>
                   ) : (
                     <>
                       <Check className="h-4 w-4 mr-2" />
-                      Save Meeting
+                      Simpan hasil meeting
                     </>
                   )}
                 </Button>

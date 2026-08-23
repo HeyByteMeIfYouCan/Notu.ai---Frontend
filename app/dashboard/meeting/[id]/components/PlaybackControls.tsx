@@ -67,11 +67,11 @@ export function PlaybackControls({
           onClick={handleProgressBarClick}
         >
           <div 
-            className="absolute left-0 top-0 h-full bg-accent rounded-full transition-all"
+            className="absolute left-0 top-0 h-full rounded-full bg-accent transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
             style={{ width: `${totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0}%` }}
           />
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-accent rounded-full border-2 border-white shadow scale-0 group-hover:scale-100 transition-transform"
+            className="absolute top-1/2 h-3 w-3 -translate-y-1/2 scale-0 rounded-full border-2 border-white bg-accent shadow transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-100 motion-reduce:transition-none"
             style={{ left: `${totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0}%` }}
           />
         </div>

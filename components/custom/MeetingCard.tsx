@@ -89,7 +89,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
   const handleTogglePin = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!isReady) {
-      toast.error("Silakan login terlebih dahulu")
+      toast.error("Login dulu untuk lanjut, ya")
       return
     }
     setIsTogglingPin(true)
@@ -104,7 +104,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
     } catch (error: any) {
       const errorMsg = error.message || "Gagal toggle pin"
       if (errorMsg.includes("Not authenticated") || errorMsg.includes("Token expired")) {
-        toast.error("Sesi telah berakhir. Silakan login ulang.")
+        toast.error("Sesi Anda telah berakhir. Silakan masuk kembali untuk melanjutkan.")
       } else {
         toast.error(errorMsg)
       }
@@ -115,7 +115,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm("Apakah Anda yakin ingin menghapus meeting ini?")) return
+    if (!confirm("Hapus meeting ini? Data yang telah dihapus tidak dapat dipulihkan.")) return
     
     setIsDeleting(true)
     try {
@@ -132,17 +132,17 @@ const MeetingCard = ({ data }: { data: Props }) => {
   const getStatusBadge = () => {
     if (!data.status) return null
 
-    const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-      pending: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending' },
-      recording: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Recording' },
-      processing: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Processing' },
-      completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
-      failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
+    const statusConfig: Record<string, { className: string; label: string }> = {
+      pending: { className: 'border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]', label: 'Menunggu' },
+      recording: { className: 'border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_11%,var(--card))] text-[var(--primary)]', label: 'Sedang merekam' },
+      processing: { className: 'border-[color-mix(in_oklch,var(--chart-4)_28%,var(--border))] bg-[color-mix(in_oklch,var(--chart-4)_12%,var(--card))] text-[var(--foreground)]', label: 'Sedang diproses' },
+      completed: { className: 'border-[color-mix(in_oklch,var(--chart-2)_28%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_12%,var(--card))] text-[var(--foreground)]', label: 'Siap dibuka' },
+      failed: { className: 'border-[color-mix(in_oklch,var(--destructive)_25%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_10%,var(--card))] text-[var(--destructive)]', label: 'Gagal diproses' },
     }
 
     const config = statusConfig[data.status] || statusConfig.pending
     return (
-      <Badge className={`${config.bg} ${config.text} hover:${config.bg}`}>
+      <Badge variant="outline" className={config.className}>
         {data.status === 'processing' || data.status === 'recording' ? (
           <IconLoader2 className="h-3 w-3 mr-1 animate-spin" />
         ) : null}
@@ -155,13 +155,25 @@ const MeetingCard = ({ data }: { data: Props }) => {
     <>
       <Card
         key={data.id}
-        className="bg-[var(--card)] shadow-border/50 cursor-pointer hover:shadow-md transition-shadow relative group"
+        className="group relative cursor-pointer overflow-hidden border-[var(--border)] bg-[var(--card)] shadow-none transition-[border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[color-mix(in_oklch,var(--primary)_32%,var(--border))] motion-reduce:transition-none"
         onClick={handleClick}
       >
-        <CardContent>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full opacity-70 transition-[transform,opacity] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.12] group-hover:opacity-100 motion-reduce:transition-none motion-reduce:transform-none"
+          style={{
+            background:
+              data.type === 'upload'
+                ? 'radial-gradient(circle, color-mix(in oklch, var(--chart-4) 16%, transparent), transparent 68%)'
+                : data.platform === 'Microphone'
+                  ? 'radial-gradient(circle, color-mix(in oklch, var(--chart-2) 16%, transparent), transparent 68%)'
+                  : 'radial-gradient(circle, color-mix(in oklch, var(--primary) 15%, transparent), transparent 68%)',
+          }}
+        />
+        <CardContent className="relative z-10 p-5">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
+              <Badge variant="outline" className="border-[color-mix(in_oklch,var(--primary)_22%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_8%,var(--card))] text-[var(--primary)]">
                 {data.tag}
               </Badge>
               {getStatusBadge()}
@@ -252,17 +264,19 @@ const MeetingCard = ({ data }: { data: Props }) => {
           </div>
 
           <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-            {(() => {
-              const isUpload = data.type === 'upload' || data.platform === 'Upload'
-              if (isUpload) return <IconUpload className="h-4 w-4" />
-              if (data.platform === 'Google Meet') return <IconBrandGoogle className="h-4 w-4" />
-              if (data.platform === 'Microphone') return <IconMicrophone className="h-4 w-4" />
-              return <IconVideo className="h-4 w-4" />
-            })()}
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[color-mix(in_oklch,var(--muted)_58%,transparent)] text-[var(--foreground)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.1] motion-reduce:transition-none motion-reduce:transform-none">
+              {(() => {
+                const isUpload = data.type === 'upload' || data.platform === 'Upload'
+                if (isUpload) return <IconUpload className="h-3.5 w-3.5" />
+                if (data.platform === 'Google Meet') return <IconBrandGoogle className="h-3.5 w-3.5" />
+                if (data.platform === 'Microphone') return <IconMicrophone className="h-3.5 w-3.5" />
+                return <IconVideo className="h-3.5 w-3.5" />
+              })()}
+            </span>
             <span>{data.platform || 'Google Meet'} • {data.date}</span>
           </div>
 
-          <h3 className="mb-2 font-semibold text-foreground">{data.title}</h3>
+          <h3 className="mb-2 text-[1.05rem] font-semibold tracking-[-0.018em] text-foreground">{data.title}</h3>
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{data.description}</p>
         </CardContent>
       </Card>
@@ -298,7 +312,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
 
               {data.userRole && (
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Role Anda</div>
+                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Akses Anda</div>
                   <div className="text-sm font-semibold text-primary">{getRoleLabel(data.userRole)}</div>
                 </div>
               )}

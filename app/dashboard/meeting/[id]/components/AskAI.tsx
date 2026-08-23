@@ -112,7 +112,7 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
   }, [input, isLoading, meetingId, api, user])
 
   const handleClearHistory = async () => {
-    if (!confirm("Apakah Anda yakin ingin menghapus semua riwayat chat?")) return
+    if (!confirm("Hapus seluruh riwayat chat meeting ini? Setelah dihapus, riwayat tidak dapat dipulihkan.")) return
     
     try {
       await api.clearChatHistory(meetingId)
@@ -286,7 +286,7 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
         ) : (
           <div className="text-center py-2 px-4 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              Anda hanya dapat melihat riwayat chat. Untuk bertanya, minta akses Editor.
+              Anda hanya dapat melihat chat. Untuk mengajukan pertanyaan, silakan minta akses Editor.
             </p>
           </div>
         )}

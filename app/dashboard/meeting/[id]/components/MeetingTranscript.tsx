@@ -267,7 +267,7 @@ export function MeetingTranscript({
                     }}
                   >
                     <div 
-                      className="h-full bg-primary rounded-full transition-all relative group-hover/bar:bg-primary/80"
+                      className="relative h-full rounded-full bg-primary transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/bar:bg-primary/80 motion-reduce:transition-none"
                       style={{ width: `${totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0}%` }}
                     >
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg" />
@@ -356,10 +356,10 @@ export function MeetingTranscript({
                 return (
                   <div 
                     key={index} 
-                    className={`rounded-xl p-3 cursor-pointer transition-all group bg-card ${
+                    className={`group cursor-pointer rounded-xl bg-card p-3 transition-[border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
                       isActive 
                         ? 'border-2 border-primary shadow-md bg-primary/10' 
-                        : 'border-2 border-border hover:border-primary/30 hover:shadow-sm bg-background'
+                        : 'border-2 border-border bg-background hover:border-primary/30'
                     }`}
                     onClick={() => jumpToTimestamp(segment.start)}
                   >
@@ -489,7 +489,7 @@ export function MeetingTranscript({
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent px-6 py-5">
                 {/* Progress Bar */}
                 <div 
-                  className="w-full bg-white/20 rounded-full cursor-pointer group h-1.5 mb-4 hover:h-2.5 transition-all"
+                  className="group mb-4 h-1.5 w-full cursor-pointer rounded-full bg-white/20 transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:h-2.5 motion-reduce:transition-none"
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect()
                     const percent = (e.clientX - rect.left) / rect.width
@@ -499,7 +499,7 @@ export function MeetingTranscript({
                   }}
                 >
                   <div 
-                    className="h-full bg-primary rounded-full transition-all relative"
+                    className="relative h-full rounded-full bg-primary transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
                     style={{ width: `${totalDuration > 0 ? (popupCurrentTime / totalDuration) * 100 : 0}%` }}
                   >
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg border-2 border-primary" />
@@ -581,10 +581,10 @@ export function MeetingTranscript({
                   return (
                     <div 
                       key={index}
-                      className={`p-4 rounded-xl cursor-pointer transition-all bg-card ${
+                      className={`cursor-pointer rounded-xl bg-card p-4 transition-[border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
                         isActive 
-                          ? 'border-2 border-primary shadow-lg ring-2 ring-primary/20' 
-                          : 'border border-border hover:border-primary/30 hover:shadow-md'
+                          ? 'border-2 border-primary ring-2 ring-primary/20'
+                          : 'border border-border hover:border-primary/30'
                       }`}
                       onClick={() => {
                         if (videoRef.current) {

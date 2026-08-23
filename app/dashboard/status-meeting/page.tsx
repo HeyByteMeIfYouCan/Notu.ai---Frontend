@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2, IconChevronDown, IconChevronUp, IconSearch, IconFilter, IconDownload, IconSparkles, IconChevronLeft, IconChevronRight, IconTrash, IconRocket, IconMicrophone, IconUsers, IconRobot, IconDeviceFloppy, IconPlugConnected, IconMapPin } from "@tabler/icons-react"
+import { IconClock, IconCheck, IconX, IconAlertCircle, IconRefresh, IconEye, IconLoader2, IconChevronDown, IconChevronUp, IconSearch, IconFilter, IconDownload, IconChevronLeft, IconChevronRight, IconTrash, IconRocket, IconMicrophone, IconUsers, IconRobot, IconDeviceFloppy, IconPlugConnected, IconMapPin } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { getSocket } from "@/lib/socket"
@@ -84,7 +84,7 @@ function getStageIndex(stage?: string, platform?: string): number {
   return stages.findIndex(s => s.key === stage)
 }
 
-function getStageBadge(stage?: string, platform?: string): { label: string; icon: any } | null {
+function getStageBadge(stage?: string, platform?: string): { label: string; icon: React.ComponentType<{ className?: string }> } | null {
   if (!stage) return null
   const stages = getStagesForMeeting(platform)
   const found = stages.find(s => s.key === stage)
@@ -494,7 +494,7 @@ function StatusMeetingContent() {
   }
 
   const handleDelete = async (meetingId: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus meeting ini?")) return
+    if (!confirm("Hapus meeting ini? Data yang telah dihapus tidak dapat dipulihkan.")) return
     
     setDeletingId(meetingId)
     try {
@@ -511,21 +511,21 @@ function StatusMeetingContent() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/15"><IconCheck className="h-5 w-5 text-green-600 dark:text-green-400" /></div>
+        return <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_11%,var(--card))]"><IconCheck className="h-5 w-5 text-[var(--foreground)]" /></div>
       case "bot_joining":
-        return <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/15 animate-pulse"><IconLoader2 className="h-5 w-5 text-purple-600 dark:text-purple-400 animate-spin" /></div>
+        return <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color-mix(in_oklch,var(--chart-3)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-3)_11%,var(--card))]"><IconLoader2 className="h-5 w-5 animate-spin text-[var(--primary)]" /></div>
       case "recording":
       case "processing":
       case "uploading":
-        return <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/15 animate-pulse"><IconLoader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" /></div>
+        return <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_10%,var(--card))]"><IconLoader2 className="h-5 w-5 animate-spin text-[var(--primary)]" /></div>
       case "pending":
       case "queued":
-        return <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500/15"><IconClock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" /></div>
+        return <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--muted)]"><IconClock className="h-5 w-5 text-[var(--muted-foreground)]" /></div>
       case "cancelled":
         return <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted"><IconX className="h-5 w-5 text-muted-foreground" /></div>
       case "failed":
       case "error":
-        return <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/15"><IconAlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" /></div>
+        return <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color-mix(in_oklch,var(--destructive)_24%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_9%,var(--card))]"><IconAlertCircle className="h-5 w-5 text-[var(--destructive)]" /></div>
       default:
         return <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted"><IconClock className="h-5 w-5 text-muted-foreground" /></div>
     }
@@ -534,23 +534,23 @@ function StatusMeetingContent() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-0 hover:bg-green-500/25">Selesai</Badge>
+        return <Badge variant="outline" className="border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))] text-[var(--foreground)]">Selesai</Badge>
       case "bot_joining":
-        return <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-0 animate-pulse flex items-center gap-1.5 hover:bg-purple-500/25"><IconLoader2 className="h-3 w-3 animate-spin" />Bot Bergabung</Badge>
+        return <Badge variant="outline" className="flex items-center gap-1.5 border-[color-mix(in_oklch,var(--chart-3)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-3)_10%,var(--card))] text-[var(--foreground)]"><IconLoader2 className="h-3 w-3 animate-spin" />Bot Bergabung</Badge>
       case "recording":
-        return <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-0 animate-pulse hover:bg-blue-500/25">Merekam</Badge>
+        return <Badge variant="outline" className="border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_10%,var(--card))] text-[var(--primary)]">Merekam</Badge>
       case "processing":
-        return <Badge className="bg-orange-500/15 text-orange-700 dark:text-orange-400 border-0 animate-pulse hover:bg-orange-500/25">Memproses</Badge>
+        return <Badge variant="outline" className="border-[color-mix(in_oklch,var(--chart-4)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-4)_10%,var(--card))] text-[var(--foreground)]">Memproses</Badge>
       case "uploading":
-        return <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-0 hover:bg-blue-500/25">Mengunggah</Badge>
+        return <Badge variant="outline" className="border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_10%,var(--card))] text-[var(--primary)]">Sedang upload</Badge>
       case "pending":
       case "queued":
-        return <Badge className="bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-0 flex items-center gap-1.5 hover:bg-yellow-500/25"><IconLoader2 className="h-3 w-3 animate-spin" />Memproses...</Badge>
+        return <Badge variant="outline" className="flex items-center gap-1.5 border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"><IconLoader2 className="h-3 w-3 animate-spin" />Memproses...</Badge>
       case "cancelled":
         return <Badge className="bg-muted text-muted-foreground border-0">Dibatalkan</Badge>
       case "failed":
       case "error":
-        return <Badge className="bg-red-500/15 text-red-700 dark:text-red-400 border-0 hover:bg-red-500/25">Gagal</Badge>
+        return <Badge variant="outline" className="border-[color-mix(in_oklch,var(--destructive)_25%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_9%,var(--card))] text-[var(--destructive)]">Gagal</Badge>
       default:
         return <Badge variant="secondary">{status || 'Menunggu'}</Badge>
     }
@@ -594,21 +594,21 @@ function StatusMeetingContent() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               {/* Header */}
               <div className="px-4 lg:px-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="relative flex flex-col gap-5 overflow-hidden rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] px-6 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-2/5" style={{ background: "radial-gradient(ellipse at 75% 50%, color-mix(in oklch, var(--chart-3) 18%, transparent), transparent 65%)" }} />
                   <div className="space-y-1">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                      Status Meeting
-                    </h1>
-                    <p className="text-sm text-muted-foreground">Monitor dan lacak progres meeting secara real-time</p>
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Pantau proses</p>
+                    <h1 className="text-3xl font-semibold tracking-[-0.035em] text-foreground">Bagaimana progresnya?</h1>
+                    <p className="text-sm leading-6 text-muted-foreground">Lihat meeting yang sedang berlangsung, diproses, atau sudah siap dibuka.</p>
                   </div>
                   <Button 
                     variant="outline" 
                     onClick={handleRefresh} 
                     disabled={isRefreshing}
-                    className="border-border hover:bg-accent bg-background-2 hover:text-accent-foreground transition-all"
+                    className="relative z-10 border-border bg-[var(--card)] transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent hover:text-accent-foreground motion-reduce:transition-none"
                   >
                     <IconRefresh className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Refresh
+                    Cek update
                   </Button>
                 </div>
               </div>
@@ -618,7 +618,7 @@ function StatusMeetingContent() {
                   <div className="relative flex-1 min-w-[200px] max-w-[400px]">
                     <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="Search meetings..."
+                      placeholder="Cari meeting Anda..."
                       className="pl-10"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -627,7 +627,7 @@ function StatusMeetingContent() {
 
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-[180px] bg-background-2">
-                      <SelectValue placeholder="All Status" />
+                      <SelectValue placeholder="Semua status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Semua Status</SelectItem>
@@ -640,7 +640,7 @@ function StatusMeetingContent() {
 
                   <Select value={platformFilter} onValueChange={setPlatformFilter}>
                     <SelectTrigger className="w-[180px] bg-background-2">
-                      <SelectValue placeholder="All Platforms" />
+                      <SelectValue placeholder="Semua sumber" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Semua Platform</SelectItem>
@@ -677,7 +677,7 @@ function StatusMeetingContent() {
                         setPlatformFilter("all")
                       }}
                     >
-                      Clear filters
+                      Reset filter
                     </Button>
                   )}
                 </div>
@@ -688,52 +688,56 @@ function StatusMeetingContent() {
               {/* Status Overview */}
               <div className="px-4 lg:px-6">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <Card className="border-border hover:shadow-lg transition-all duration-300">
+                  <Card className="relative overflow-hidden border-border shadow-none">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--chart-2) 15%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Selesai</CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/15">
-                        <IconCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))]">
+                        <IconCheck className="h-4 w-4 text-[var(--foreground)]" />
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">{statusCounts.completed}</div>
+                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.completed}</div>
                       <p className="text-xs text-muted-foreground mt-1">Meeting selesai</p>
                     </CardContent>
                   </Card>
-                  <Card className="border-border hover:shadow-lg transition-all duration-300">
+                  <Card className="relative overflow-hidden border-border shadow-none">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Aktif</CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/15 animate-pulse">
-                        <IconLoader2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_10%,var(--card))]">
+                        <IconLoader2 className="h-4 w-4 text-[var(--primary)]" />
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{statusCounts.active}</div>
+                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.active}</div>
                       <p className="text-xs text-muted-foreground mt-1">Sedang diproses</p>
                     </CardContent>
                   </Card>
-                  <Card className="border-border hover:shadow-lg transition-all duration-300">
+                  <Card className="relative overflow-hidden border-border shadow-none">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--chart-4) 14%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Menunggu</CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500/15">
-                        <IconClock className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--muted)]">
+                        <IconClock className="h-4 w-4 text-[var(--muted-foreground)]" />
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{statusCounts.pending}</div>
+                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.pending}</div>
                       <p className="text-xs text-muted-foreground mt-1">Dalam antrian</p>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-border hover:shadow-lg transition-all duration-300">
+                  <Card className="relative overflow-hidden border-border shadow-none">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--destructive) 12%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Gagal</CardTitle>
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/15">
-                        <IconAlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--destructive)_24%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_9%,var(--card))]">
+                        <IconAlertCircle className="h-4 w-4 text-[var(--destructive)]" />
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-red-600 dark:text-red-400">{statusCounts.failed}</div>
+                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.failed}</div>
                       <p className="text-xs text-muted-foreground mt-1">Error teknis</p>
                     </CardContent>
                   </Card>
@@ -744,8 +748,8 @@ function StatusMeetingContent() {
               <div className="px-4 lg:px-6">
                 <h2 className="text-lg font-semibold mb-4">
                   {statusFilter !== "all" || platformFilter !== "all" || searchQuery 
-                    ? "Filtered Meetings" 
-                    : "All Meetings"}
+                    ? "Hasil sesuai filter Anda"
+                    : "Semua proses meeting"}
                 </h2>
                 
                 {isLoading ? (
@@ -756,14 +760,14 @@ function StatusMeetingContent() {
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     {meetings.length === 0 ? (
                       <>
-                        <p className="text-lg font-medium text-foreground">Belum ada meeting</p>
-                        <p className="text-sm text-muted-foreground mt-1">Mulai dengan membuat meeting baru</p>
+                        <p className="text-lg font-medium text-foreground">Belum ada proses yang jalan</p>
+                        <p className="text-sm text-muted-foreground mt-1">Mulai meeting baru, lalu progresnya akan muncul di sini.</p>
                       </>
                     ) : (
                       <>
                         <IconFilter className="h-12 w-12 text-muted-foreground mb-4" />
-                        <p className="text-lg font-medium">No meetings found</p>
-                        <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
+                        <p className="text-lg font-medium">Belum ketemu yang cocok</p>
+                        <p className="text-sm text-muted-foreground mt-1">Coba ubah kata kunci atau reset filternya.</p>
                         <Button 
                           variant="outline" 
                           className="mt-4"
@@ -773,7 +777,7 @@ function StatusMeetingContent() {
                             setPlatformFilter("all")
                           }}
                         >
-                          Clear all filters
+                          Reset semua filter
                         </Button>
                       </>
                     )}
@@ -784,8 +788,8 @@ function StatusMeetingContent() {
                       {filteredMeetings.map((meeting) => (
                         <Card 
                           key={meeting._id} 
-                          className={`group border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 ${
-                          meetingIdFromUrl === meeting._id ? 'ring-2 ring-primary shadow-lg' : ''
+                          className={`group overflow-hidden border-border shadow-none transition-[border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[color-mix(in_oklch,var(--primary)_32%,var(--border))] motion-reduce:transition-none ${
+                          meetingIdFromUrl === meeting._id ? 'ring-2 ring-primary' : ''
                         }`}
                       >
                         <CardContent className="p-6">
@@ -809,7 +813,7 @@ function StatusMeetingContent() {
                                   </span>
                                   {meeting.duration && (
                                     <span className="flex items-center gap-1.5">
-                                      <IconSparkles className="h-3.5 w-3.5" />
+                                      <IconClock className="h-3.5 w-3.5" />
                                       {formatDuration(meeting.duration)}
                                     </span>
                                   )}
@@ -817,7 +821,7 @@ function StatusMeetingContent() {
                                     {meeting.platform || 'Upload'}
                                   </span>
                                   {meeting.actionItems && meeting.actionItems.length > 0 && (
-                                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+                                      <span className="rounded-full border border-[color-mix(in_oklch,var(--chart-3)_24%,var(--border))] bg-[color-mix(in_oklch,var(--chart-3)_9%,var(--card))] px-2 py-0.5 text-xs font-medium text-[var(--foreground)]">
                                       {meeting.actionItems.length} action items
                                     </span>
                                   )}
@@ -840,7 +844,7 @@ function StatusMeetingContent() {
 
                               {/* Processing Progress - Visual Stage Stepper */}
                               {(meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued' || meeting.status === 'recording') && (
-                                <div className="space-y-3 p-4 rounded-lg bg-muted/50 border border-border">
+                                <div className="space-y-3 rounded-xl border border-border bg-[color-mix(in_oklch,var(--muted)_46%,var(--card))] p-4">
                                   {/* Stage Stepper - Visual Steps - Dynamic based on meeting type */}
                                   <div className="flex items-center justify-between gap-1">
                                     {(() => {
@@ -857,18 +861,14 @@ function StatusMeetingContent() {
                                             <div className="flex flex-col items-center relative group/stage">
                                               {/* Icon with enhanced styling */}
                                               <div 
-                                                className={`relative w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 cursor-help ${
+                                                className={`relative flex h-9 w-9 cursor-help items-center justify-center rounded-xl border text-sm font-medium transition-[transform,background-color,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/stage:scale-[1.1] motion-reduce:transition-none motion-reduce:transform-none ${
                                                   isCompleted 
-                                                    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md hover:shadow-lg hover:scale-110' 
+                                                    ? 'border-[color-mix(in_oklch,var(--chart-2)_28%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_15%,var(--card))] text-[var(--foreground)]'
                                                     : isCurrent 
-                                                      ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg animate-pulse ring-2 ring-primary/30 hover:scale-110' 
-                                                      : 'bg-gradient-to-br from-muted to-muted/80 text-muted-foreground hover:from-muted/80 hover:to-muted hover:scale-105'
+                                                      ? 'border-[var(--primary)] bg-[color-mix(in_oklch,var(--primary)_14%,var(--card))] text-[var(--primary)] ring-2 ring-[color-mix(in_oklch,var(--primary)_14%,transparent)]'
+                                                      : 'border-[var(--border)] bg-[var(--card)] text-muted-foreground'
                                                 }`}
                                               >
-                                                {/* Glow effect for current stage */}
-                                                {isCurrent && (
-                                                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-md animate-pulse" />
-                                                )}
                                                 <span className="relative z-10 flex items-center justify-center">
                                                   {isCompleted ? <IconCheck className="w-5 h-5" /> : <stage.icon className="w-5 h-5" />}
                                                 </span>
@@ -896,8 +896,8 @@ function StatusMeetingContent() {
                                             {/* Connector Line */}
                                             {idx < stages.length - 2 && (
                                               <div 
-                                                className={`flex-1 h-0.5 mx-1 transition-all duration-300 ${
-                                                  isCompleted ? 'bg-green-500' : 'bg-muted'
+                                                className={`mx-1 h-px flex-1 transition-[background-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                                                  isCompleted ? 'bg-[color-mix(in_oklch,var(--chart-2)_70%,var(--border))]' : 'bg-muted'
                                                 }`}
                                               />
                                             )}
@@ -917,7 +917,6 @@ function StatusMeetingContent() {
                                             <span className="text-muted-foreground flex items-center gap-1.5">
                                               {(() => {
                                                 const badge = getStageBadge(meeting.processingStage, meeting.platform)
-                                                // @ts-ignore
                                                 const Icon = badge?.icon
                                                 return Icon ? <Icon className="w-4 h-4" /> : null
                                               })()}
@@ -933,7 +932,7 @@ function StatusMeetingContent() {
                                           {/* Global progress bar */}
                                           <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                                             <div 
-                                              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+                                              className="h-full rounded-full bg-primary transition-[width] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
                                               style={{ width: `${meeting.processingProgress || 0}%` }}
                                             />
                                           </div>
@@ -956,10 +955,10 @@ function StatusMeetingContent() {
 
                                   {/* Live Transcript Display - Only for recording/online meetings */}
                                   {meeting.status === 'recording' && meeting.processingLogs && meeting.processingLogs.length > 0 && (
-                                    <div className="mt-3 p-3 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-lg border border-green-200/50 dark:border-green-800/50">
+                                    <div className="mt-3 rounded-lg border border-[color-mix(in_oklch,var(--chart-2)_24%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_7%,var(--card))] p-3">
                                       <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                                        <p className="text-xs font-semibold text-green-700 dark:text-green-400">📝 Live Transcript</p>
+                                        <div className="h-2 w-2 rounded-sm bg-[var(--destructive)]" />
+                                        <p className="text-xs font-semibold text-[var(--foreground)]">Live transcript</p>
                                       </div>
                                       <div className="max-h-24 overflow-y-auto space-y-1">
                                         {(() => {
@@ -992,10 +991,10 @@ function StatusMeetingContent() {
                                 <Button 
                                   size="sm" 
                                   onClick={() => handleViewSummary(meeting._id)}
-                                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
+                                  className="bg-primary text-primary-foreground shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
                                 >
                                   <IconEye className="h-4 w-4 mr-2" />
-                                  Lihat Detail
+                                  Buka hasil meeting
                                 </Button>
                               )}
                               {meeting.status === "failed" && (
@@ -1006,7 +1005,7 @@ function StatusMeetingContent() {
                                   className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
                                 >
                                   <IconRefresh className="h-4 w-4 mr-2" />
-                                  Coba Lagi
+                                  Coba proses lagi
                                 </Button>
                               )}
                               {/* Delete - Owner/Admin only */}

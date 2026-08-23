@@ -101,13 +101,13 @@ export function RealtimeBanner({ meetingId, currentUserName, onRefresh }: Realti
 
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-2">
-      <div className="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-lg px-4 py-3 shadow-lg">
+      <div className="flex items-center gap-3 rounded-lg border border-[color-mix(in_oklch,var(--chart-3)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-3)_10%,var(--card))] px-4 py-3 text-[var(--foreground)]">
         <div className="flex-1">
-          <p className="text-sm text-purple-800">
+          <p className="text-sm text-[var(--foreground)]">
             <span className="font-semibold">{latestNotification.userName}</span>{" "}
             {latestNotification.message}
             {notifications.length > 1 && (
-              <span className="text-purple-600 ml-1">
+              <span className="ml-1 text-[var(--muted-foreground)]">
                 (+{notifications.length - 1} perubahan lainnya)
               </span>
             )}
@@ -116,7 +116,7 @@ export function RealtimeBanner({ meetingId, currentUserName, onRefresh }: Realti
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-purple-700 hover:text-purple-900 hover:bg-purple-100"
+          className="h-8 px-2 text-[var(--primary)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
           onClick={handleRefresh}
         >
           <IconRefresh className="h-4 w-4 mr-1" />
@@ -125,7 +125,7 @@ export function RealtimeBanner({ meetingId, currentUserName, onRefresh }: Realti
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-purple-500 hover:text-purple-700 hover:bg-purple-100"
+          className="h-8 w-8 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
           onClick={handleDismiss}
         >
           <IconX className="h-4 w-4" />
