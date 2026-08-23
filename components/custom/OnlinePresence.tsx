@@ -46,7 +46,7 @@ export function OnlinePresence({
   currentUserId,
   collaborators = [],
   owner,
-  maxAvatars = 5
+  maxAvatars = 4
 }: OnlinePresenceProps) {
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([])
   const { user } = useAuth()
@@ -69,10 +69,9 @@ export function OnlinePresence({
       socket.emit('join_board', resourceId)
     }
 
-    // Listen for presence updates - backend sends array of user objects with id field
+    // Listen for presence updates
     const handlePresence = (data: { roomId: string; users: OnlineUserFromSocket[] | string[] }) => {
       if (data.roomId === roomId) {
-        // Handle both formats: array of objects or array of strings
         const userIds = (data.users || []).map(u => 
           typeof u === 'string' ? u : (u.id || '')
         ).filter(Boolean)
@@ -102,7 +101,7 @@ export function OnlinePresence({
     }
   }, [resourceId, resourceType, user])
 
-  // Build the list of all users (owner + collaborators) with online status
+  // Build the list of all users
   const allUsers: Array<OnlineUser & { isOnline: boolean; isOwner: boolean }> = []
 
   if (owner) {
@@ -128,7 +127,6 @@ export function OnlinePresence({
     }
   })
 
-  // Sort: online first, then by name
   allUsers.sort((a, b) => {
     if (a.isOnline && !b.isOnline) return -1
     if (!a.isOnline && b.isOnline) return 1
@@ -146,63 +144,55 @@ export function OnlinePresence({
   return (
     <TooltipProvider>
       <div className="flex items-center gap-2">
-        <div className="flex -space-x-2">
-          {displayUsers.map((user) => (
-            <Tooltip key={user.id}>
+        <div className="flex -space-x-1.5 items-center">
+          {displayUsers.map((u) => (
+            <Tooltip key={u.id}>
               <TooltipTrigger asChild>
-                <div className="relative">
-                  {user.image ? (
+                <div className="relative group cursor-pointer transition-transform hover:scale-110 hover:z-20">
+                  {u.image ? (
                     <img
-                      src={user.image}
-                      alt={user.name || 'User'}
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        user.isOnline ? 'border-green-400' : 'border-gray-200'
-                      } ${user.id === currentUserId ? 'ring-2 ring-purple-400' : ''}`}
+                      src={u.image}
+                      alt={u.name || 'User'}
+                      className={`w-7 h-7 rounded-full border-2 bg-background object-cover ${
+                        u.isOnline 
+                          ? 'border-emerald-500 ring-1 ring-emerald-500/30' 
+                          : 'border-border opacity-70'
+                      }`}
                     />
                   ) : (
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
-                        user.isOnline
-                          ? 'border-green-400 bg-green-50 text-green-700'
-                          : 'border-gray-200 bg-gray-100 text-gray-600'
-                      } ${user.id === currentUserId ? 'ring-2 ring-purple-400' : ''}`}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 bg-background ${
+                        u.isOnline
+                          ? 'border-emerald-500 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10'
+                          : 'border-border text-muted-foreground bg-muted'
+                      }`}
                     >
-                      {(user.name || 'U')[0].toUpperCase()}
+                      {(u.name || 'U')[0].toUpperCase()}
                     </div>
                   )}
-                  {/* Online indicator dot */}
-                  {user.isOnline && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                  {u.isOnline && (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full shadow-2xs" />
                   )}
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                <p className="font-medium">{user.name || user.email || 'User'}</p>
-                <p className="text-xs text-muted-foreground">
-                  {user.isOwner ? 'Owner' : 'Collaborator'}
-                  {user.isOnline ? ' • Online' : ' • Offline'}
+              <TooltipContent className="rounded-xl border bg-popover p-2 text-xs shadow-xl space-y-0.5">
+                <p className="font-semibold text-foreground">{u.name || u.email || 'User'}</p>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <span>{u.isOwner ? '👑 Owner' : 'Kolaborator'}</span>
+                  <span>•</span>
+                  <span className={u.isOnline ? 'text-emerald-500 font-medium' : ''}>
+                    {u.isOnline ? 'Online' : 'Offline'}
+                  </span>
                 </p>
               </TooltipContent>
             </Tooltip>
           ))}
           {extraCount > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
-                  +{extraCount}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{extraCount} more users</p>
-              </TooltipContent>
-            </Tooltip>
+            <div className="w-7 h-7 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-medium text-muted-foreground">
+              +{extraCount}
+            </div>
           )}
         </div>
-        {onlineCount > 0 && (
-          <span className="text-xs text-green-600 font-medium">
-            {onlineCount} online
-          </span>
-        )}
       </div>
     </TooltipProvider>
   )
