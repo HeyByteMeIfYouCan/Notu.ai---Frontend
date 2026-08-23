@@ -1,0 +1,129 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-accent-light: color-mix(in oklch, var(--primary) 10%, transparent);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+
+.trustSection {
+  position: relative;
+  overflow: hidden;
+  padding: 6rem 1rem;
+  background-color: transparent;
+  
+  @media (min-width: 768px) {
+    padding: 8rem 2rem;
+  }
+
+  // Soft background glow
+  &::before {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, color-mix(in oklch, var(--primary) 5%, transparent) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &__container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  &__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: $color-text-main;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    margin: 0;
+    
+    @media (min-width: 1024px) {
+      font-size: 3.5rem;
+    }
+
+    span {
+      color: $color-accent;
+      display: inline-block;
+    }
+  }
+
+  &__mapWrapper {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 5rem;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    
+    img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.06));
+      animation: floatMap 8s ease-in-out infinite;
+    }
+  }
+
+  &__stats {
+    width: 100%;
+    display: grid;
+    gap: 2rem;
+    text-align: center;
+    
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+    }
+  }
+
+  &__statItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__statNumber {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    // Elegant solid color (matches base accent) or dark
+    color: $color-text-main;
+    margin: 0;
+    
+    @media (min-width: 1024px) {
+      font-size: 4rem;
+    }
+  }
+
+  &__statLabel {
+    font-size: 1rem;
+    font-weight: 500;
+    color: $color-text-muted;
+    margin: 0;
+    max-width: 250px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+}
+
+@keyframes floatMap {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}

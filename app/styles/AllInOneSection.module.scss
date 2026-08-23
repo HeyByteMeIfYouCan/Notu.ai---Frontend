@@ -59,16 +59,20 @@ $color-bg-subtle: color-mix(in oklch, var(--card) 95%, var(--muted) 5%);
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: float 6s ease-in-out infinite; // Floating image
+    animation: float 6s ease-in-out infinite;
+    aspect-ratio: 1 / 1; // FIX: Prevents layout shift bouncing when images change
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
     
     @media (min-width: 1024px) {
-      order: 1; // IMAGE ON THE LEFT
+      order: 1;
+      aspect-ratio: 4 / 3; // Wider on desktop to match typical SaaS illustrations
     }
 
     img {
       width: 100%;
-      max-width: 650px;
-      height: auto;
+      height: 100%;
       object-fit: contain;
       filter: drop-shadow(0 30px 60px rgba(0,0,0,0.1));
     }

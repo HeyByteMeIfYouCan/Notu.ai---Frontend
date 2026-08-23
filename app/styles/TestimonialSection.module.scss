@@ -1,0 +1,167 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-accent-light: color-mix(in oklch, var(--primary) 10%, transparent);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+$color-card-bg: var(--card);
+$color-card-border: var(--border);
+$color-star: #FBBF24; // Amber 400 for stars
+
+.testimonialSection {
+  position: relative;
+  overflow: hidden;
+  padding: 6rem 1rem;
+  background-color: transparent;
+  
+  @media (min-width: 768px) {
+    padding: 8rem 2rem;
+  }
+
+  // Soft background blob
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, color-mix(in oklch, var(--primary) 3%, transparent) 0%, transparent 70%);
+    transform: translate(30%, -30%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &__container {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: 4rem;
+    
+    @media (min-width: 1024px) {
+      margin-bottom: 5rem;
+    }
+  }
+
+  &__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: $color-text-main;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    margin: 0;
+    
+    @media (min-width: 1024px) {
+      font-size: 3.5rem;
+    }
+
+    span {
+      color: $color-accent;
+      display: inline-block;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    gap: 1.5rem;
+    
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  &__card {
+    background: color-mix(in oklch, $color-card-bg 80%, transparent);
+    backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in oklch, $color-card-border 40%, transparent);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+
+    &:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.08);
+      border-color: color-mix(in oklch, var(--primary) 30%, transparent);
+    }
+  }
+
+  &__rating {
+    display: flex;
+    gap: 0.25rem;
+    color: $color-star;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+  }
+
+  &__quote {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: $color-text-main;
+    margin: 0;
+    flex-grow: 1;
+    font-style: italic;
+    
+    &::before, &::after {
+      content: '"';
+      color: $color-accent;
+      opacity: 0.5;
+    }
+  }
+
+  &__author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in oklch, $color-card-border 30%, transparent);
+  }
+
+  &__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: $color-accent-light;
+    color: $color-accent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  &__authorInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  &__authorName {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $color-text-main;
+    margin: 0;
+  }
+
+  &__authorRole {
+    font-size: 0.875rem;
+    color: $color-text-muted;
+    margin: 0;
+  }
+}

@@ -5,9 +5,12 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart } from "lucide-react";
+import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart, Star, ChevronDown } from "lucide-react";
 import styles from "./styles/WhySection.module.scss";
 import allInOneStyles from "./styles/AllInOneSection.module.scss";
+import trustStyles from "./styles/TrustSection.module.scss";
+import testimonialStyles from "./styles/TestimonialSection.module.scss";
+import faqStyles from "./styles/FaqSection.module.scss";
 
 export default function Home() {
   return (
@@ -576,28 +579,54 @@ function AllInOneSection(){
 
 function TrustSection(){
   return (
-    <section className="mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-14">
-      <div className="leading-normal text-2xl lg:text-4xl font-bold text-center">
-            <h2><span className="text-accent">Trusted</span> by company around</h2>
-            <h2>the world?</h2>
-      </div>
-      <div className="mt-8 flex justify-center">
-        {/* <div className="h-64 rounded-lg bg-gradient-to-b from-white to-[#f4f3ff]" /> */}
-        <Image src={"/trusted-by-company-around-the-world.png"} width={900} height={900} alt="Trusted by company image" />
-        
-      </div>
-      <div className="mt-8 grid grid-cols-3 gap-6 text-center">
-        <div>
-          <p className="text-xl font-semibold">350+</p>
-          <p className="text-xs text-gray-600">Perusahaan menggunakan Notu</p>
-        </div>
-        <div>
-          <p className="text-xl font-semibold">750k</p>
-          <p className="text-xs text-gray-600">Users and participants assisted</p>
-        </div>
-        <div>
-          <p className="text-xl font-semibold">24+</p>
-          <p className="text-xs text-gray-600">Integrations and add‑ons</p>
+    <section className={trustStyles.trustSection}>
+      <div className={trustStyles.trustSection__container}>
+        <motion.div 
+          className={trustStyles.trustSection__header}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className={trustStyles.trustSection__title}>
+            <span>Trusted</span> by companies around the world
+          </h2>
+        </motion.div>
+
+        <motion.div 
+          className={trustStyles.trustSection__mapWrapper}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <Image 
+            src={"/trusted-by-company-around-the-world.png"} 
+            width={1000} 
+            height={600} 
+            alt="Map showing companies trusting Notu" 
+            priority
+          />
+        </motion.div>
+
+        <div className={trustStyles.trustSection__stats}>
+          {[
+            { num: "350+", label: "Perusahaan menggunakan Notu" },
+            { num: "750k+", label: "Users and participants assisted" },
+            { num: "24+", label: "Integrations and add‑ons" }
+          ].map((stat, i) => (
+            <motion.div 
+              key={i}
+              className={trustStyles.trustSection__statItem}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: 0.4 + (i * 0.1) }}
+            >
+              <h3 className={trustStyles.trustSection__statNumber}>{stat.num}</h3>
+              <p className={trustStyles.trustSection__statLabel}>{stat.label}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
@@ -605,47 +634,131 @@ function TrustSection(){
 }
 
 function TestimonialsSection(){
-  const quote = "Keren, jadi tidak perlu catat manual lagi!";
+  const testimonials = [
+    { quote: "Keren, jadi tidak perlu catat manual lagi! Sangat menghemat waktu tim kami setiap minggu.", name: "Siska", role: "HR Manager" },
+    { quote: "Transkripsi otomatisnya luar biasa akurat, bahkan untuk istilah teknis sekalipun.", name: "Budi", role: "Product Owner" },
+    { quote: "Notulen meeting langsung jadi dalam hitungan detik setelah rapat selesai. Magis!", name: "Andi", role: "CEO" },
+    { quote: "Sangat mudah diintegrasikan dengan Google Meet. Saya tidak pernah absen menggunakannya.", name: "Dina", role: "Scrum Master" },
+    { quote: "Fitur analytics meeting-nya membantu kami mengukur partisipasi anggota tim dengan lebih baik.", name: "Reza", role: "Engineering Lead" },
+    { quote: "UI-nya sangat bersih dan modern. Semua tim saya langsung paham cara menggunakannya.", name: "Maya", role: "Operations" }
+  ];
+
   return (
-    <section className="mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-14">
-      <div className="leading-normal text-xl lg:text-2xl font-medium text-center">
-            <h2><span className="text-accent">Dengar</span> apa kata mereka</h2>
-            <h2>yang telah memakai Notu</h2>
-      </div>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({length:6}).map((_,i)=> (
-          <figure key={i} className="rounded-[6px] border border-border bg-background p-5">
-            <blockquote className="text-sm text-foreground">“{quote}”</blockquote>
-            <figcaption className="mt-3 text-xs text-muted-foreground">Siska • HR</figcaption>
-          </figure>
-        ))}
+    <section className={testimonialStyles.testimonialSection}>
+      <div className={testimonialStyles.testimonialSection__container}>
+        <motion.div 
+          className={testimonialStyles.testimonialSection__header}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className={testimonialStyles.testimonialSection__title}>
+            <span>Dengar</span> apa kata mereka<br />
+            yang telah memakai Notu
+          </h2>
+        </motion.div>
+
+        <div className={testimonialStyles.testimonialSection__grid}>
+          {testimonials.map((t, i) => (
+            <motion.div 
+              key={i} 
+              className={testimonialStyles.testimonialSection__card}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <div className={testimonialStyles.testimonialSection__rating}>
+                <Star />
+                <Star />
+                <Star />
+                <Star />
+                <Star />
+              </div>
+              <p className={testimonialStyles.testimonialSection__quote}>
+                {t.quote}
+              </p>
+              <div className={testimonialStyles.testimonialSection__author}>
+                <div className={testimonialStyles.testimonialSection__avatar}>
+                  {t.name.charAt(0)}
+                </div>
+                <div className={testimonialStyles.testimonialSection__authorInfo}>
+                  <p className={testimonialStyles.testimonialSection__authorName}>{t.name}</p>
+                  <p className={testimonialStyles.testimonialSection__authorRole}>{t.role}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
 function FAQSection(){
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   const faqs = [
-    {q:"Apakah saya dapat menggunakan Notu secara gratis?", a:"Ya, tersedia paket gratis dengan fitur inti."},
-    {q:"Apakah saya bisa menggunakan Notu untuk meeting secara offline?", a:"Bisa, unggah rekaman audio lalu biarkan Notu memproses."},
-    {q:"Bahasa apa yang support oleh Notu?", a:"Bahasa Indonesia, Inggris, dan banyak lagi."},
+    {q:"Apakah saya dapat menggunakan Notu secara gratis?", a:"Ya, tersedia paket gratis dengan fitur inti yang bisa langsung Anda gunakan tanpa perlu kartu kredit."},
+    {q:"Apakah saya bisa menggunakan Notu untuk meeting secara offline?", a:"Bisa. Anda cukup merekam meeting offline menggunakan smartphone atau alat perekam suara, lalu mengunggah rekaman tersebut ke Notu untuk diproses."},
+    {q:"Bahasa apa saja yang didukung oleh Notu?", a:"Saat ini Notu difokuskan dan dioptimalkan secara khusus untuk mengenali dan mentranskripsi Bahasa Indonesia dengan tingkat akurasi yang sangat tinggi."},
+    {q:"Apakah data meeting saya aman dan rahasia?", a:"Tentu saja. Keamanan adalah prioritas utama kami. Transkrip dan rekaman Anda dijaga kerahasiaannya dan hanya dapat diakses oleh Anda atau anggota tim yang Anda izinkan."},
+    {q:"Platform online meeting apa saja yang bisa diintegrasikan?", a:"Notu terhubung langsung dengan ekosistem meeting favorit Anda seperti Google Meet, Zoom, dan Microsoft Teams."}
   ];
+
   return (
-    <section id="faq" className="mx-auto w-full max-w-[800px] px-4 sm:px-6 lg:px-8 py-14">
-      <div className="leading-normal text-xl lg:text-2xl font-medium text-center">
-            <h2><span className="text-accent">{"(FAQ)"}</span> Pertanyaan yang sering ditanyakan</h2>
-      </div>
-      {/* <SectionTitle center title="Pertanyaan yang sering ditanyakan" /> */}
-      <div className="mt-6 divide-y rounded-[6px] border border-gray-200">
-        {faqs.map((f,i)=> (
-          <details key={i} className="group">
-            <summary className="list-none cursor-pointer select-none px-4 sm:px-6 py-4 flex items-center justify-between">
-              <span className="text-sm font-medium text-[#0f1222]">{f.q}</span>
-              <span className="ml-4 h-6 w-6 grid place-items-center rounded-md border border-gray-200 text-gray-600 group-open:rotate-180 transition">⌄</span>
-            </summary>
-            <div className="px-4 sm:px-6 pb-4 text-sm text-gray-600">{f.a}</div>
-          </details>
-        ))}
+    <section id="faq" className={faqStyles.faqSection}>
+      <div className={faqStyles.faqSection__container}>
+        <motion.div 
+          className={faqStyles.faqSection__leftColumn}
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className={faqStyles.faqSection__badge}>FAQ</span>
+          <h2 className={faqStyles.faqSection__title}>
+            Pertanyaan yang sering ditanyakan
+          </h2>
+          <p className={faqStyles.faqSection__description}>
+            Temukan jawaban cepat untuk pertanyaan umum tentang fitur, integrasi, dan keamanan Notu.
+          </p>
+        </motion.div>
+
+        <div className={faqStyles.faqSection__rightColumn}>
+          <div className={faqStyles.faqSection__list}>
+            {faqs.map((f, i) => (
+              <div key={i} className={`${faqStyles.faqSection__item} ${openIndex === i ? faqStyles['faqSection__item--active'] : ''}`}>
+                <button 
+                  className={faqStyles.faqSection__question}
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                >
+                  <span className={faqStyles.faqSection__questionText}>{f.q}</span>
+                  <div className={`${faqStyles.faqSection__iconWrapper} ${openIndex === i ? faqStyles['faqSection__iconWrapper--active'] : ''}`}>
+                    <ChevronDown className={faqStyles.faqSection__icon} />
+                  </div>
+                </button>
+                
+                <AnimatePresence initial={false}>
+                  {openIndex === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <div className={faqStyles.faqSection__answer}>
+                        {f.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

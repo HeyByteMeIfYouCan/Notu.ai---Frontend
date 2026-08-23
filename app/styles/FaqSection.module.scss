@@ -1,0 +1,164 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-accent-light: color-mix(in oklch, var(--primary) 10%, transparent);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+$color-card-bg: var(--card);
+$color-card-border: var(--border);
+
+.faqSection {
+  position: relative;
+  overflow: hidden;
+  padding: 8rem 1rem 12rem; // Larger height and bottom gap
+  background-color: transparent;
+  
+  @media (min-width: 768px) {
+    padding: 10rem 2rem 16rem; // Massive padding for enterprise feel and extra bottom gap
+  }
+
+  &__container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    gap: 4rem;
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: 1fr 1.5fr;
+      align-items: start;
+    }
+  }
+
+  &__leftColumn {
+    text-align: left;
+    
+    @media (min-width: 1024px) {
+      position: sticky;
+      top: 120px;
+    }
+  }
+
+  &__description {
+    font-size: 1.125rem;
+    color: $color-text-muted;
+    line-height: 1.6;
+    margin-top: 1.5rem;
+    margin-bottom: 2.5rem;
+    max-width: 400px;
+  }
+
+  &__contactCta {
+    display: flex;
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 0.35rem 1rem;
+    background: $color-accent-light;
+    color: $color-accent;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: $color-text-main;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    margin: 0;
+    
+    @media (min-width: 1024px) {
+      font-size: 3rem;
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__item {
+    background: color-mix(in oklch, $color-card-bg 50%, transparent);
+    border: 1px solid color-mix(in oklch, $color-card-border 40%, transparent);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: color-mix(in oklch, var(--primary) 20%, transparent);
+    }
+    
+    &--active {
+      background: #ffffff;
+      border-color: color-mix(in oklch, var(--primary) 30%, transparent);
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &__question {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: $color-text-main;
+    font-size: 1.125rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+    gap: 1rem;
+    
+    &:hover {
+      color: $color-accent;
+    }
+  }
+
+  &__questionText {
+    flex-grow: 1;
+    line-height: 1.4;
+  }
+
+  &__iconWrapper {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in oklch, $color-text-muted 10%, transparent);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    &--active {
+      background: $color-accent-light;
+      transform: rotate(180deg);
+    }
+  }
+
+  &__icon {
+    width: 20px;
+    height: 20px;
+    color: $color-text-muted;
+    transition: color 0.2s ease;
+    
+    .faqSection__iconWrapper--active & {
+      color: $color-accent;
+    }
+  }
+
+  &__answer {
+    padding: 0 1.5rem 1.5rem;
+    color: $color-text-muted;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
