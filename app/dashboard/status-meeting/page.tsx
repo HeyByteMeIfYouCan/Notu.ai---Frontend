@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useCallback, useMemo } from "react"
+import React, { useEffect, useState, useCallback, useMemo, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
@@ -110,7 +110,7 @@ function getStageProgress(globalProgress: number, stage?: string, platform?: str
   return Math.min(100, Math.round((current / range) * 100))
 }
 
-export default function StatusMeetingPage() {
+function StatusMeetingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const meetingIdFromUrl = searchParams.get('id')
@@ -1049,5 +1049,17 @@ export default function StatusMeetingPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
+  )
+}
+
+export default function StatusMeetingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <StatusMeetingContent />
+    </Suspense>
   )
 }

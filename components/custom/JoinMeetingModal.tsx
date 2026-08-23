@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { IconVideo, IconLoader2, IconBrandGoogleMeet, IconBrandZoom, IconBrandTeams, IconRobot } from "@tabler/icons-react"
+import { IconVideo, IconLoader2, IconBrandZoom, IconBrandTeams, IconRobot } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -19,7 +19,7 @@ interface JoinMeetingModalProps {
 type Platform = "google_meet" | "zoom" | "teams" | "other"
 
 const platformIcons: Record<Platform, React.ReactNode> = {
-  google_meet: <IconBrandGoogleMeet className="h-5 w-5 text-green-500" />,
+  google_meet: <IconVideo className="h-5 w-5 text-green-500" />,
   zoom: <IconBrandZoom className="h-5 w-5 text-blue-500" />,
   teams: <IconBrandTeams className="h-5 w-5 text-purple-500" />,
   other: <IconVideo className="h-5 w-5 text-gray-500" />,
@@ -203,7 +203,7 @@ export function JoinMeetingModal({ trigger, onSuccess }: JoinMeetingModalProps) 
           {/* Platform Support Badge */}
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="gap-1">
-              <IconBrandGoogleMeet className="h-3 w-3" />
+              <IconVideo className="h-3 w-3" />
               Google Meet ✓
             </Badge>
             <Badge variant="outline" className="gap-1 opacity-50">
