@@ -11,17 +11,16 @@ $color-bg-dark: #060818;
 
 // Left Section: Starry Sky & Branding
 .leftPanel {
-  display: none; // Hidden on mobile
-  flex: 1.2;
+  display: none; // BEST PRACTICE: Hide marketing fluff on mobile login
   position: relative;
   background-color: $color-bg-dark;
   overflow: hidden;
-  display: flex;
   flex-direction: column;
   padding: 3rem;
 
   @media (min-width: 1024px) {
     display: flex;
+    flex: 1.2;
   }
 
   // Radial glow (light blur)
@@ -95,20 +94,31 @@ $color-bg-dark: #060818;
 .brandText {
   position: relative;
   z-index: 3; // Ensure text is always on top
-  margin-top: 5vh; // Pushed up slightly to give image more room
-  max-width: 80%; // Restricted to 80% per user request
-  padding-right: 1rem;
+  margin-top: 2.5rem; 
+  max-width: 100%; 
   align-self: flex-start;
   text-align: left;
+
+  @media (min-width: 1024px) {
+    margin-top: 5vh; // Pushed up slightly to give image more room
+    max-width: 80%; // Restricted to 80% per user request
+    padding-right: 1rem;
+  }
 }
 
 .brandTitle {
-  font-size: 3.5rem;
+  font-size: 2.25rem; // Mobile size
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.04em;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+
+  @media (min-width: 1024px) {
+    font-size: 3.5rem; // Desktop size
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+  }
 }
 
 .brandDesc {
@@ -119,17 +129,27 @@ $color-bg-dark: #060818;
 
 // Massive Overflowing Showcase Image
 .showcaseWrapper {
-  position: absolute;
+  position: relative;
   z-index: 1;
-  bottom: -5%;
-  left: -5%; // Moved to bottom-left
-  width: 82%;
-  transform: perspective(1200px) rotateY(12deg) rotateX(4deg); // Flipped the Y rotation
+  width: 100%;
+  margin-top: 3rem;
+  transform: perspective(1200px) rotateY(8deg) rotateX(2deg); // Subtler on mobile
   transform-style: preserve-3d;
   transition: transform 0.5s ease;
   
+  @media (min-width: 1024px) {
+    position: absolute;
+    bottom: -5%;
+    left: -5%;
+    width: 82%;
+    margin-top: 0;
+    transform: perspective(1200px) rotateY(12deg) rotateX(4deg);
+  }
+
   &:hover {
-    transform: perspective(1200px) rotateY(8deg) rotateX(2deg) translateY(-10px);
+    @media (min-width: 1024px) {
+      transform: perspective(1200px) rotateY(8deg) rotateX(2deg) translateY(-10px);
+    }
   }
 }
 
@@ -187,7 +207,7 @@ $color-bg-dark: #060818;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   
   @media (min-width: 1024px) {
     display: none;
@@ -195,7 +215,7 @@ $color-bg-dark: #060818;
   
   span {
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     color: #111827; // gray-900
     letter-spacing: -0.02em;
   }
