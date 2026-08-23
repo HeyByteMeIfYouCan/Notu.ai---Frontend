@@ -70,14 +70,7 @@ function QuickActionArtwork({ id }: { id: QuickActionId }) {
       <div
         className={`absolute inset-0 ${fieldTransition} group-hover:scale-[1.04] group-focus-visible:scale-[1.04]`}
         style={{
-          background:
-            id === "online"
-              ? "radial-gradient(circle at 70% 42%, color-mix(in oklch, var(--primary) 28%, transparent) 0, transparent 42%), linear-gradient(130deg, transparent 18%, color-mix(in oklch, var(--chart-3) 16%, transparent) 100%)"
-              : id === "realtime"
-                ? "radial-gradient(ellipse at 72% 50%, color-mix(in oklch, var(--chart-2) 24%, transparent) 0, transparent 52%), linear-gradient(105deg, transparent 10%, color-mix(in oklch, var(--primary) 13%, transparent) 100%)"
-                : id === "upload"
-                  ? "linear-gradient(145deg, transparent 28%, color-mix(in oklch, var(--chart-4) 20%, transparent) 72%, color-mix(in oklch, var(--primary) 16%, transparent) 100%)"
-                  : "radial-gradient(ellipse at 74% 48%, color-mix(in oklch, var(--chart-5) 24%, transparent) 0, transparent 50%), linear-gradient(155deg, transparent 30%, color-mix(in oklch, var(--chart-1) 16%, transparent) 100%)",
+          background: "radial-gradient(ellipse at 75% 50%, color-mix(in oklch, var(--primary) 14%, transparent) 0%, transparent 65%)",
         }}
       />
 
@@ -320,7 +313,7 @@ export default function Page() {
                       </>
                     )
 
-                    const cardClassName = "group relative isolate block w-full overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-[var(--card)] text-left outline-none transition-[border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[color-mix(in_oklch,var(--primary)_35%,var(--border))] focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] motion-reduce:transition-none"
+                    const cardClassName = "group relative isolate block w-full overflow-hidden rounded-xl sm:rounded-2xl border border-border bg-card text-left outline-none transition-all duration-200 shadow-xs hover:shadow-sm hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
 
                     if (action.href) {
                       return (

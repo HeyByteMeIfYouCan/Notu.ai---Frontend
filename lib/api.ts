@@ -20,6 +20,7 @@ import type {
   UserPreferences,
   ApiResponse,
   TaskStatus,
+  MeetingAiNotes,
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -168,15 +169,7 @@ class ApiClient {
     numSpeakers?: number;
     duration: number;
     language?: string;
-    aiNotes?: {
-      summary?: string;
-      highlights?: Record<string, string>;
-      conclusion?: string;
-      actionItems?: any[];
-      suggestedTitle?: string;
-      suggestedDescription?: string;
-      tags?: string[];
-    };
+    aiNotes?: MeetingAiNotes | Partial<MeetingAiNotes>;
     processingTime?: number;
     audioBlob?: Blob; // Optional audio blob to save
   }) {

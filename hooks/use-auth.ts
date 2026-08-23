@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useMemo, useCallback } from "react"
 import api from "@/lib/api"
 
-interface User {
+export interface AuthUser {
   id: string
   email: string
   name: string
@@ -24,7 +24,7 @@ export function useAuth() {
     }
   }, [status])
 
-  const user: User | null = useMemo(() => session?.user ? {
+  const user: AuthUser | null = useMemo(() => session?.user ? {
     id: (session.user as any).id || "",
     email: session.user.email || "",
     name: session.user.name || "",

@@ -34,12 +34,14 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { AskAI } from "./AskAI"
 import { getPermissions, getRoleLabel } from "@/lib/permissions"
+import type { Collaborator, CollaboratorRole, Meeting, TranscriptionSegment, User } from "@/lib/types"
+import type { AuthUser } from "@/hooks/use-auth"
 
 interface MeetingTranscriptProps {
   meetingId: string
-  userRole?: string
-  transcriptSegments: any[]
-  filteredSegments: any[]
+  userRole?: CollaboratorRole | 'owner' | string
+  transcriptSegments: TranscriptionSegment[]
+  filteredSegments: TranscriptionSegment[]
   searchQuery: string
   setSearchQuery: (query: string) => void
   autoFollow: boolean
@@ -58,9 +60,9 @@ interface MeetingTranscriptProps {
   togglePlayPause: () => void
   transcriptContainerRef: RefObject<HTMLDivElement | null>
   onUpdateSpeaker: (oldName: string, newName: string, segmentIndex: number, applyToAll: boolean) => Promise<void>
-  meeting: any  // Full meeting object for details dialog
-  collaborators: any[]  // Collaborators list
-  user: any  // Current user info
+  meeting: Meeting
+  collaborators?: Collaborator[]
+  user: AuthUser | User | null
 }
 
 export function MeetingTranscript({
@@ -135,14 +137,14 @@ export function MeetingTranscript({
   // Find current segment for subtitle in popup
   const currentPopupSegment = useMemo(() => {
     return transcriptSegments.find(
-      (seg: any) => seg.start <= popupCurrentTime && seg.end >= popupCurrentTime
+      (seg: TranscriptionSegment) => seg.start <= popupCurrentTime && seg.end >= popupCurrentTime
     )
   }, [transcriptSegments, popupCurrentTime])
 
   // Find current segment for subtitle in mini player
   const currentMiniSegment = useMemo(() => {
     return transcriptSegments.find(
-      (seg: any) => seg.start <= currentTime && seg.end >= currentTime
+      (seg: TranscriptionSegment) => seg.start <= currentTime && seg.end >= currentTime
     )
   }, [transcriptSegments, currentTime])
 
@@ -157,7 +159,7 @@ export function MeetingTranscript({
       // Auto-scroll to active segment in popup
       if (popupSegmentsRef.current) {
         const activeIndex = transcriptSegments.findIndex(
-          (seg: any) => seg.start <= video.currentTime && seg.end >= video.currentTime
+          (seg: TranscriptionSegment) => seg.start <= video.currentTime && seg.end >= video.currentTime
         )
         if (activeIndex !== -1) {
           const segmentElement = popupSegmentsRef.current.children[activeIndex] as HTMLElement
@@ -433,7 +435,7 @@ export function MeetingTranscript({
               <select 
                 id="update-scope"
                 value={updateScope}
-                onChange={(e) => setUpdateScope(e.target.value as any)}
+                onChange={(e) => setUpdateScope(e.target.value === 'single' ? 'single' : 'all')}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="single">Ganti hanya segmen ini saja</option>

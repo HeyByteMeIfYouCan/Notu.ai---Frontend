@@ -39,6 +39,24 @@ interface RealtimeMeetingDialogProps {
   onComplete?: (result: FinalTranscriptResult, meetingName: string) => void
 }
 
+const SAVE_TIMEOUT_MS = 60000
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), timeoutMs)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      (requestError) => {
+        clearTimeout(timer)
+        reject(requestError)
+      },
+    )
+  })
+}
+
 export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeMeetingDialogProps) {
   const [meetingName, setMeetingName] = useState("")
   const [previewText, setPreviewText] = useState("")
@@ -83,6 +101,8 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
     isRecording,
     isPaused,
     isProcessingFinal,
+    lifecycleState,
+    canRetryFinalization,
     sessionId,
     formattedDuration,
     error,
@@ -90,8 +110,12 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
     pauseRecording,
     resumeRecording,
     stopRecording,
+    retryFinalization,
     cancelRecording,
     resetState,
+    markSaving,
+    markSaveCompleted,
+    markSaveFailed,
   } = useRealtimeTranscription({
     onPreviewUpdate: handlePreviewUpdate,
     onAccumulatedUpdate: handleAccumulatedUpdate,
@@ -113,7 +137,8 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
   }, [isRecording, isPaused]);
 
   // Check if popup should be locked (during recording or processing)
-  const isLocked = isRecording || isProcessingFinal;
+  const isStarting = lifecycleState === 'requesting_permission' || lifecycleState === 'starting_session';
+  const isLocked = isRecording || isProcessingFinal || isStarting || isSaving;
 
   const handleStart = async () => {
     setPreviewText("");
@@ -141,6 +166,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
     }
     
     setIsSaving(true);
+    markSaving();
     try {
       console.log('[RealtimeDialog] Saving meeting...', {
         title: meetingName || 'Realtime Meeting',
@@ -153,7 +179,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
         aiNotesSummaryLen: finalResult.aiNotes?.summary?.length,
       });
       
-      const response = await api.createRealtimeMeeting(backendToken, {
+      const response = await withTimeout(api.createRealtimeMeeting(backendToken, {
         title: meetingName || `Realtime Meeting - ${new Date().toLocaleDateString('id-ID')}`,
         sessionId: finalResult.sessionId,
         transcript: finalResult.transcript,
@@ -162,34 +188,44 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
         numSpeakers: finalResult.numSpeakers,
         duration: finalResult.duration,
         language: 'id',
-        aiNotes: finalResult.aiNotes,
+        aiNotes: finalResult.aiNotes ?? undefined,
         processingTime: finalResult.processingTime,
         audioBlob: finalResult.audioBlob, // Include audio blob for storage
-      });
+      }), SAVE_TIMEOUT_MS, 'Penyimpanan membutuhkan waktu terlalu lama. Hasil tetap tersedia untuk dicoba kembali.');
       
       console.log('[RealtimeDialog] Save response:', response);
       
       if (response.success && response.data) {
         setSavedMeetingId(response.data.id);
-        toast.success('Meeting saved successfully!');
+        markSaveCompleted();
+        if (response.data.mediaStatus === 'upload_failed') {
+          toast.warning('Notulen berhasil disimpan, tetapi audio belum dapat disimpan.');
+        } else if (response.data.idempotent) {
+          toast.success('Meeting ini sudah tersimpan. Anda akan diarahkan ke hasilnya.');
+        } else {
+          toast.success('Meeting dan notulennya berhasil disimpan.');
+        }
         handleClose();
         router.push(`/dashboard/meeting/${response.data.id}`);
       } else {
         throw new Error(response.message || response.error || 'Failed to save meeting');
       }
-    } catch (err: any) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save meeting. Please try again.';
+      markSaveFailed(message);
       console.error('[RealtimeDialog] Failed to save meeting:', err);
-      toast.error(err.message || 'Failed to save meeting. Please try again.');
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleClose = () => {
-    if (isRecording) {
+    if (isRecording || canRetryFinalization) {
       cancelRecording();
+    } else {
+      resetState();
     }
-    resetState();
     setMeetingName("");
     setPreviewText("");
     setFinalResult(null);
@@ -199,7 +235,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
   };
 
   const handleNewRecording = () => {
-    resetState();
+    cancelRecording();
     setPreviewText("");
     setFinalResult(null);
     setProcessingMessage("");
@@ -305,7 +341,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
         
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden p-6 gap-4">
           {/* Meeting Name Input - Only show before recording */}
-          {!isRecording && !isProcessingFinal && !finalResult && (
+          {!isRecording && !isProcessingFinal && !isStarting && !finalResult && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
               <label className="text-sm font-medium text-muted-foreground">
                 Nama meeting
@@ -377,6 +413,12 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                   Rekaman dijeda
                 </div>
               )}
+              {isStarting && (
+                <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {lifecycleState === 'requesting_permission' ? 'Menunggu izin mikrofon' : 'Menyiapkan sesi realtime'}
+                </div>
+              )}
               {isProcessingFinal && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/80 text-primary-foreground rounded-full text-sm font-medium">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -389,7 +431,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                   Selesai
                 </div>
               )}
-              {!isRecording && !isProcessingFinal && !finalResult && (
+              {!isRecording && !isProcessingFinal && !isStarting && !finalResult && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-muted text-muted-foreground rounded-full text-sm">
                   <Mic className="h-3 w-3" />
                   Siap untuk mulai merekam
@@ -486,7 +528,7 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
           {/* Control Buttons - Fixed at bottom */}
           <div className="flex gap-3 pt-4 mt-auto border-t bg-background flex-shrink-0">
             {/* Start Recording Button */}
-            {!isRecording && !isProcessingFinal && !finalResult && (
+            {!isRecording && !isProcessingFinal && !isStarting && !finalResult && !canRetryFinalization && (
               <Button 
                 onClick={handleStart}
                 className="h-12 w-full bg-primary text-primary-foreground shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
@@ -495,6 +537,31 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
                 <Mic className="h-5 w-5 mr-2" />
                 Mulai rekam sekarang
               </Button>
+            )}
+
+            {isStarting && (
+              <Button disabled className="h-12 w-full" size="lg">
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                {lifecycleState === 'requesting_permission'
+                  ? 'Mohon izinkan akses mikrofon...'
+                  : 'Menyiapkan sesi realtime yang aman...'}
+              </Button>
+            )}
+
+            {canRetryFinalization && !finalResult && (
+              <div className="flex w-full gap-2">
+                <Button
+                  onClick={retryFinalization}
+                  className="h-12 flex-1 bg-primary text-primary-foreground shadow-none"
+                  size="lg"
+                >
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Coba buat notulen lagi
+                </Button>
+                <Button onClick={handleNewRecording} variant="outline" size="lg" className="h-12">
+                  Rekam ulang
+                </Button>
+              </div>
             )}
 
             {/* Recording Controls */}

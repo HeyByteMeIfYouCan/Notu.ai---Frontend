@@ -22,15 +22,17 @@ import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { OnlinePresence } from "@/components/custom/OnlinePresence"
 import { getPermissions, getAssignableRoles, getRoleLabel } from "@/lib/permissions"
+import type { Collaborator, CollaboratorRole, Participant, TranscriptionSegment, User } from "@/lib/types"
+import type { AuthUser } from "@/hooks/use-auth"
 
 interface MeetingHeaderProps {
   title: string
   description: string
   meetingId: string
   shareToken: string | null
-  user: any
-  collaborators: any[]
-  participants: any[]  // Add participants
+  user: AuthUser | User | null
+  collaborators?: Collaborator[]
+  participants?: Participant[]
   onGenerateShareLink: () => Promise<void>
   onUpdateRole: (userId: string, role: string) => Promise<void>
   onRemoveMember: (userId: string) => Promise<void>
@@ -40,10 +42,10 @@ interface MeetingHeaderProps {
   isVideoFile: boolean
   audioUrl: string | null
   summary: string
-  userRole?: string
+  userRole?: CollaboratorRole | 'owner' | string
   createdAt?: string
   duration?: number
-  segments?: any[]
+  segments?: TranscriptionSegment[]
 }
 
 export function MeetingHeader({

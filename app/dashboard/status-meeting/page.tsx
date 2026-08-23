@@ -18,6 +18,7 @@ import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { getSocket } from "@/lib/socket"
 import { ModernPagination } from "@/components/custom/ModernPagination"
+import type { CollaboratorRole, Participant, TaskCandidate } from "@/lib/types"
 
 interface ProcessingLog {
   message: string
@@ -36,11 +37,11 @@ interface Meeting {
   processingProgress?: number
   processingLogs?: ProcessingLog[]
   processingStage?: string
-  participants?: any[]
+  participants?: Participant[] | number
   description?: string
-  userRole?: 'owner' | 'editor' | 'viewer' | string
+  userRole?: CollaboratorRole | 'owner' | string
   isUpload?: boolean
-  actionItems?: any[]
+  actionItems?: TaskCandidate[]
   chunkingEnabled?: boolean
   totalChunks?: number
   currentChunk?: number
@@ -179,28 +180,16 @@ function StatusMeetingContent() {
         }
       }
 
-      const params: any = { 
+      const params: Record<string, string | number | undefined> = { 
         limit: pageSize, 
         page,
         // Pass filters to backend
-        search: debouncedSearch,
+        search: debouncedSearch || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
         type: typeParam,
         platform: platformParam,
-        // Status page should sort by pure latest, not pinned first
         sortByPinned: 'false'
       }
-      
-      // Note: Backend 'type' might map to 'platform' or 'type'. 
-      // The backend controller uses `type` query param for `type` field.
-      // But platformFilter seems to check `meeting.platform`. 
-      // Checking backend controller again: uses `type` for meeting.type.
-      // If we want to filter by platform, strictly speaking we need backend support or abuse 'type' if values overlap.
-      // For now, let's pass it. If backend doesn't support 'platform' param, we might need client side filter for that specific one.
-      // Looking at controller code: it supports 'type' field queries. Meeting has 'type' (upload/online) and 'platform' (Zoom/Meet).
-      // Assuming platformFilter maps to meeting.platform, we should use a backend param for it? 
-      // Controller doesn't explicitly look for 'platform' query.
-      // Let's stick to client filtering for platform if needed, OR mostly likely status/search are the big ones.
       
       const response = await api.getMeetings(params)
       
@@ -231,7 +220,7 @@ function StatusMeetingContent() {
           pages: response.pagination.totalPages || 1
         })
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching meetings:", error)
       toast.error("Gagal memuat status meeting")
     } finally {
@@ -250,7 +239,7 @@ function StatusMeetingContent() {
            ...response.data
         }))
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching stats:", error)
     }
   }, [isReady, api])
@@ -263,7 +252,7 @@ function StatusMeetingContent() {
     } else {
       setIsLoading(false)
     }
-  }, [isReady, currentPage, fetchMeetings])
+  }, [isReady, currentPage, fetchMeetings, fetchStats])
 
   // Page change handler
   const handlePageChange = (page: number) => {
@@ -277,26 +266,36 @@ function StatusMeetingContent() {
   useEffect(() => {
     const socket = getSocket()
 
+    const handleConnect = () => {
+      fetchMeetings()
+      fetchStats()
+    }
+
     // Listen for transcription progress updates
-    socket.on('transcription_progress', ({ meetingId, progress, message, stage, chunking, totalChunks, chunk }) => {
+    const handleTranscriptionProgress = ({ meetingId, progress, message, stage, chunking, totalChunks, chunk }: {
+      meetingId: string
+      progress?: number
+      message?: string
+      stage?: string
+      chunking?: boolean
+      totalChunks?: number
+      chunk?: number
+    }) => {
       setMeetings(prev => prev.map(m => {
         if (m._id === meetingId) {
           // MONOTONIC GUARD: Only update if progress is forward (prevent backward progress)
           const currentProgress = m.processingProgress || 0
           const newProgress = progress ?? currentProgress
           if (newProgress < currentProgress && stage !== 'completed') {
-            // Skip backward progress updates (except for completed which resets)
-            console.log(`[Progress Guard] Skipping backward progress: ${currentProgress} -> ${newProgress}`)
             return m
           }
           
-          const newLog: ProcessingLog = { message, timestamp: new Date().toISOString(), progress, stage }
+          const newLog: ProcessingLog = { message: message || '', timestamp: new Date().toISOString(), progress, stage }
           return {
             ...m,
             processingProgress: newProgress,
             processingStage: stage || m.processingStage,
-            processingLogs: [...(m.processingLogs || []), newLog].slice(-15), // Keep last 15 logs
-            // Add chunking info if available
+            processingLogs: [...(m.processingLogs || []), newLog].slice(-15),
             ...(chunking !== undefined && { chunkingEnabled: chunking }),
             ...(totalChunks !== undefined && { totalChunks }),
             ...(chunk !== undefined && { currentChunk: chunk })
@@ -304,33 +303,28 @@ function StatusMeetingContent() {
         }
         return m
       }))
-      // Update heartbeat on any progress
       setLastHeartbeats(prev => new Map(prev).set(meetingId, new Date()))
-    })
+    }
 
-    // Listen for worker heartbeat (indicates worker is still alive)
-    socket.on('worker_heartbeat', ({ meetingId, stage, timestamp }) => {
+    const handleWorkerHeartbeat = ({ meetingId, timestamp }: { meetingId: string; stage?: string; timestamp: string }) => {
       setLastHeartbeats(prev => new Map(prev).set(meetingId, new Date(timestamp)))
-    })
+    }
 
-    // Listen for transcription completion
-    socket.on('transcription_complete', ({ meetingId }) => {
+    const handleTranscriptionComplete = () => {
       fetchMeetings()
-      toast.success('Transcription completed!')
-    })
+      fetchStats()
+      toast.success('Notulen meeting selesai diproses!')
+    }
 
-    // Listen for transcription failure
-    socket.on('transcription_failed', ({ meetingId, error }) => {
+    const handleTranscriptionFailed = ({ error }: { meetingId: string; error?: string }) => {
       fetchMeetings()
-      toast.error(`Transcription failed: ${error}`)
-    })
+      fetchStats()
+      toast.error(`Proses transkripsi gagal: ${error || 'Terjadi kesalahan sistem'}`)
+    }
 
-    // Listen for bot status updates
-    socket.on('bot_status', ({ meetingId, status, message }) => {
-      console.log('[Bot] Status update:', meetingId, status)
+    const handleBotStatus = ({ meetingId, status }: { meetingId: string; status: string; message?: string }) => {
       setMeetings(prev => prev.map(m => {
         if (m._id === meetingId) {
-          // Map bot status to meeting status and stage
           let newStatus = m.status
           let newStage = m.processingStage
           let newProgress = m.processingProgress || 0
@@ -344,7 +338,6 @@ function StatusMeetingContent() {
             newStage = 'completed'
             newProgress = 100
           } else if (status === 'leaving') {
-            // Keep recording status while leaving
             newProgress = 90
           } else if (status === 'in_meeting') {
             newStatus = 'recording'
@@ -362,19 +355,17 @@ function StatusMeetingContent() {
         return m
       }))
       
-      // Refresh meetings when completed to get full data
       if (status === 'completed') {
         setTimeout(() => fetchMeetings(), 1000)
       }
-    })
+    }
 
-    // Listen for live captions from bot
-    socket.on('caption_added', ({ meetingId, segment }) => {
-      console.log('[Bot] Caption:', meetingId, segment?.speaker, segment?.text?.substring(0, 50))
+    const handleCaptionAdded = ({ meetingId, segment }: { meetingId: string; segment?: { speaker?: string; text?: string } }) => {
+      if (!segment) return
       setMeetings(prev => prev.map(m => {
         if (m._id === meetingId) {
-          const captionText = `${segment.speaker}: ${segment.text}`
-          const newLog = { 
+          const captionText = `${segment.speaker || 'Speaker'}: ${segment.text || ''}`
+          const newLog: ProcessingLog = { 
             message: captionText, 
             timestamp: new Date().toISOString(), 
             stage: 'bot_recording' 
@@ -382,38 +373,39 @@ function StatusMeetingContent() {
           return {
             ...m,
             processingLogs: [...(m.processingLogs || []).slice(-10), newLog],
-            description: captionText, // Show latest caption in description
+            description: captionText,
           }
         }
         return m
       }))
-    })
+    }
 
-    // Also listen for global live_caption (for dashboard monitoring)
-    socket.on('live_caption', ({ meetingId, segment }) => {
-      console.log('[Bot] Live caption:', segment?.text?.substring(0, 30))
-    })
+    socket.on('connect', handleConnect)
+    socket.on('transcription_progress', handleTranscriptionProgress)
+    socket.on('worker_heartbeat', handleWorkerHeartbeat)
+    socket.on('transcription_complete', handleTranscriptionComplete)
+    socket.on('transcription_failed', handleTranscriptionFailed)
+    socket.on('bot_status', handleBotStatus)
+    socket.on('caption_added', handleCaptionAdded)
 
     return () => {
-      socket.off('transcription_progress')
-      socket.off('worker_heartbeat')
-      socket.off('transcription_complete')
-      socket.off('transcription_failed')
-      socket.off('bot_status')
-      socket.off('caption_added')
-      socket.off('live_caption')
+      socket.off('connect', handleConnect)
+      socket.off('transcription_progress', handleTranscriptionProgress)
+      socket.off('worker_heartbeat', handleWorkerHeartbeat)
+      socket.off('transcription_complete', handleTranscriptionComplete)
+      socket.off('transcription_failed', handleTranscriptionFailed)
+      socket.off('bot_status', handleBotStatus)
+      socket.off('caption_added', handleCaptionAdded)
     }
-  }, [fetchMeetings])
+  }, [fetchMeetings, fetchStats])
 
   // Polling for active meetings
   useEffect(() => {
-    // Poll list refresh (for status changes)
     const listInterval = setInterval(() => {
       fetchMeetings()
       fetchStats()
-    }, 15000) // Every 15 seconds
+    }, 15000)
 
-    // Poll progress for active meetings (more frequent)
     const activeMeetings = meetings.filter(m => 
       m.status === 'processing' || 
       m.status === 'uploading' || 
@@ -432,16 +424,12 @@ function StatusMeetingContent() {
              if (res.success && res.data) {
                 setMeetings(prev => prev.map(pm => {
                   if (pm._id === m._id) {
-                    // Get stage from latest log if available
                     const latestLog = res.data.processingLogs?.[res.data.processingLogs.length - 1]
                     const newProgress = res.data.job?.progress || 0
                     const currentProgress = pm.processingProgress || 0
                     
-                    // MONOTONIC GUARD: Only update if progress is forward or status changed to completed/failed
                     const isStatusComplete = res.data.status === 'completed' || res.data.status === 'failed'
                     if (newProgress < currentProgress && !isStatusComplete) {
-                      // Skip backward progress from polling (socket has more up-to-date data)
-                      console.log(`[Polling Guard] Skipping backward progress for ${m._id}: ${currentProgress} -> ${newProgress}`)
                       return pm
                     }
                     
@@ -456,7 +444,6 @@ function StatusMeetingContent() {
                   return pm
                 }))
                 
-                // If finished, force full refresh
                 if (res.data.status === 'completed' || res.data.status === 'failed') {
                    fetchMeetings()
                 }
@@ -465,14 +452,14 @@ function StatusMeetingContent() {
              console.error("Progress poll error", e)
            }
         }
-      }, 5000) // Every 5 seconds for processing meetings
+      }, 5000)
     }
 
     return () => {
       clearInterval(listInterval)
       if (progressInterval) clearInterval(progressInterval)
     }
-  }, [meetings, fetchMeetings, api])
+  }, [meetings, fetchMeetings, fetchStats, api])
 
   const handleRefresh = () => {
     setIsRefreshing(true)
@@ -484,8 +471,9 @@ function StatusMeetingContent() {
       await api.retryTranscription(meetingId)
       toast.success("Transkripsi ulang dimulai")
       fetchMeetings()
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Gagal memulai ulang transkripsi")
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Gagal memulai ulang transkripsi"
+      toast.error(msg)
     }
   }
 
@@ -501,8 +489,9 @@ function StatusMeetingContent() {
       await api.deleteMeeting(meetingId)
       setMeetings(prev => prev.filter(m => m._id !== meetingId))
       toast.success("Meeting berhasil dihapus")
-    } catch (error: any) {
-      toast.error(error.message || "Gagal menghapus meeting")
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Gagal menghapus meeting"
+      toast.error(msg)
     } finally {
       setDeletingId(null)
     }
@@ -595,7 +584,7 @@ function StatusMeetingContent() {
               {/* Header */}
               <div className="px-4 lg:px-6">
                 <div className="relative flex flex-col gap-5 overflow-hidden rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] px-6 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-2/5" style={{ background: "radial-gradient(ellipse at 75% 50%, color-mix(in oklch, var(--chart-3) 18%, transparent), transparent 65%)" }} />
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-2/5" style={{ background: "radial-gradient(ellipse at 75% 50%, color-mix(in oklch, var(--primary) 12%, transparent), transparent 65%)" }} />
                   <div className="space-y-1">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Pantau proses</p>
                     <h1 className="text-3xl font-semibold tracking-[-0.035em] text-foreground">Bagaimana progresnya?</h1>
@@ -688,8 +677,8 @@ function StatusMeetingContent() {
               {/* Status Overview */}
               <div className="px-4 lg:px-6">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <Card className="relative overflow-hidden border-border shadow-none">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--chart-2) 15%, transparent), transparent 62%)" }} />
+                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 10%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Selesai</CardTitle>
                       <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))]">
@@ -701,8 +690,8 @@ function StatusMeetingContent() {
                       <p className="text-xs text-muted-foreground mt-1">Meeting selesai</p>
                     </CardContent>
                   </Card>
-                  <Card className="relative overflow-hidden border-border shadow-none">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 62%)" }} />
+                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 12%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Aktif</CardTitle>
                       <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_10%,var(--card))]">
@@ -714,8 +703,8 @@ function StatusMeetingContent() {
                       <p className="text-xs text-muted-foreground mt-1">Sedang diproses</p>
                     </CardContent>
                   </Card>
-                  <Card className="relative overflow-hidden border-border shadow-none">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--chart-4) 14%, transparent), transparent 62%)" }} />
+                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Menunggu</CardTitle>
                       <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--muted)]">
@@ -728,8 +717,8 @@ function StatusMeetingContent() {
                     </CardContent>
                   </Card>
 
-                  <Card className="relative overflow-hidden border-border shadow-none">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--destructive) 12%, transparent), transparent 62%)" }} />
+                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
+                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--destructive) 10%, transparent), transparent 62%)" }} />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-foreground">Gagal</CardTitle>
                       <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--destructive)_24%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_9%,var(--card))]">
@@ -788,7 +777,7 @@ function StatusMeetingContent() {
                       {filteredMeetings.map((meeting) => (
                         <Card 
                           key={meeting._id} 
-                          className={`group overflow-hidden border-border shadow-none transition-[border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[color-mix(in_oklch,var(--primary)_32%,var(--border))] motion-reduce:transition-none ${
+                          className={`group overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40 motion-reduce:transition-none ${
                           meetingIdFromUrl === meeting._id ? 'ring-2 ring-primary' : ''
                         }`}
                       >

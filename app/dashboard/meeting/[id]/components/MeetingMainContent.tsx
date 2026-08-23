@@ -20,6 +20,7 @@ import remarkGfm from "remark-gfm"
 import dynamic from "next/dynamic"
 import { useState, useMemo } from "react"
 import { getPermissions } from "@/lib/permissions"
+import type { CollaboratorRole, Meeting, TaskCandidate } from "@/lib/types"
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor").then((mod) => mod.default),
@@ -27,17 +28,17 @@ const MDEditor = dynamic(
 )
 
 interface MeetingMainContentProps {
-  meeting: any
-  actionItems: any[]
+  meeting: Meeting
+  actionItems: TaskCandidate[]
   hasSyncedTasks: boolean
-  onUpdateMeeting: (data: any) => Promise<void>
+  onUpdateMeeting: (data: { title?: string; description?: string }) => Promise<void>
   onRegenerateAi: () => Promise<void>
   onGenerateKanban: () => Promise<void>
-  onUpdateContent: (field: any, value: any) => Promise<void>
+  onUpdateContent: (field: string, value: string | Record<string, string>) => Promise<void>
   formatDate: (date: string) => string
   formatTimeOnly: (date: string) => string
   formatDuration: (seconds: number) => string
-  userRole?: string
+  userRole?: CollaboratorRole | 'owner' | string
 }
 
 export function MeetingMainContent({
@@ -74,7 +75,7 @@ export function MeetingMainContent({
   }
 
   const handleSaveEdit = async (field: string) => {
-    let finalValue: any = editValue
+    let finalValue: string | Record<string, string> = editValue
     
     if (field === 'title' || field === 'description') {
       await onUpdateMeeting({ [field]: editValue })
@@ -178,11 +179,16 @@ export function MeetingMainContent({
             <div className="flex items-center gap-1 rounded-md border border-[color-mix(in_oklch,var(--chart-2)_24%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_9%,var(--card))] px-2 py-1 text-sm font-medium text-[var(--foreground)]">
               {meeting.platform || "Google Meet"}
             </div>
-            {meeting.participants > 0 && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground font-medium">
-                {meeting.participants} Orang
-              </div>
-            )}
+            {(() => {
+              const count = Array.isArray(meeting.participants) 
+                ? meeting.participants.length 
+                : (meeting.participantsCount || 0)
+              return count > 0 ? (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground font-medium">
+                  {count} Orang
+                </div>
+              ) : null
+            })()}
           </div>
         </div>
       </div>
@@ -263,14 +269,14 @@ export function MeetingMainContent({
                   )}
                 </div>
                 <div className="space-y-4">
-                  {Object.entries(highlights).map(([header, content]: [string, any]) => (
+                  {Object.entries(highlights).map(([header, content]) => (
                     <div key={header}>
                       <div className="flex items-center gap-1 mb-2">
                         <div className="bg-foreground w-1 h-1 rounded-full"></div>
                         <h3 className="font-medium text-sm text-primary">{header}</h3>
                       </div>
                       <div className="prose prose-sm prose-gray max-w-none text-muted-foreground">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{typeof content === 'string' ? content : String(content)}</ReactMarkdown>
                       </div>
                     </div>
                   ))}

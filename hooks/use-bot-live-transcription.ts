@@ -1,5 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { getSocket } from '@/lib/socket';
+import type {
+  BotCaptionEvent,
+  BotCompletedEvent,
+  BotMeetingStatus,
+  BotStatusEvent,
+  MeetingFeatureError,
+} from '@/lib/types';
 
 export interface BotTranscriptSegment {
   chunkIndex: number;
@@ -9,20 +16,7 @@ export interface BotTranscriptSegment {
 }
 
 export interface BotSessionStatus {
-  status:
-  | 'pending'
-  | 'joining'
-  | 'bot_joining'
-  | 'waiting_admission'
-  | 'disabling_media'
-  | 'bot_in_meeting'
-  | 'in_meeting'
-  | 'enabling_captions'
-  | 'recording'
-  | 'processing'
-  | 'leaving'
-  | 'completed'
-  | 'failed';
+  status: BotMeetingStatus;
   currentPreview: string;
   chunksProcessed: number;
   duration: number;
@@ -34,7 +28,7 @@ interface UseBotLiveTranscriptionOptions {
   meetingId: string;
   onStatusUpdate?: (status: BotSessionStatus) => void;
   onPreviewUpdate?: (text: string, chunkIndex: number) => void;
-  onComplete?: (data: { transcript: string; segments: any[]; duration: number }) => void;
+  onComplete?: (data: BotCompletedEvent) => void;
   onError?: (error: string) => void;
 }
 
@@ -65,7 +59,6 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
 
   // Setup socket listeners
   useEffect(() => {
-    if (socketListenersSetupRef.current) return;
     if (!meetingId) return;
 
     const socket = getSocket();
@@ -74,19 +67,12 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
     socket.emit('join_meeting', meetingId);
     console.log('[Bot] Joined meeting room:', meetingId);
 
-    // Track connection status
     setIsConnected(socket.connected);
-    socket.on('connect', () => setIsConnected(true));
-    socket.on('disconnect', () => setIsConnected(false));
 
-    // Bot status updates
-    socket.on('bot_status', (data: {
-      meetingId: string;
-      status: BotSessionStatus['status'];
-      chunksProcessed?: number;
-      duration?: number;
-      message?: string;
-    }) => {
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+
+    const handleBotStatus = (data: BotStatusEvent) => {
       if (data.meetingId !== meetingIdRef.current) return;
 
       console.log('[Bot] Status update:', data.status);
@@ -105,156 +91,81 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
         chunksProcessed: data.chunksProcessed || 0,
         duration: data.duration || 0,
       });
-    });
+    };
 
-    // Live preview updates
-    socket.on('bot_preview', (data: {
-      meetingId: string;
-      preview: string;
-      chunkIndex: number;
-      timestamp: string;
-    }) => {
-      if (data.meetingId !== meetingIdRef.current) return;
-
-      console.log('[Bot] Preview update:', data.preview.substring(0, 50));
-      setPreviewText(data.preview);
-
-      // Add to segments
-      setSegments(prev => [...prev, {
-        chunkIndex: data.chunkIndex,
-        text: data.preview,
-        timestamp: new Date(data.timestamp),
-      }]);
-
-      onPreviewUpdate?.(data.preview, data.chunkIndex);
-    });
-
-    // Live caption updates (from caption scraping)
-    socket.on('caption_added', (data: {
-      meetingId?: string;
-      segment: {
-        speaker: string;
-        text: string;
-        start: number;
-        end: number;
-      };
-    }) => {
-      // Check if this caption is for our meeting
+    const handleCaptionAdded = (data: BotCaptionEvent) => {
       if (data.meetingId && data.meetingId !== meetingIdRef.current) return;
 
       console.log('[Bot] Caption added:', `${data.segment.speaker}: ${data.segment.text.substring(0, 50)}`);
-
       const fullText = `${data.segment.speaker}: ${data.segment.text}`;
 
-      // Update segments with merge logic + duplicate detection
-      setSegments(prev => {
-        // Check for exact duplicates in last 3 segments
-        const isDuplicate = prev.slice(-3).some(seg => seg.text === fullText);
+      setSegments((prev) => {
+        const isDuplicate = prev.slice(-3).some((seg) => seg.text === fullText);
         if (isDuplicate) {
-          console.log('[Bot] Skipping duplicate caption');
           return prev;
         }
 
         const last = prev[prev.length - 1];
         const isSameSpeaker = last && last.text.startsWith(data.segment.speaker);
-        // If same speaker and new text is likely an update (longer or distinct enough but close in time)
-        // We use a simple heuristic: same speaker within 10 seconds = update
         const isRecent = last && (new Date().getTime() - new Date(last.timestamp).getTime() < 10000);
 
         if (isSameSpeaker && isRecent) {
-          // Update in place
           return [...prev.slice(0, -1), {
             ...last,
             text: fullText,
-            chunkIndex: data.segment.start, // Update index if needed
+            chunkIndex: data.segment.sequence,
           }];
         }
 
-        // New segment
         return [...prev, {
-          chunkIndex: data.segment.start,
+          chunkIndex: data.segment.sequence,
           text: fullText,
           timestamp: new Date(),
           isInterim: false,
         }];
       });
 
-      // Update preview text (just show the latest active caption)
       setPreviewText(fullText);
+      onPreviewUpdate?.(data.segment.text, data.segment.sequence);
+    };
 
-      onPreviewUpdate?.(data.segment.text, data.segment.start);
-    });
-
-    // Session complete
-    socket.on('bot_completed', (data: {
-      meetingId: string;
-      transcript: string;
-      segments: any[];
-      duration: number;
-    }) => {
+    const handleBotCompleted = (data: BotCompletedEvent) => {
       if (data.meetingId !== meetingIdRef.current) return;
 
       console.log('[Bot] Session completed');
       setStatus('completed');
       onComplete?.(data);
-    });
+    };
 
-    // Error handling
-    socket.on('bot_error', (data: { meetingId: string; error: string }) => {
+    const handleBotError = (data: MeetingFeatureError & { meetingId: string }) => {
       if (data.meetingId !== meetingIdRef.current) return;
 
       console.error('[Bot] Error:', data.error);
       setError(data.error);
       setStatus('failed');
       onError?.(data.error);
-    });
+    };
 
-    socketListenersSetupRef.current = true;
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('bot_status', handleBotStatus);
+    socket.on('caption_added', handleCaptionAdded);
+    socket.on('bot_completed', handleBotCompleted);
+    socket.on('bot_error', handleBotError);
 
     // Cleanup
     return () => {
-      // Leave meeting room
       socket.emit('leave_meeting', meetingId);
       console.log('[Bot] Left meeting room:', meetingId);
 
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('bot_status');
-      socket.off('bot_preview');
-      socket.off('caption_added');
-      socket.off('bot_completed');
-      socket.off('bot_error');
-      socketListenersSetupRef.current = false;
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('bot_status', handleBotStatus);
+      socket.off('caption_added', handleCaptionAdded);
+      socket.off('bot_completed', handleBotCompleted);
+      socket.off('bot_error', handleBotError);
     };
-  }, [meetingId]); // Only re-run if meetingId changes - prevents socket flapping
-
-  // Join bot live room
-  const joinLiveRoom = useCallback(() => {
-    if (!meetingId) return;
-
-    const socket = getSocket();
-    socket.emit('join_bot_live', { meetingId });
-    setIsConnected(true);
-    console.log('[Bot] Joined live room:', meetingId);
-  }, [meetingId]);
-
-  // Leave bot live room
-  const leaveLiveRoom = useCallback(() => {
-    if (!meetingId) return;
-
-    const socket = getSocket();
-    socket.emit('leave_bot_live', { meetingId });
-    setIsConnected(false);
-    console.log('[Bot] Left live room:', meetingId);
-  }, [meetingId]);
-
-  // Request current preview
-  const requestPreview = useCallback(() => {
-    if (!meetingId) return;
-
-    const socket = getSocket();
-    socket.emit('get_bot_preview', { meetingId });
-  }, [meetingId]);
+  }, [meetingId, onComplete, onError, onPreviewUpdate, onStatusUpdate, previewText]);
 
   // Get accumulated text from all segments
   const getAccumulatedText = useCallback(() => {
@@ -272,9 +183,6 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
     error,
 
     // Actions
-    joinLiveRoom,
-    leaveLiveRoom,
-    requestPreview,
     getAccumulatedText,
   };
 }

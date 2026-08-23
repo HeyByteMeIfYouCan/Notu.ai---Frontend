@@ -16,13 +16,39 @@ import { MeetingMainContent } from "./components/MeetingMainContent"
 import { MeetingTranscript } from "./components/MeetingTranscript"
 import { PlaybackControls } from "./components/PlaybackControls"
 import { RealtimeBanner } from "./components/RealtimeBanner"
+import type { Collaborator, CollaboratorRole, Meeting, TaskCandidate, TranscriptionSegment, User } from "@/lib/types"
 
-// Types for socket events
+// Types for socket events and analytics
 interface MeetingUpdateEvent {
-  meeting: any
+  meeting: Meeting
   updatedBy: { _id: string; name: string }
   field?: string
   action?: string
+}
+
+interface TalkTimeItem {
+  speaker: string
+  words: number
+  talks: number
+  total: number
+}
+
+interface TopicItem {
+  name: string
+  color: string
+}
+
+interface MeetingDetailAnalytics {
+  talkTime: TalkTimeItem[]
+  topics: TopicItem[]
+}
+
+interface GetMeetingApiResponse {
+  meeting?: Meeting
+  analytics?: MeetingDetailAnalytics
+  actionItems?: TaskCandidate[]
+  hasSyncedTasks?: boolean
+  fileUrl?: string
 }
 
 export default function MeetingDetailPage() {
@@ -33,9 +59,9 @@ export default function MeetingDetailPage() {
   const { api, isReady } = useApiWithAuth()
   const { user } = useAuth()
   
-  const [meeting, setMeeting] = useState<any>(null)
-  const [analytics, setAnalytics] = useState<any>(null)
-  const [actionItems, setActionItems] = useState<any[]>([])
+  const [meeting, setMeeting] = useState<Meeting | null>(null)
+  const [analytics, setAnalytics] = useState<MeetingDetailAnalytics | null>(null)
+  const [actionItems, setActionItems] = useState<TaskCandidate[]>([])
   const [hasSyncedTasks, setHasSyncedTasks] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -47,7 +73,6 @@ export default function MeetingDetailPage() {
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [shareToken, setShareToken] = useState<string | null>(null)
-  const [processingProgress, setProcessingProgress] = useState(0)
   const [mediaDuration, setMediaDuration] = useState<number>(0)
 
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -58,11 +83,11 @@ export default function MeetingDetailPage() {
     if (!isReady || !meetingId) return
     try {
       setIsLoading(true)
-      const response = await api.getMeeting(meetingId) as any
+      const response = await api.getMeeting(meetingId) as unknown as GetMeetingApiResponse
       if (response && response.meeting) {
         setMeeting(response.meeting)
-        setAnalytics(response.analytics)
-        setActionItems(response.actionItems)
+        setAnalytics(response.analytics || null)
+        setActionItems(response.actionItems || [])
         setHasSyncedTasks(!!response.hasSyncedTasks || !!response.meeting?.hasBoard)
         
         const mimetype = response.meeting.originalFile?.mimetype || ''
@@ -80,9 +105,9 @@ export default function MeetingDetailPage() {
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Gagal memuat data meeting")
-      if (error.response?.status === 404) router.push("/dashboard")
+      router.push("/dashboard")
     } finally {
       setIsLoading(false)
     }
@@ -118,7 +143,7 @@ export default function MeetingDetailPage() {
     }
     
     // Handle AI regeneration
-    const handleAiRegenerated = (payload: any) => {
+    const handleAiRegenerated = (payload: { meetingId?: string; regeneratedBy?: { _id?: string; name?: string } }) => {
       if (payload?.meetingId !== meetingId) return
       
       if (payload.regeneratedBy?._id !== user?.id) {
@@ -131,7 +156,7 @@ export default function MeetingDetailPage() {
     }
     
     // Handle action item sync
-    const handleActionItemSynced = (payload: any) => {
+    const handleActionItemSynced = (payload: { meetingId?: string; syncedBy?: { _id?: string; name?: string } }) => {
       if (payload?.meetingId !== meetingId) return
       
       if (payload.syncedBy?._id !== user?.id) {
@@ -144,7 +169,7 @@ export default function MeetingDetailPage() {
     }
     
     // Handle collaborator changes
-    const handleCollaboratorAdded = (payload: any) => {
+    const handleCollaboratorAdded = (payload: { meetingId?: string; user?: { name?: string } }) => {
       if (payload?.meetingId !== meetingId) return
       toast.success(`${payload.user?.name || 'Seseorang'} bergabung ke meeting`, {
         duration: 3000,
@@ -152,7 +177,7 @@ export default function MeetingDetailPage() {
       fetchMeeting()
     }
     
-    const handleCollaboratorRemoved = (payload: any) => {
+    const handleCollaboratorRemoved = (payload: { meetingId?: string; userId?: string }) => {
       if (payload?.meetingId !== meetingId) return
       
       // If current user was removed, redirect
@@ -166,7 +191,7 @@ export default function MeetingDetailPage() {
     }
     
     // Handle role changes
-    const handleCollaboratorRoleChanged = (payload: any) => {
+    const handleCollaboratorRoleChanged = (payload: { resourceId?: string; userId?: string; newRole?: string }) => {
       if (payload?.resourceId !== meetingId) return
       
       // If current user's role was changed, refetch and show notification
@@ -176,7 +201,6 @@ export default function MeetingDetailPage() {
         })
         fetchMeeting()
       } else {
-        // Someone else's role changed, just refetch silently
         fetchMeeting()
       }
     }
@@ -305,9 +329,9 @@ export default function MeetingDetailPage() {
   const handleUpdateMeeting = async (data: { title?: string; description?: string }) => {
     try {
       await api.updateMeeting(meetingId, data)
-      setMeeting((prev: any) => ({ ...prev, ...data }))
+      setMeeting(prev => prev ? { ...prev, ...data } : null)
       toast.success("Meeting diperbarui")
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Gagal memperbarui meeting")
     }
   }
@@ -315,8 +339,8 @@ export default function MeetingDetailPage() {
   const handleUpdateSpeaker = async (oldName: string, newName: string, segmentIndex: number, applyToAll: boolean) => {
     try {
       await api.updateSpeakerName(meetingId, { oldSpeakerName: oldName, newSpeakerName: newName, segmentIndex, applyToAll })
-      fetchMeeting() // Refresh to get all updated segments
-    } catch (error) {
+      fetchMeeting()
+    } catch (error: unknown) {
       toast.error("Gagal memperbarui pembicara")
       throw error
     }
@@ -327,7 +351,9 @@ export default function MeetingDetailPage() {
     try {
       const res = await api.generateMeetingShareLink(meetingId)
       setShareToken(res.data.shareToken)
-    } catch (error) { toast.error("Gagal generate link share") }
+    } catch (error: unknown) {
+      toast.error("Gagal generate link share")
+    }
   }
 
   const handleUpdateRole = async (userId: string, role: string) => {
@@ -335,7 +361,9 @@ export default function MeetingDetailPage() {
       await api.updateMeetingCollaboratorRole(meetingId, userId, role)
       toast.success("Role diperbarui")
       fetchMeeting()
-    } catch (error) { toast.error("Gagal perbarui role") }
+    } catch (error: unknown) {
+      toast.error("Gagal perbarui role")
+    }
   }
 
   const handleRemoveMember = async (userId: string) => {
@@ -343,10 +371,13 @@ export default function MeetingDetailPage() {
       await api.removeMeetingCollaborator(meetingId, userId)
       toast.success("Member dihapus")
       fetchMeeting()
-    } catch (error) { toast.error("Gagal hapus member") }
+    } catch (error: unknown) {
+      toast.error("Gagal hapus member")
+    }
   }
 
-  const handleExport = async (format: any) => {
+  const handleExport = async (format: 'json' | 'txt' | 'srt' | 'vtt' | 'mp3' | 'mp4') => {
+    if (!meeting) return
     try {
       const blob = await api.exportTranscript(meetingId, format)
       const url = window.URL.createObjectURL(blob)
@@ -359,12 +390,15 @@ export default function MeetingDetailPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       toast.success("Download berhasil")
-    } catch (error: any) { toast.error(error.message || "Gagal export") }
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Gagal export"
+      toast.error(msg)
+    }
   }
 
-  const handleUpdateContent = async (field: string, value: any) => {
+  const handleUpdateContent = async (field: string, value: string | Record<string, string>) => {
     try {
-      const updateData: any = {}
+      const updateData: Record<string, string | Record<string, string>> = {}
       if (field === 'executiveSummary') updateData.executiveSummary = value
       else if (field === 'highlights') updateData.highlights = value
       else if (field === 'conclusion') updateData.conclusion = value
@@ -372,7 +406,9 @@ export default function MeetingDetailPage() {
       await api.updateMeeting(meetingId, updateData)
       await fetchMeeting()
       toast.success("Konten diperbarui")
-    } catch (error) { toast.error("Gagal memperbarui konten") }
+    } catch (error: unknown) {
+      toast.error("Gagal memperbarui konten")
+    }
   }
 
   const handleGenerateKanban = async () => {
@@ -382,7 +418,7 @@ export default function MeetingDetailPage() {
       toast.dismiss()
       toast.success("Kanban board berhasil dibuat!")
       router.push(`/dashboard/kanban/${res.data._id}`)
-    } catch (error) {
+    } catch (error: unknown) {
       toast.dismiss()
       toast.error("Gagal membuat Kanban board")
     }
@@ -390,17 +426,14 @@ export default function MeetingDetailPage() {
 
   const handleDeleteKanban = async () => {
     try {
-      const raw = meeting?.boardId ?? actionItems[0]?.boardId ?? null
-      let bid: string | null = null
-      if (raw) {
-        if (typeof raw === 'object') bid = raw._id ?? String(raw)
-        else bid = String(raw)
-      }
+      const bid = meeting?.boardId || actionItems[0]?.boardId || null
       if (!bid) return
-      await api.deleteBoard(bid)
+      await api.deleteBoard(String(bid))
       toast.success("Kanban board dihapus")
       fetchMeeting()
-    } catch (error) { toast.error("Gagal menghapus Kanban board") }
+    } catch (error: unknown) {
+      toast.error("Gagal menghapus Kanban board")
+    }
   }
 
   const handleRegenerateAi = async () => {
@@ -410,7 +443,7 @@ export default function MeetingDetailPage() {
       toast.dismiss()
       toast.success("Analisis AI diperbarui!")
       fetchMeeting()
-    } catch (error) {
+    } catch (error: unknown) {
       toast.dismiss()
       toast.error("Gagal mengulangi analisis AI")
     }
@@ -421,7 +454,9 @@ export default function MeetingDetailPage() {
       await api.deleteMeeting(meetingId)
       toast.success("Meeting dihapus")
       router.push("/dashboard/meeting")
-    } catch (error) { toast.error("Gagal menghapus meeting") }
+    } catch (error: unknown) {
+      toast.error("Gagal menghapus meeting")
+    }
   }
 
   // Formatter utils
@@ -442,10 +477,10 @@ export default function MeetingDetailPage() {
   const formatDate = (ds: string) => new Date(ds).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
   const formatTimeOnly = (ds: string) => new Date(ds).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
 
-  if (isLoading) return <div className="min-h-screen bg-white flex items-center justify-center"><IconLoader2 className="h-12 w-12 animate-spin text-[var(--primary)]" /></div>
-  if (!meeting) return <div className="min-h-screen bg-white flex items-center justify-center">Meeting tidak ditemukan</div>
+  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><IconLoader2 className="h-12 w-12 animate-spin text-primary" /></div>
+  if (!meeting) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Meeting tidak ditemukan</div>
 
-  const filteredSegments = meeting.transcription?.segments?.filter((s: any) => 
+  const filteredSegments = meeting.transcription?.segments?.filter((s: TranscriptionSegment) => 
     s.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
     s.speaker.toLowerCase().includes(searchQuery.toLowerCase())
   ) || []

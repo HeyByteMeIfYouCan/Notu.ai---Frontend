@@ -155,19 +155,14 @@ const MeetingCard = ({ data }: { data: Props }) => {
     <>
       <Card
         key={data.id}
-        className="group relative cursor-pointer overflow-hidden border-[var(--border)] bg-[var(--card)] shadow-none transition-[border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[color-mix(in_oklch,var(--primary)_32%,var(--border))] motion-reduce:transition-none"
+        className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40 motion-reduce:transition-none"
         onClick={handleClick}
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full opacity-70 transition-[transform,opacity] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.12] group-hover:opacity-100 motion-reduce:transition-none motion-reduce:transform-none"
+          className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full opacity-70 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100 motion-reduce:transition-none"
           style={{
-            background:
-              data.type === 'upload'
-                ? 'radial-gradient(circle, color-mix(in oklch, var(--chart-4) 16%, transparent), transparent 68%)'
-                : data.platform === 'Microphone'
-                  ? 'radial-gradient(circle, color-mix(in oklch, var(--chart-2) 16%, transparent), transparent 68%)'
-                  : 'radial-gradient(circle, color-mix(in oklch, var(--primary) 15%, transparent), transparent 68%)',
+            background: 'radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 10%, transparent), transparent 70%)',
           }}
         />
         <CardContent className="relative z-10 p-5">

@@ -130,7 +130,7 @@ export default function MeetingPage() {
               {/* Generate Your Meeting Section */}
               <div className="px-4 lg:px-6">
                 <div className="relative mb-8 overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-[var(--card)] px-6 py-8 sm:px-9 sm:py-10">
-                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-[48%] opacity-90" style={{ background: "radial-gradient(ellipse at 70% 48%, color-mix(in oklch, var(--primary) 20%, transparent), transparent 58%), linear-gradient(145deg, transparent 30%, color-mix(in oklch, var(--chart-3) 13%, transparent))" }} />
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-[48%] opacity-90" style={{ background: "radial-gradient(ellipse at 70% 48%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 60%)" }} />
                   <svg aria-hidden="true" viewBox="0 0 420 210" className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 text-[var(--primary)] sm:block">
                     <path d="M8 170c72-7 98-58 162-54 60 4 80 47 142 23 38-15 59-58 108-69" fill="none" stroke="currentColor" strokeOpacity=".13" strokeWidth="1.5" />
                     <path d="M2 193c90-2 113-46 172-41 64 5 82 38 144 17 42-15 55-44 102-54" fill="none" stroke="currentColor" strokeOpacity=".07" />

@@ -20,6 +20,19 @@ interface OnlineMeetingDialogProps {
   meetingId?: string | null  // Optional: for reopening existing meeting
 }
 
+function isValidGoogleMeetUrl(urlStr: string): boolean {
+  if (!urlStr || !urlStr.trim()) return false;
+  try {
+    const parsed = new URL(urlStr.trim());
+    if (parsed.protocol !== 'https:') return false;
+    if (parsed.hostname !== 'meet.google.com') return false;
+    const cleanPath = parsed.pathname.replace(/^\/+/, '');
+    return cleanPath.length >= 3 && /^[a-zA-Z0-9_-]+$/.test(cleanPath);
+  } catch {
+    return false;
+  }
+}
+
 export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetingDialogProps) {
   const [meetingName, setMeetingName] = useState("")
   const [meetingLink, setMeetingLink] = useState("")
@@ -47,36 +60,41 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!meetingLink) {
-      toast.error("Tempel link meeting dulu, ya")
+    if (!meetingLink.trim()) {
+      toast.error("Tempel tautan Google Meet terlebih dahulu.")
+      return
+    }
+
+    if (!isValidGoogleMeetUrl(meetingLink)) {
+      toast.error("Tautan tidak valid. Gunakan format resmi https://meet.google.com/xxx-xxxx-xxx")
       return
     }
 
     if (!isReady) {
-      toast.error("Login dulu biar Notu bisa ikut meeting, ya")
+      toast.error("Silakan masuk terlebih dahulu untuk menggunakan fitur bot meeting.")
       return
     }
 
     setIsLoading(true)
     try {
       const response = await api.createOnlineMeeting({
-        title: meetingName || "Online Meeting",
-        meetingLink: meetingLink,
+        title: meetingName.trim() || "Online Meeting",
+        meetingLink: meetingLink.trim(),
         platform: 'Google Meet',
       })
       
       const newMeetingId = response.data?.meeting?._id || response.meeting?._id
-      if (newMeetingId) {
+      if (response.success && response.botStarted !== false && newMeetingId) {
         setActiveMeetingId(newMeetingId)
-        toast.success("Notu berhasil bergabung dengan meeting.")
+        toast.success("Notu berhasil bergabung dengan Google Meet.")
         setMode('live')
-        // Do NOT redirect immediately; let user watch live or navigate manually
       } else {
-        throw new Error("Invalid response from server")
+        throw new Error(response.message || "Layanan bot tidak dapat bergabung ke meeting.")
       }
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal menghubungkan Notu ke meeting"
       console.error("Error creating online meeting:", error)
-      toast.error(error.message || error.response?.data?.error || "Gagal mengirim bot ke meeting")
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }

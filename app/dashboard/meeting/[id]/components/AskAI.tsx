@@ -101,8 +101,9 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
           ]
         })
       }
-    } catch (error: any) {
-      toast.error(error.message || "Gagal mendapatkan jawaban dari AI")
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Gagal mendapatkan jawaban dari AI"
+      toast.error(msg)
       // Remove temp message on error
       setMessages(prev => prev.filter(m => m._id !== tempUserMsg._id))
     } finally {
@@ -118,8 +119,9 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
       await api.clearChatHistory(meetingId)
       setMessages([])
       toast.success("Riwayat chat telah dihapus")
-    } catch (error: any) {
-      toast.error(error.message || "Gagal menghapus riwayat chat")
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Gagal menghapus riwayat chat"
+      toast.error(msg)
     }
   }
 

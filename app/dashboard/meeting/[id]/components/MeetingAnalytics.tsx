@@ -15,6 +15,7 @@ import { useState, useMemo } from "react"
 import { toast } from "sonner"
 import { formatDueDate } from "@/lib/dateUtils"
 import { getPermissions } from "@/lib/permissions"
+import type { CollaboratorRole, TaskCandidate } from "@/lib/types"
 
 interface TalkTimeData {
   speaker: string
@@ -31,13 +32,13 @@ interface TopicKeyword {
 interface MeetingAnalyticsProps {
   talkTime: TalkTimeData[]
   topics: TopicKeyword[]
-  actionItems: any[]
+  actionItems: TaskCandidate[]
   hasSyncedTasks: boolean
   hasBoard?: boolean | null
   onGenerateKanban: () => Promise<void>
   onDeleteKanban: () => Promise<void>
   boardId?: string | null
-  userRole?: string | null
+  userRole?: CollaboratorRole | 'owner' | string | null
   meetingId: string
 }
 
@@ -273,15 +274,9 @@ export function MeetingAnalytics({
                         variant="secondary" 
                         className="h-7 rounded-lg border border-primary/10 bg-background px-3 text-[10px] font-bold uppercase tracking-tight text-primary transition-[background-color,color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary hover:text-primary-foreground motion-reduce:transition-none"
                         onClick={() => {
-                          // Use explicit board existence (`hasBoard`) to decide Open vs Create UI
                           if (hasBoard) {
-                            const raw = actionItems?.[0]?.boardId ?? (typeof boardId !== 'undefined' ? boardId : null);
-                            let bid = null as string | null;
-                            if (raw) {
-                              if (typeof raw === 'object') bid = raw._id ?? String(raw);
-                              else bid = String(raw);
-                            }
-                            if (bid) router.push(`/dashboard/kanban/${bid}`);
+                            const raw = actionItems?.[0]?.boardId || (boardId ? String(boardId) : null);
+                            if (raw) router.push(`/dashboard/kanban/${raw}`);
                           } else {
                             if (!permissions.canSyncTasks) {
                               toast.error('Anda belum memiliki akses untuk membuat board.');
@@ -308,12 +303,13 @@ export function MeetingAnalytics({
                   </div>
 
                   <div className="space-y-4 pt-1">
-                    {actionItems.map((item: any, index: number) => {
+                    {actionItems.map((item: TaskCandidate, index: number) => {
                         const colors = ['bg-purple-500', 'bg-red-500', 'bg-emerald-500', 'bg-amber-500'];
                         const colorClass = item.priority === 'urgent' ? 'bg-rose-500' : item.priority === 'high' ? 'bg-orange-500' : colors[index % colors.length];
                         
                         // Use centralized date utility for consistent formatting
                         const dateStr = formatDueDate(item.dueDate);
+                        const assigneeLabel = item.assigneeName || (typeof item.assignee === 'string' ? item.assignee : item.assignee?.name);
 
                         return (
                           <Tooltip key={index}>
@@ -340,8 +336,8 @@ export function MeetingAnalytics({
                                     <span>📅 {new Date(item.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                   )}
                                 </div>
-                                {item.assignee && (
-                                  <div className="text-[10px] opacity-70">👤 {item.assignee}</div>
+                                {assigneeLabel && (
+                                  <div className="text-[10px] opacity-70">👤 {assigneeLabel}</div>
                                 )}
                               </div>
                             </TooltipContent>

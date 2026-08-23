@@ -171,10 +171,198 @@ export interface TranscriptionSegment {
     speaker: string;
 }
 
+/**
+ * Sequence-bearing form used while a Google Meet caption is still live.
+ * Persistence keeps the four fields above; `sequence` is transport identity.
+ */
+export interface LiveCaptionSegment extends TranscriptionSegment {
+    sequence: number;
+}
+
 export interface Speaker {
     speaker: string;
     start: number;
     end: number;
+}
+
+export interface MeetingAiActionItem {
+    title: string;
+    description: string;
+    priority: TaskPriority;
+    dueDate?: string | null;
+    assigneeName?: string | null;
+    labels: string[];
+    status: TaskStatus;
+}
+
+export interface MeetingAiNotes {
+    summary: string;
+    highlights: Record<string, string>;
+    conclusion: string;
+    actionItems: MeetingAiActionItem[];
+    suggestedTitle?: string;
+    suggestedDescription?: string;
+    tags?: string[];
+}
+
+export type RealtimeMeetingState =
+    | 'idle'
+    | 'requesting_permission'
+    | 'starting_session'
+    | 'recording'
+    | 'paused'
+    | 'finalizing'
+    | 'ready_to_save'
+    | 'saving'
+    | 'completed'
+    | 'recoverable_error'
+    | 'cancelled';
+
+export type BotMeetingStatus =
+    | 'pending'
+    | 'starting'
+    | 'joining'
+    | 'bot_joining'
+    | 'waiting_admission'
+    | 'disabling_media'
+    | 'in_meeting'
+    | 'bot_in_meeting'
+    | 'enabling_captions'
+    | 'recording'
+    | 'processing'
+    | 'leaving'
+    | 'completed'
+    | 'failed';
+
+export type MeetingFeatureErrorCode =
+    | 'SESSION_NOT_FOUND'
+    | 'SESSION_MISMATCH'
+    | 'SESSION_NOT_ACTIVE'
+    | 'ACTIVE_SESSION_EXISTS'
+    | 'INVALID_PAYLOAD'
+    | 'PERMISSION_DENIED'
+    | 'MEDIA_UNAVAILABLE'
+    | 'PREVIEW_TOO_LARGE'
+    | 'FINAL_AUDIO_TOO_LARGE'
+    | 'START_TIMEOUT'
+    | 'FINALIZATION_TIMEOUT'
+    | 'SOCKET_DISCONNECTED'
+    | 'TRANSCRIPTION_FAILED'
+    | 'BOT_UNAVAILABLE'
+    | 'FINALIZATION_FAILED'
+    | 'PERSISTENCE_FAILED';
+
+export interface MeetingFeatureError {
+    code?: MeetingFeatureErrorCode;
+    error: string;
+    sessionId?: string;
+    meetingId?: string;
+    chunkIndex?: number;
+}
+
+export interface RealtimeSessionStartedEvent {
+    sessionId: string;
+    startedAt: string;
+}
+
+export interface RealtimeStartAcknowledgement {
+    success: boolean;
+    sessionId?: string;
+    startedAt?: string;
+    resumeToken?: string;
+    code?: MeetingFeatureErrorCode;
+    error?: string;
+}
+
+export interface RealtimeResumeAcknowledgement {
+    success: boolean;
+    sessionId?: string;
+    status?: 'active' | 'processing' | 'completed' | 'error';
+    code?: MeetingFeatureErrorCode;
+    error?: string;
+}
+
+export interface RealtimeChunkAcknowledgement {
+    success: boolean;
+    accepted: boolean;
+    dropped?: boolean;
+    sessionId?: string;
+    chunkIndex?: number;
+    code?: MeetingFeatureErrorCode;
+    error?: string;
+}
+
+export interface RealtimeFinalizationAcknowledgement {
+    success: boolean;
+    accepted: boolean;
+    sessionId?: string;
+    code?: MeetingFeatureErrorCode;
+    error?: string;
+}
+
+export interface RealtimeFinalizationOptions {
+    numSpeakers?: number;
+    language?: string;
+    enableAiNotes?: boolean;
+}
+
+export interface RealtimePreviewEvent {
+    sessionId: string;
+    text: string;
+    chunkIndex: number;
+    processingTime?: number;
+}
+
+export interface RealtimeAccumulatedEvent {
+    sessionId: string;
+    text: string;
+    chunksProcessed: number;
+    duration: number;
+}
+
+export interface RealtimeProcessingEvent {
+    sessionId: string;
+    message: string;
+}
+
+export interface RealtimeFinalResult {
+    success: true;
+    sessionId: string;
+    transcript: string;
+    segments: TranscriptionSegment[];
+    speakers: Record<string, number> | Speaker[];
+    numSpeakers: number;
+    duration: number;
+    processingTime: number;
+    language?: string;
+    diarizationMethod?: string;
+    aiNotes?: MeetingAiNotes | null;
+    audioBlob?: Blob;
+}
+
+export interface BotStatusEvent {
+    meetingId: string;
+    status: BotMeetingStatus;
+    message?: string;
+    chunksProcessed?: number;
+    segmentCount?: number;
+    duration?: number;
+    timestamp?: string;
+}
+
+export interface BotCaptionEvent {
+    meetingId: string;
+    segment: LiveCaptionSegment;
+    timestamp?: string;
+}
+
+export interface BotCompletedEvent {
+    meetingId: string;
+    transcript?: string;
+    segments?: LiveCaptionSegment[];
+    duration?: number;
+    reason?: string;
+    timestamp?: string;
 }
 
 export interface Transcription {
@@ -204,15 +392,22 @@ export interface ProcessingMeta {
     queuedAt?: string;
     processingStartedAt?: string;
     lastUpdatedAt?: string;
+    sessionId?: string;
+    mediaStatus?: 'not_provided' | 'stored' | 'upload_failed';
+    mediaError?: string;
 }
 
 // ...
 export interface TaskCandidate {
+    _id?: string;
+    id?: string;
+    boardId?: string;
     title: string;
     description?: string;
     priority: TaskPriority;
     dueDate?: string;
-    assigneeName?: string;
+    assignee?: string | UserPublic | null;
+    assigneeName?: string | null;
     labels?: string[];
     status: TaskStatus;
 }

@@ -22,6 +22,7 @@ import { useBotLiveTranscription } from "@/hooks/use-bot-live-transcription"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import type { BotMeetingStatus, Meeting, TranscriptionSegment } from "@/lib/types"
 
 interface BotLiveTranscriptProps {
   meetingId: string
@@ -29,8 +30,9 @@ interface BotLiveTranscriptProps {
   onError?: (error: string) => void
 }
 
-const statusLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+const statusLabels: Record<BotMeetingStatus, { label: string; color: string; icon: React.ReactNode }> = {
   pending: { label: "Menunggu", color: "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]", icon: <IconClock className="h-4 w-4" /> },
+  starting: { label: "Memulai", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
   joining: { label: "Bot Memulai", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
   bot_joining: { label: "Bot Bergabung", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
   waiting_admission: { label: "Menunggu Host", color: "border-[color-mix(in_oklch,var(--chart-4)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-4)_10%,var(--card))] text-[var(--foreground)]", icon: <IconClock className="h-4 w-4" /> },
@@ -51,13 +53,17 @@ function formatDuration(seconds: number): string {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
+function getErrorMessage(error: Error, fallback: string): string {
+  return error.message || fallback
+}
+
 export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTranscriptProps) {
   const { api, isReady } = useApiWithAuth()
   const [isStopping, setIsStopping] = useState(false)
   const [isFinalizing, setIsFinalizing] = useState(false)
   const [meetingStatus, setMeetingStatus] = useState<string | null>(null)
   const [isLoadingStatus, setIsLoadingStatus] = useState(true)
-  const [completedTranscript, setCompletedTranscript] = useState<any>(null)
+  const [completedTranscript, setCompletedTranscript] = useState<Meeting | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const stopToastShownRef = useRef(false) // Prevent duplicate toasts
 
@@ -75,9 +81,10 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
         if (meeting.status === 'completed') {
           setCompletedTranscript(meeting)
         }
-      } catch (err: any) {
+      } catch (err) {
+        const message = getErrorMessage(err instanceof Error ? err : new Error('Gagal memuat status meeting'), 'Gagal memuat status meeting')
         console.error('Failed to fetch meeting status:', err)
-        onError?.(err.message || 'Gagal memuat status meeting')
+        onError?.(message)
       } finally {
         setIsLoadingStatus(false)
       }
@@ -94,8 +101,6 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
     chunksProcessed,
     duration,
     error,
-    joinLiveRoom,
-    leaveLiveRoom,
     getAccumulatedText,
   } = useBotLiveTranscription({
     meetingId,
@@ -109,38 +114,33 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
     },
   })
 
-  // The hook already joins the meeting room via socket.emit('join_meeting')
-  // joinLiveRoom is redundant and causes flapping - skip it
-  // Just track when we should show live vs completed
-  const liveRoomJoinedRef = useRef(false)
-  
-  useEffect(() => {
-    if (meetingId && !liveRoomJoinedRef.current) {
-      liveRoomJoinedRef.current = true
-      joinLiveRoom()
-    }
-    return () => {
-      if (liveRoomJoinedRef.current) {
-        leaveLiveRoom()
-        liveRoomJoinedRef.current = false
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [meetingId]) // Only depend on meetingId to prevent flapping
+  const isNearBottomRef = useRef(true)
 
-  // Auto-scroll to bottom when new segments arrive
+  // Track scroll position so user can read earlier captions without being forced down
   useEffect(() => {
-    if (scrollRef.current) {
-      // ScrollArea uses internal viewport, find it and scroll
-      const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+    const viewport = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]')
+    if (!viewport) return
+
+    const onScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = viewport
+      isNearBottomRef.current = scrollHeight - (scrollTop + clientHeight) < 60
+    }
+
+    viewport.addEventListener('scroll', onScroll, { passive: true })
+    return () => viewport.removeEventListener('scroll', onScroll)
+  }, [isLoadingStatus])
+
+  // Auto-scroll to bottom only if user is already at the bottom
+  useEffect(() => {
+    if (isNearBottomRef.current && scrollRef.current) {
+      const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]')
       if (viewport) {
-        viewport.scrollTop = viewport.scrollHeight;
+        viewport.scrollTop = viewport.scrollHeight
       } else {
-        // Fallback for regular div
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight
       }
     }
-  }, [segments, completedTranscript])
+  }, [segments, previewText, completedTranscript])
 
   const handleStop = async () => {
     if (!isReady) return
@@ -154,8 +154,8 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
         toast.info("Notu sudah keluar dari meeting")
         stopToastShownRef.current = true
       }
-    } catch (err: any) {
-      toast.error(err.message || "Gagal menghentikan bot")
+    } catch (err) {
+      toast.error(getErrorMessage(err instanceof Error ? err : new Error("Gagal menghentikan bot"), "Gagal menghentikan bot"))
     } finally {
       setIsStopping(false)
     }
@@ -198,9 +198,9 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
             className="h-[300px] w-full rounded-md border p-4 bg-muted/30"
             ref={scrollRef}
           >
-            {completedTranscript.segments && completedTranscript.segments.length > 0 ? (
+            {completedTranscript.transcription?.segments && completedTranscript.transcription.segments.length > 0 ? (
               <div className="space-y-2">
-                {completedTranscript.segments.map((segment: any, index: number) => (
+                {completedTranscript.transcription.segments.map((segment: TranscriptionSegment, index: number) => (
                   <div 
                     key={index}
                     className="p-2 rounded bg-background/50"
