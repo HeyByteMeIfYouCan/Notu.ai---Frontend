@@ -286,57 +286,77 @@ function SectionTitle({eyebrow, title, center=false}:{eyebrow?:string; title:str
   );
 }
 
+import stylesSteps from './styles/StepsSection.module.scss';
+
+// ... (in the file, we already import motion and Image, we just need to replace the StepsSection component)
+
 function StepsSection(){
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStepIndex((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   const items = [
     {t:"Paste URL meet anda kepada Notu", d:"Notu ikut hadir di Google Meet atau Zoom lalu menyiapkan sesi.", i:"/hownotu-1.png"},
     {t:"Notu akan memproses transkrip", d:"Transkrip, ringkasan, action items, dan highlights dibuat otomatis.", i:"/hownotu-2.png"},
     {t:"Tindak lanjuti hasil meeting", d:"Distribusikan ringkasan, integrasikan ke tools, dan pantau progres.", i:"/hownotu-3.png"},
   ];
   return (
-    <section id="how" className="relative mx-auto w-full px-4 sm:px-6 lg:px-8 py-20 md:py-32 overflow-hidden bg-slate-50/50">
-      {/* Subtle background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0" />
+    <section id="how" className={stylesSteps.stepsSection}>
+      <div className={stylesSteps.stepsSection__bgGlow} />
       
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.6 }}
-        className="text-center leading-tight text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight"
+        className={stylesSteps.stepsSection__header}
       >
-        <h2>How notu make meetings</h2>
-        <h2><span className="text-primary">effortless</span>?</h2>
+        <h2 className={stylesSteps.stepsSection__title}>
+          How notu make meetings<br/>
+          <span>effortless</span>?
+        </h2>
       </motion.div>
       
-      <div className="mx-auto max-w-7xl mt-16 md:mt-24 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 relative z-10">
+      <div className={stylesSteps.stepsSection__container}>
         {items.map((it,idx)=> (
           <motion.article 
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.7, delay: idx * 0.2, type: "spring", bounce: 0.3 }}
-            key={idx} 
-            className="flex flex-col items-center text-center relative bg-white/80 backdrop-blur-md rounded-3xl p-6 lg:p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(107,78,255,0.2)] transition-all duration-300 z-10"
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.2 }}
+            key={idx}
+            className={`${stylesSteps.stepsSection__step} ${activeStepIndex === idx ? stylesSteps['stepsSection__step--active'] : ''}`}
           >
-            {/* Elegant SVG Gap Connector - Perfectly bridges the grid gap */}
-            {idx < items.length - 1 && (
-              <div className="hidden lg:block absolute top-1/2 -translate-y-1/2 left-full w-8 z-[-1] pointer-events-none">
-                <svg width="100%" height="2" viewBox="0 0 32 2" fill="none" className="overflow-visible">
-                  <line x1="0" y1="1" x2="32" y2="1" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" className="text-primary/30" />
-                </svg>
-              </div>
-            )}
+            <div className={stylesSteps.stepsSection__imageWrapper}>
+              <img 
+                src={it.i} 
+                alt={it.t}
+                className={stylesSteps.stepsSection__mainImage}
+              />
+            </div>
             
-            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-accent text-white font-bold flex items-center justify-center mb-6 text-base shadow-lg shadow-primary/20 ring-4 ring-white">
+            <div className={stylesSteps.stepsSection__node}>
               0{idx + 1}
+              
+              {/* Custom direction lines spanning the gap */}
+              {idx < items.length - 1 && (
+                <img 
+                  src={`/hownout-directionline-${idx + 1}.png`} 
+                  alt="direction line" 
+                  className={stylesSteps.stepsSection__directionLine} 
+                />
+              )}
             </div>
             
-            <div className="relative w-full h-[200px] sm:h-[240px] mb-8">
-              <Image src={it.i} alt={it.t} fill className="object-contain drop-shadow-sm hover:scale-105 transition-transform duration-500" />
+            <div className={stylesSteps.stepsSection__textGroup}>
+              <h3 className={stylesSteps.stepsSection__stepTitle}>{it.t}</h3>
+              <p className={stylesSteps.stepsSection__stepDesc}>{it.d}</p>
             </div>
-            
-            <h3 className="font-semibold text-xl text-[#0f1222]">{it.t}</h3>
-            <p className="mt-3 text-sm md:text-base text-gray-500 leading-relaxed max-w-[280px]">{it.d}</p>
           </motion.article>
         ))}
       </div>
@@ -399,8 +419,10 @@ function WhySection(){
                 <div className={styles.whySection__iconWrapper}>
                   {p.icon}
                 </div>
-                <h4 className={styles.whySection__cardTitle}>{p.t}</h4>
-                <p className={styles.whySection__cardDesc}>{p.d}</p>
+                <div className={styles.whySection__textGroup}>
+                  <h4 className={styles.whySection__cardTitle}>{p.t}</h4>
+                  <p className={styles.whySection__cardDesc}>{p.d}</p>
+                </div>
               </motion.li>
             ))}
           </ul>

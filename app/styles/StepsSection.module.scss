@@ -1,0 +1,199 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-accent-light: color-mix(in oklch, var(--primary) 10%, transparent);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+
+// Block: .stepsSection
+.stepsSection {
+  position: relative;
+  overflow: hidden;
+  padding: 5rem 1rem;
+  background-color: transparent;
+  
+  @media (min-width: 768px) {
+    padding: 8rem 2rem;
+  }
+
+  // Background abstract glow
+  &__bgGlow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 60%;
+    background: color-mix(in oklch, var(--primary) 5%, transparent);
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &__header {
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    margin-bottom: 4rem;
+    
+    @media (min-width: 1024px) {
+      margin-bottom: 6rem;
+    }
+  }
+
+  &__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: $color-text-main;
+    letter-spacing: -0.03em;
+    text-wrap: balance; // Modern wrapping
+    
+    @media (min-width: 1024px) {
+      font-size: 3.5rem;
+    }
+
+    span {
+      color: $color-accent;
+      display: inline-block;
+    }
+  }
+
+  &__container {
+    position: relative;
+    z-index: 10;
+    max-width: 1280px;
+    margin: 0 auto;
+    
+    // Timeline Layout
+    display: grid;
+    gap: 3rem;
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2rem;
+    }
+  }
+
+  // Connecting Line container removed, using pseudo-elements on nodes instead
+
+  &__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0; 
+    gap: 1rem; 
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1;
+    opacity: 0.5; // Inactive state
+    filter: grayscale(80%);
+    
+    &--active {
+      opacity: 1;
+      filter: grayscale(0%);
+      
+      .stepsSection__node {
+        background: $color-accent;
+        color: white;
+        box-shadow: 0 0 20px 4px color-mix(in oklch, var(--primary) 40%, transparent);
+      }
+      
+      .stepsSection__imageWrapper {
+        transform: translateY(-12px);
+      }
+      
+      .stepsSection__mainImage {
+        transform: scale(1.35);
+        filter: drop-shadow(0 25px 50px rgba(0,0,0,0.1));
+      }
+    }
+    
+    &:hover:not(.stepsSection__step--active) {
+      opacity: 0.8;
+      filter: grayscale(40%);
+    }
+  }
+
+  &__imageWrapper {
+    position: relative;
+    width: 100%;
+    height: 250px; // Fixed height guarantees bottom elements perfectly align
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  &__mainImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.06));
+    transform: scale(1.2); // Base scale increased to make images bigger
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  &__node {
+    width: 40px; 
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    color: $color-accent;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid color-mix(in oklch, var(--primary) 20%, transparent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.5s ease;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__directionLine {
+    display: none;
+    
+    @media (min-width: 1024px) {
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 1rem); 
+      // The distance between nodes is exactly 1 grid column + 1 gap.
+      // Since the node is centered in the column, the distance is column_width + gap.
+      // So width should span to the next node.
+      width: calc(30vw - 80px); // Approximate gap between nodes
+      max-width: 300px;
+      height: auto;
+      object-fit: contain;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+  }
+
+  &__textGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__stepTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-text-main;
+    margin: 0;
+  }
+
+  &__stepDesc {
+    font-size: 0.9375rem;
+    color: $color-text-muted;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
