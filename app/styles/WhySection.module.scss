@@ -153,8 +153,8 @@ $color-text-muted: var(--muted-foreground);
   
   &__card:hover &__iconWrapper {
     transform: scale(1.05);
-    background: color-mix(in oklch, var(--primary) 20%, transparent);
-    // Remove the aggressive solid background change, just deepen the tint
+    background: $color-accent-light;
+    color: $color-accent;
   }
 
   &__cardTitle {

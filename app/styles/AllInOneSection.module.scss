@@ -101,12 +101,7 @@ $color-bg-subtle: color-mix(in oklch, var(--card) 95%, var(--muted) 5%);
     }
 
     span {
-      // Creative gradient text using global theme colors
-      background: linear-gradient(135deg, $color-accent 0%, color-mix(in oklch, var(--primary) 70%, white) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      color: transparent;
+      color: $color-accent;
       display: inline-block;
     }
   }
@@ -129,7 +124,7 @@ $color-bg-subtle: color-mix(in oklch, var(--card) 95%, var(--muted) 5%);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: default;
 
-    // The expanding neon border
+    // The expanding solid border (no glow)
     &::before {
       content: '';
       position: absolute;
@@ -140,39 +135,38 @@ $color-bg-subtle: color-mix(in oklch, var(--card) 95%, var(--muted) 5%);
       height: 0; // Starts hidden
       background: $color-accent;
       border-radius: 4px;
-      transition: height 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 0 10px $color-accent-glow;
+      transition: height 0.3s ease;
     }
 
     &--active {
-      background: $color-bg-subtle;
+      background: #ffffff;
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
       transform: translateX(10px);
       
       &::before {
         height: 70%;
-        box-shadow: 0 0 15px $color-accent;
       }
       
       .allInOneSection__iconWrapper {
-        background: $color-accent;
-        color: white;
-        transform: scale(1.1) rotate(-5deg);
+        background: $color-accent-light;
+        color: $color-accent;
+        transform: scale(1.05);
       }
     }
 
     &:hover {
-      background: $color-bg-subtle;
+      background: #ffffff;
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
       transform: translateX(10px); 
       
       &::before {
         height: 70%; 
-        box-shadow: 0 0 15px $color-accent;
       }
       
       .allInOneSection__iconWrapper {
-        background: $color-accent;
-        color: white;
-        transform: scale(1.1) rotate(-5deg);
+        background: $color-accent-light;
+        color: $color-accent;
+        transform: scale(1.05);
       }
     }
   }
