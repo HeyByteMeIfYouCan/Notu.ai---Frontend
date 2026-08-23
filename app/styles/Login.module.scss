@@ -1,0 +1,319 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-bg-dark: #060818;
+
+.loginWrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #ffffff;
+}
+
+// Left Section: Starry Sky & Branding
+.leftPanel {
+  display: none; // Hidden on mobile
+  flex: 1.2;
+  position: relative;
+  background-color: $color-bg-dark;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 3rem;
+
+  @media (min-width: 1024px) {
+    display: flex;
+  }
+
+  // Radial glow (light blur)
+  background-image: radial-gradient(
+    circle at 50% 50%, 
+    color-mix(in oklch, $color-accent 20%, transparent) 0%, 
+    transparent 60%
+  );
+
+  // Pure CSS Stars - EXTREME DENSITY
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: 
+      radial-gradient(1.5px 1.5px at 10px 20px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 40px 60px, #eee, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 70px 10px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(2.5px 2.5px at 100px 140px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1.5px 1.5px at 130px 40px, #eee, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 150px 260px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 180px 120px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 200px 20px, #eee, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 290px 80px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 310px 160px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(1.5px 1.5px at 330px 180px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2.5px 2.5px at 460px 220px, #eee, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 50px 40px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 120px 200px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(1.5px 1.5px at 220px 50px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 380px 90px, #eee, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 420px 250px, #fff, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 150px 150px;
+    opacity: 0.6;
+    animation: twinkle 3s linear infinite alternate;
+  }
+
+  @keyframes twinkle {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.6; }
+  }
+}
+
+// Top Left Branding
+.brandHeader {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
+  img {
+    border-radius: 8px;
+  }
+}
+
+.brandName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+// Main Value Proposition Text
+.brandText {
+  position: relative;
+  z-index: 3; // Ensure text is always on top
+  margin-top: 5vh; // Pushed up slightly to give image more room
+  max-width: 80%; // Restricted to 80% per user request
+  padding-right: 1rem;
+  align-self: flex-start;
+  text-align: left;
+}
+
+.brandTitle {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.brandDesc {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+}
+
+// Massive Overflowing Showcase Image
+.showcaseWrapper {
+  position: absolute;
+  z-index: 1;
+  bottom: -5%;
+  left: -5%; // Moved to bottom-left
+  width: 82%;
+  transform: perspective(1200px) rotateY(12deg) rotateX(4deg); // Flipped the Y rotation
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  
+  &:hover {
+    transform: perspective(1200px) rotateY(8deg) rotateX(2deg) translateY(-10px);
+  }
+}
+
+.showcaseImageGlow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(107, 78, 255, 0.4), transparent 70%);
+  filter: blur(40px);
+  z-index: 0;
+  transform: translateZ(-20px);
+}
+
+.showcaseImg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -20px 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: block;
+}
+
+
+// Right Section: Clean Form Area
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background-color: #ffffff; // Pure white like original
+  position: relative;
+  overflow: hidden;
+
+  @media (min-width: 1024px) {
+    max-width: 650px;
+    padding: 4rem;
+  }
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  margin: 0 auto;
+}
+
+// Logo on mobile (since left panel is hidden)
+.mobileLogo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 3rem;
+  
+  @media (min-width: 1024px) {
+    display: none;
+  }
+  
+  span {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #111827; // gray-900
+    letter-spacing: -0.02em;
+  }
+}
+
+.logoIconSmall {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: #060818;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+.loginHeader {
+  margin-bottom: 2.5rem;
+  text-align: left; // SaaS Best Practice: left aligned header
+
+  h2 {
+    font-size: 2rem; // Slightly larger for impact
+    font-weight: 800;
+    color: #111827; // gray-900
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    font-size: 1.0625rem;
+    color: #4b5563; // gray-600
+    line-height: 1.5;
+  }
+}
+
+.googleBtn {
+  width: 100%;
+  height: 3.5rem;
+  color: #111827; // gray-900
+  border: 2.5px solid transparent; // Thicker border
+  border-radius: 12px;
+  background-image: linear-gradient(#ffffff, #ffffff), linear-gradient(to right, #4285F4, #EA4335, #FBBC05, #34A853);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &:hover:not(:disabled) {
+    background-image: linear-gradient(#f9fafb, #f9fafb), linear-gradient(to right, #4285F4, #EA4335, #FBBC05, #34A853);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.trustBadge {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  
+  .stars {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: #6b7280; // gray-500
+    line-height: 1.5;
+    margin: 0;
+
+    strong {
+      color: #374151; // gray-700
+      font-weight: 600;
+    }
+  }
+}
+
+.footerText {
+  text-align: left;
+  font-size: 0.8125rem;
+  color: #9ca3af; // gray-400
+  line-height: 1.5;
+  margin-top: 2.5rem;
+  position: relative;
+  z-index: 1;
+
+  a {
+    color: $color-accent; // Purple accent
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
