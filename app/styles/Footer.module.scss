@@ -1,0 +1,205 @@
+// Variables mapped to globals.css (OKLCH)
+$color-accent: var(--primary);
+$color-text-main: var(--foreground);
+$color-text-muted: var(--muted-foreground);
+$color-bg-dark: #060818; // Specific to the footer anchor
+
+.footer {
+  position: relative;
+  background-color: $color-bg-dark;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 6rem 1rem 2rem; // Extra top padding for the glow
+  overflow: hidden;
+  
+  // Radial glow (light blur) in the background
+  background-image: radial-gradient(
+    circle at 50% 0%, 
+    color-mix(in oklch, $color-accent 15%, transparent) 0%, 
+    transparent 60%
+  );
+
+  // Subtle glowing top border
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in oklch, $color-accent 50%, transparent), transparent);
+    box-shadow: 0 0 20px 2px color-mix(in oklch, $color-accent 40%, transparent);
+    z-index: 2;
+  }
+
+  // Pure CSS Stars Background
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+    // Generate some random looking dots (stars)
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+      radial-gradient(1.5px 1.5px at 130px 80px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    opacity: 0.3;
+    animation: twinkle 5s linear infinite alternate;
+  }
+
+  @keyframes twinkle {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.5; }
+  }
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 1; // Above the stars
+  }
+
+  &__mainArea {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    margin-bottom: 4rem;
+
+    @media (min-width: 1024px) {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 6rem;
+    }
+  }
+
+  &__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 320px;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    span {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+  }
+
+  &__desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  &__socials {
+    display: flex;
+    gap: 1rem;
+    
+    a {
+      color: rgba(255, 255, 255, 0.4);
+      transition: color 0.3s ease, transform 0.3s ease;
+      
+      &:hover {
+        color: $color-accent;
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  &__linksGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+    flex-grow: 1;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  &__linkCol {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__colTitle {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__linkList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__linkItem {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+      color: #ffffff;
+    }
+  }
+
+  &__bottomBar {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+    }
+  }
+
+  &__copyright {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &__legalLinks {
+    display: flex;
+    gap: 1.5rem;
+
+    a {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.4);
+      text-decoration: none;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #ffffff;
+      }
+    }
+  }
+}

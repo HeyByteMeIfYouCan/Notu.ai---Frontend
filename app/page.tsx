@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart, Star, ChevronDown, Check, CheckCircle2 } from "lucide-react";
+import { Zap, ShieldCheck, Activity, Share2, Link2, Users, BarChart, Star, ChevronDown, Check, CheckCircle2, Twitter, Linkedin, Github } from "lucide-react";
 import styles from "./styles/WhySection.module.scss";
 import allInOneStyles from "./styles/AllInOneSection.module.scss";
 import trustStyles from "./styles/TrustSection.module.scss";
 import testimonialStyles from "./styles/TestimonialSection.module.scss";
 import faqStyles from "./styles/FaqSection.module.scss";
 import pricingStyles from "./styles/PricingSection.module.scss";
+import footerStyles from "./styles/Footer.module.scss";
 
 export default function Home() {
   return (
@@ -888,48 +889,85 @@ function PricingSection(){
 
 function SiteFooter(){
   return (
-    <footer className="border-t border-white/10 bg-[#060818] text-white/80">
-      <div className="mx-auto w-full container  px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <img src={"/logo.png"} width={30} height={30} alt="Logo" />
-            <span className="font-semibold text-white">Notu.ai</span>
+    <footer className={footerStyles.footer}>
+      <div className={footerStyles.footer__container}>
+        
+        {/* Main Area: Brand & Links */}
+        <div className={footerStyles.footer__mainArea}>
+          
+          {/* Brand & Socials */}
+          <div className={footerStyles.footer__brand}>
+            <div className={footerStyles.footer__logo}>
+              <img src={"/logo.png"} width={32} height={32} alt="Notu.ai Logo" />
+              <span>Notu.ai</span>
+            </div>
+            <p className={footerStyles.footer__desc}>
+              Kecerdasan buatan terdepan yang merevolusi cara Anda mendokumentasikan rapat dan percakapan. Otomatis, akurat, dan aman.
+            </p>
+            <div className={footerStyles.footer__socials}>
+              <a href="#" aria-label="Twitter"><Twitter size={20} /></a>
+              <a href="#" aria-label="LinkedIn"><Linkedin size={20} /></a>
+              <a href="#" aria-label="GitHub"><Github size={20} /></a>
+            </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
-            <div>
-              <p className="text-white font-medium">Produk</p>
-              <ul className="mt-2 space-y-1">
-                <li>Fitur</li>
-                <li>Integrasi</li>
-                <li>Harga</li>
+
+          {/* Links Grid */}
+          <div className={footerStyles.footer__linksGrid}>
+            <div className={footerStyles.footer__linkCol}>
+              <h4 className={footerStyles.footer__colTitle}>Produk</h4>
+              <ul className={footerStyles.footer__linkList}>
+                <li><a className={footerStyles.footer__linkItem} href="#">Fitur Utama</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Integrasi API</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Harga & Paket</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Changelog</a></li>
               </ul>
             </div>
-            <div>
-              <p className="text-white font-medium">Perusahaan</p>
-              <ul className="mt-2 space-y-1">
-                <li>Tentang</li>
-                <li>Karier</li>
-                <li>Kontak</li>
+            
+            <div className={footerStyles.footer__linkCol}>
+              <h4 className={footerStyles.footer__colTitle}>Perusahaan</h4>
+              <ul className={footerStyles.footer__linkList}>
+                <li><a className={footerStyles.footer__linkItem} href="#">Tentang Kami</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Karier</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Blog & Berita</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Kontak</a></li>
               </ul>
             </div>
-            <div>
-              <p className="text-white font-medium">Sumber daya</p>
-              <ul className="mt-2 space-y-1">
-                <li>Blog</li>
-                <li>Panduan</li>
-                <li>Pusat Bantuan</li>
+            
+            <div className={footerStyles.footer__linkCol}>
+              <h4 className={footerStyles.footer__colTitle}>Sumber Daya</h4>
+              <ul className={footerStyles.footer__linkList}>
+                <li><a className={footerStyles.footer__linkItem} href="#">Panduan Pengguna</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Dokumentasi API</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Pusat Bantuan</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Komunitas</a></li>
               </ul>
             </div>
-            <div>
-              <p className="text-white font-medium">Legal</p>
-              <ul className="mt-2 space-y-1">
-                <li>Privasi</li>
-                <li>Ketentuan</li>
+            
+            <div className={footerStyles.footer__linkCol}>
+              <h4 className={footerStyles.footer__colTitle}>Legal</h4>
+              <ul className={footerStyles.footer__linkList}>
+                <li><a className={footerStyles.footer__linkItem} href="#">Kebijakan Privasi</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Syarat Ketentuan</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Keamanan Data</a></li>
+                <li><a className={footerStyles.footer__linkItem} href="#">Cookie Policy</a></li>
               </ul>
             </div>
+          </div>
+          
+        </div>
+
+        {/* Bottom Bar: Copyright & Legal */}
+        <div className={footerStyles.footer__bottomBar}>
+          <p className={footerStyles.footer__copyright}>
+            &copy; {new Date().getFullYear()} Notu.ai. Hak Cipta Dilindungi.
+          </p>
+          <div className={footerStyles.footer__legalLinks}>
+            <a href="#">Privasi</a>
+            <a href="#">Ketentuan</a>
+            <a href="#">Status Sistem</a>
           </div>
         </div>
-        <p className="mt-8 text-xs">All rights reserved © 2025 Notu</p>
+        
       </div>
     </footer>
   );
