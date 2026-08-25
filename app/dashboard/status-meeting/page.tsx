@@ -753,20 +753,25 @@ function StatusMeetingContent() {
                       <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : filteredMeetings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center bg-card rounded-2xl border border-border/60">
+                  <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border/60 shadow-sm mx-1">
                     {meetings.length === 0 ? (
                       <>
-                        <p className="text-lg font-bold tracking-tight text-foreground">Belum ada proses yang berjalan</p>
-                        <p className="text-sm text-muted-foreground mt-1">Mulai meeting baru, dan pantau progresnya di sini.</p>
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6 ring-8 ring-primary/5">
+                          <IconRocket className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2">Belum ada proses yang berjalan</h3>
+                        <p className="text-muted-foreground max-w-md mx-auto">Mulai meeting baru, dan pantau progres transkripsinya di sini.</p>
                       </>
                     ) : (
                       <>
-                        <IconFilter className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                        <p className="text-lg font-bold tracking-tight text-foreground">Tidak ada hasil</p>
-                        <p className="text-sm text-muted-foreground mt-1">Coba ubah kata kunci atau reset filter Anda.</p>
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-6 ring-8 ring-muted/50">
+                          <IconFilter className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2">Tidak ada hasil</h3>
+                        <p className="text-muted-foreground max-w-md mx-auto">Coba ubah kata kunci pencarian atau reset filter Anda.</p>
                         <Button 
                           variant="outline" 
-                          className="mt-6 rounded-xl"
+                          className="mt-6 rounded-xl shadow-sm"
                           onClick={() => {
                             setSearchQuery("")
                             setStatusFilter("all")

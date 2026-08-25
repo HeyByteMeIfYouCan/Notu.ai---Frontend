@@ -321,9 +321,12 @@ export default function UploadsPage() {
                     <IconLoader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
                   </div>
                 ) : meetings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="text-lg font-medium text-[var(--foreground)]">Belum ada file yang diupload</p>
-                    <p className="text-sm text-[var(--muted-foreground)] mt-1">Upload file audio/video untuk memulai transkripsi</p>
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6 ring-8 ring-primary/5">
+                      <IconCloudUpload className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2">Belum ada file yang diupload</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">Upload file audio atau video untuk memulai transkripsi dan analisis AI.</p>
                   </div>
                 ) : (
                   <>

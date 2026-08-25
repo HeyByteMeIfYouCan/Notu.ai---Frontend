@@ -45,7 +45,7 @@ export default function LoginPage() {
         {/* Massive Overflowing Showcase Image */}
         <div className={styles.showcaseWrapper}>
           <div className={styles.showcaseImageGlow}></div>
-          <img src="/hero-features.png" alt="Hero Features Interface" className={styles.showcaseImg} />
+          <img src="/hero-notu.png" alt="Hero Features Interface" className={styles.showcaseImg} />
         </div>
       </div>
 

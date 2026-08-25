@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation"
 import { useApiWithAuth, useAuth } from "@/hooks/use-auth"
 import { getSocket } from "@/lib/socket"
 import { toast } from "sonner"
-import { IconLoader2 } from "@tabler/icons-react"
+import { IconLoader2, IconAlertCircle, IconRefresh, IconClock, IconMicrophone } from "@tabler/icons-react"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
+import { Button } from "@/components/ui/button"
 
 // Components
 import { MeetingHeader } from "./components/MeetingHeader"
@@ -552,62 +553,134 @@ export default function MeetingDetailPage() {
             summary={meeting.transcription?.summary || ""}
           />
 
-          <div className="flex flex-1 overflow-hidden">
-            <MeetingAnalytics 
-              talkTime={analytics?.talkTime || []}
-              topics={analytics?.topics || []}
-              actionItems={actionItems}
-              hasSyncedTasks={hasSyncedTasks}
-              hasBoard={meeting?.hasBoard}
-              onGenerateKanban={handleGenerateKanban}
-              onDeleteKanban={handleDeleteKanban}
-              boardId={meeting?.boardId}
-              userRole={meeting?.userRole}
-              meetingId={meetingId}
-            />
+          {meeting.status === 'failed' || meeting.status === 'error' ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-card rounded-2xl mx-6 my-4 border border-destructive/20 shadow-sm relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-destructive/5 to-transparent pointer-events-none" />
+              <div className="h-16 w-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-6 ring-8 ring-destructive/5 relative z-10">
+                <IconAlertCircle className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2 relative z-10">Gagal Memproses Meeting</h3>
+              <p className="text-muted-foreground max-w-md mb-8 relative z-10">
+                Maaf, terjadi kesalahan sistem saat memproses meeting ini. 
+                {meeting.processingLogs && meeting.processingLogs.length > 0 && (
+                  <span className="block mt-2 font-medium text-destructive">
+                    Pesan error: {meeting.processingLogs[meeting.processingLogs.length - 1].message}
+                  </span>
+                )}
+              </p>
+              <div className="flex items-center gap-4 relative z-10">
+                <Button 
+                  variant="outline" 
+                  className="rounded-xl border-border bg-background hover:bg-muted"
+                  onClick={() => router.push('/dashboard/status-meeting')}
+                >
+                  Kembali ke Status
+                </Button>
+                <Button 
+                  className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={async () => {
+                    try {
+                      await api.retryTranscription(meetingId);
+                      toast.success("Transkripsi ulang dimulai");
+                      router.push('/dashboard/status-meeting');
+                    } catch (e: any) {
+                      toast.error(e.message || "Gagal memulai ulang");
+                    }
+                  }}
+                >
+                  <IconRefresh className="h-4 w-4 mr-2" />
+                  Coba Proses Lagi
+                </Button>
+              </div>
+            </div>
+          ) : meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued' || meeting.status === 'recording' || meeting.status === 'bot_joining' ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-card rounded-2xl mx-6 my-4 border border-primary/20 shadow-sm relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+              <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-6 ring-8 ring-primary/5 relative z-10">
+                {meeting.status === 'recording' || meeting.status === 'bot_joining' ? (
+                  <IconMicrophone className="h-8 w-8 animate-pulse" />
+                ) : meeting.status === 'pending' || meeting.status === 'queued' ? (
+                  <IconClock className="h-8 w-8" />
+                ) : (
+                  <IconLoader2 className="h-8 w-8 animate-spin" />
+                )}
+              </div>
+              <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2 relative z-10">
+                {meeting.status === 'recording' ? 'Bot Sedang Merekam' : 
+                 meeting.status === 'bot_joining' ? 'Bot Sedang Bergabung' :
+                 meeting.status === 'uploading' ? 'Mengunggah File' :
+                 meeting.status === 'pending' || meeting.status === 'queued' ? 'Menunggu Antrian' :
+                 'Sedang Memproses Meeting'}
+              </h3>
+              <p className="text-muted-foreground max-w-md mb-8 relative z-10">
+                Meeting Anda sedang dalam antrian atau sedang diproses. Anda dapat memantau status secara lebih detail di halaman Status Proses.
+              </p>
+              <Button 
+                variant="default" 
+                className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 relative z-10"
+                onClick={() => router.push('/dashboard/status-meeting')}
+              >
+                Lihat Status Proses
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-1 overflow-hidden">
+              <MeetingAnalytics 
+                talkTime={analytics?.talkTime || []}
+                topics={analytics?.topics || []}
+                actionItems={actionItems}
+                hasSyncedTasks={hasSyncedTasks}
+                hasBoard={meeting?.hasBoard}
+                onGenerateKanban={handleGenerateKanban}
+                onDeleteKanban={handleDeleteKanban}
+                boardId={meeting?.boardId}
+                userRole={meeting?.userRole}
+                meetingId={meetingId}
+              />
 
-            <MeetingMainContent 
-              meeting={meeting}
-              userRole={meeting?.userRole}
-              actionItems={actionItems}
-              hasSyncedTasks={hasSyncedTasks}
-              onUpdateMeeting={handleUpdateMeeting}
-              onRegenerateAi={handleRegenerateAi}
-              onGenerateKanban={handleGenerateKanban}
-              onUpdateContent={handleUpdateContent}
-              formatDate={formatDate}
-              formatTimeOnly={formatTimeOnly}
-              formatDuration={formatDuration}
-            />
+              <MeetingMainContent 
+                meeting={meeting}
+                userRole={meeting?.userRole}
+                actionItems={actionItems}
+                hasSyncedTasks={hasSyncedTasks}
+                onUpdateMeeting={handleUpdateMeeting}
+                onRegenerateAi={handleRegenerateAi}
+                onGenerateKanban={handleGenerateKanban}
+                onUpdateContent={handleUpdateContent}
+                formatDate={formatDate}
+                formatTimeOnly={formatTimeOnly}
+                formatDuration={formatDuration}
+              />
 
-            <MeetingTranscript 
-              meetingId={meetingId}
-              userRole={meeting.userRole}
-              transcriptSegments={meeting.transcription?.segments || []}
-              filteredSegments={filteredSegments}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              autoFollow={autoFollow}
-              setAutoFollow={setAutoFollow}
-              activeSegmentIndex={activeSegmentIndex}
-              jumpToTimestamp={jumpToTimestamp}
-              formatTime={formatTime}
-              currentTime={currentTime}
-              totalDuration={mediaDuration || meeting.duration || 0}
-              videoUrl={videoUrl}
-              audioRef={audioRef}
-              videoRef={videoRef}
-              isVideoFile={isVideoFile}
-              isPlaying={isPlaying}
-              setIsPlaying={setIsPlaying}
-              togglePlayPause={togglePlayPause}
-              transcriptContainerRef={transcriptContainerRef}
-              onUpdateSpeaker={handleUpdateSpeaker}
-              meeting={meeting}
-              collaborators={meeting.collaborators}
-              user={user}
-            />
-          </div>
+              <MeetingTranscript 
+                meetingId={meetingId}
+                userRole={meeting.userRole}
+                transcriptSegments={meeting.transcription?.segments || []}
+                filteredSegments={filteredSegments}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                autoFollow={autoFollow}
+                setAutoFollow={setAutoFollow}
+                activeSegmentIndex={activeSegmentIndex}
+                jumpToTimestamp={jumpToTimestamp}
+                formatTime={formatTime}
+                currentTime={currentTime}
+                totalDuration={mediaDuration || meeting.duration || 0}
+                videoUrl={videoUrl}
+                audioRef={audioRef}
+                videoRef={videoRef}
+                isVideoFile={isVideoFile}
+                isPlaying={isPlaying}
+                setIsPlaying={setIsPlaying}
+                togglePlayPause={togglePlayPause}
+                transcriptContainerRef={transcriptContainerRef}
+                onUpdateSpeaker={handleUpdateSpeaker}
+                meeting={meeting}
+                collaborators={meeting.collaborators}
+                user={user}
+              />
+            </div>
+          )}
 
           {(videoUrl || audioUrl) && (
             <PlaybackControls 

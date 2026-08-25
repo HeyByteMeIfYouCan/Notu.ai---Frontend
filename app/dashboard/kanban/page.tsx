@@ -207,12 +207,12 @@ export default function KanbanListPage() {
                   </div>
                 </div>
               ) : boards.length === 0 ? (
-                <div className="flex h-[350px] flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/30 text-center p-10">
-                  <div className="p-4 rounded-full bg-primary/5 mb-4 ring-1 ring-primary/10">
-                    <IconLayoutBoard className="h-10 w-10 text-primary/60" />
+                <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border/60 shadow-sm mx-1">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6 ring-8 ring-primary/5">
+                    <IconLayoutBoard className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-bold text-foreground">Belum ada board</h3>
-                  <p className="text-muted-foreground max-w-xs mt-2 text-sm leading-relaxed">Buat board baru secara manual atau *generate* otomatis dari halaman detail meeting.</p>
+                  <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2">Belum ada board</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">Buat board baru secara manual atau *generate* otomatis dari action items meeting Anda.</p>
                   <Button variant="outline" className="mt-6 font-semibold rounded-xl shadow-sm" onClick={() => router.push('/dashboard/meeting')}>
                     Lihat Meeting Anda
                   </Button>

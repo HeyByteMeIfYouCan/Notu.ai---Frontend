@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar"
 import MeetingCard from "@/components/custom/MeetingCard"
 import { ModernPagination } from "@/components/custom/ModernPagination"
-import { IconLoader2 } from "@tabler/icons-react"
+import { IconLoader2, IconMicrophone } from "@tabler/icons-react"
 import { Video, Mic, Upload, BarChart2 } from "lucide-react"
 import { OnlineMeetingDialog } from "@/components/dialogs/online-meeting-dialog"
 import { RealtimeMeetingDialog } from "@/components/dialogs/realtime-meeting-dialog"
@@ -289,9 +289,12 @@ export default function Page() {
                     <IconLoader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
                   </div>
                 ) : meetings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="text-lg font-medium text-[var(--foreground)]">Belum ada meeting</p>
-                    <p className="text-sm text-[var(--muted-foreground)] mt-1">Mari mulai meeting pertama Anda melalui pilihan di atas.</p>
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6 ring-8 ring-primary/5">
+                      <IconMicrophone className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2">Belum ada meeting yang tercatat</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">Ruang kerja Anda masih kosong. Mari mulai dengan merekam diskusi atau mengundang Notu ke panggilan online.</p>
                   </div>
                 ) : (
                   <>

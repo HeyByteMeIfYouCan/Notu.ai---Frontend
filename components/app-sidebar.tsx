@@ -44,7 +44,7 @@ const data = {
   navSecondary: [
     {
       title: "Settings",
-      url: "/dashboard/settings",
+      url: "#",
       icon: IconSettings,
     },
     {
@@ -56,7 +56,7 @@ const data = {
   documents: [
       {
         name: "Settings",
-        url: "/dashboard/settings",
+        url: "#",
       },
       {
         name: "Get Help",

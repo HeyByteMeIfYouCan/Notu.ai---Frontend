@@ -171,7 +171,7 @@ function HeroSection() {
             {/* Elegant Glassmorphism Frame around the dashboard image */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-2 shadow-[0_0_80px_-20px_rgba(107,78,255,0.4)] backdrop-blur-md">
               <div className="overflow-hidden rounded-lg border border-white/5 bg-[#060818]">
-                <Image src="/hero-features.png" alt="Hero Feature" width={1600} height={900} className="w-full h-auto object-cover" priority />
+                <Image src="/hero-notu.png" alt="Hero Feature" width={1600} height={900} className="w-full h-auto object-cover" priority />
               </div>
             </div>
           </motion.div>
@@ -468,7 +468,7 @@ function AllInOneSection(){
       t: "Analytics your meeting", 
       d: "Pantau metrik krusial seperti tingkat engagement peserta, dominasi pembicaraan, dan sentimen secara berkala. Dashboard analitik interaktif kami membantu Anda mengambil keputusan berbasis data.",
       icon: <BarChart />,
-      image: "/hero-features.png"
+      image: "/hero-notu.png"
     },
   ];
 
