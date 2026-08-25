@@ -578,44 +578,104 @@ function StatusMeetingContent() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col bg-background">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <div className="flex flex-col gap-6 py-8">
               {/* Header */}
-              <div className="px-4 lg:px-6">
-                <div className="relative flex flex-col gap-5 overflow-hidden rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] px-6 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-2/5" style={{ background: "radial-gradient(ellipse at 75% 50%, color-mix(in oklch, var(--primary) 12%, transparent), transparent 65%)" }} />
-                  <div className="space-y-1">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Pantau proses</p>
-                    <h1 className="text-3xl font-semibold tracking-[-0.035em] text-foreground">Bagaimana progresnya?</h1>
-                    <p className="text-sm leading-6 text-muted-foreground">Lihat meeting yang sedang berlangsung, diproses, atau sudah siap dibuka.</p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleRefresh} 
-                    disabled={isRefreshing}
-                    className="relative z-10 border-border bg-[var(--card)] transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent hover:text-accent-foreground motion-reduce:transition-none"
-                  >
-                    <IconRefresh className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Cek update
-                  </Button>
+              <div className="px-4 lg:px-8 mb-2 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)]">
+                    Status Proses
+                  </h2>
+                  <p className="text-base text-muted-foreground mt-2">
+                    Pantau meeting yang sedang berlangsung, diproses, atau sudah siap dibuka.
+                  </p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={handleRefresh} 
+                  disabled={isRefreshing}
+                  className="rounded-xl bg-card shadow-sm transition-all duration-300 hover:bg-accent hover:text-accent-foreground sm:mt-1"
+                >
+                  <IconRefresh className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Cek Update
+                </Button>
+              </div>
+
+              {/* Status Overview */}
+              <div className="px-4 lg:px-8">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <Card className="rounded-2xl border-border/60 bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-foreground">Selesai</CardTitle>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))]">
+                        <IconCheck className="h-5 w-5 text-[var(--foreground)]" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.completed}</div>
+                      <p className="text-xs font-medium text-muted-foreground mt-1">Meeting Selesai</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-2xl border-border/60 bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-foreground">Aktif</CardTitle>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_10%,var(--card))]">
+                        <IconLoader2 className="h-5 w-5 text-[var(--primary)]" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.active}</div>
+                      <p className="text-xs font-medium text-muted-foreground mt-1">Sedang Diproses</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-2xl border-border/60 bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-foreground">Menunggu</CardTitle>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--muted)]">
+                        <IconClock className="h-5 w-5 text-[var(--muted-foreground)]" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.pending}</div>
+                      <p className="text-xs font-medium text-muted-foreground mt-1">Dalam Antrian</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-2xl border-border/60 bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-foreground">Gagal</CardTitle>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[color-mix(in_oklch,var(--destructive)_24%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_9%,var(--card))]">
+                        <IconAlertCircle className="h-5 w-5 text-[var(--destructive)]" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.failed}</div>
+                      <p className="text-xs font-medium text-muted-foreground mt-1">Error Teknis</p>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
+
               {/* Filters */}
-              <div className="px-4 lg:px-6">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="relative flex-1 min-w-[200px] max-w-[400px]">
+              <div className="px-4 lg:px-8 mt-4 mb-6">
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/50 bg-card p-1.5 shadow-sm">
+                  <div className="relative flex-1 min-w-[200px]">
                     <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       placeholder="Cari meeting Anda..."
-                      className="pl-10"
+                      className="h-9 pl-9 pr-4 bg-transparent border-none shadow-none focus-visible:ring-0 text-foreground placeholder:text-muted-foreground"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
 
+                  <div className="h-5 w-px bg-border/50 hidden md:block"></div>
+
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px] bg-background-2">
+                    <SelectTrigger className="h-9 w-[160px] bg-transparent border-none shadow-none focus:ring-0 text-muted-foreground hover:text-foreground font-medium">
                       <SelectValue placeholder="Semua status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -627,8 +687,10 @@ function StatusMeetingContent() {
                     </SelectContent>
                   </Select>
 
+                  <div className="h-5 w-px bg-border/50 hidden md:block"></div>
+
                   <Select value={platformFilter} onValueChange={setPlatformFilter}>
-                    <SelectTrigger className="w-[180px] bg-background-2">
+                    <SelectTrigger className="h-9 w-[160px] bg-transparent border-none shadow-none focus:ring-0 text-muted-foreground hover:text-foreground font-medium">
                       <SelectValue placeholder="Semua sumber" />
                     </SelectTrigger>
                     <SelectContent>
@@ -640,105 +702,50 @@ function StatusMeetingContent() {
                     </SelectContent>
                   </Select>
 
+                  <div className="h-5 w-px bg-border/50 hidden md:block"></div>
+
                   <Select value={pageSize.toString()} onValueChange={(val) => {
                     setPageSize(Number(val))
-                    setCurrentPage(1) // Reset to first page when changing page size
+                    setCurrentPage(1)
                   }}>
-                    <SelectTrigger className="w-[130px] bg-background-2">
-                      <SelectValue placeholder="10 / page" />
+                    <SelectTrigger className="h-9 w-[130px] bg-transparent border-none shadow-none focus:ring-0 text-muted-foreground hover:text-foreground font-medium">
+                      <SelectValue placeholder="10 / halaman" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="5">5 / page</SelectItem>
-                      <SelectItem value="10">10 / page</SelectItem>
-                      <SelectItem value="20">20 / page</SelectItem>
-                      <SelectItem value="50">50 / page</SelectItem>
-                      <SelectItem value="100">100 / page</SelectItem>
+                      <SelectItem value="5">5 / halaman</SelectItem>
+                      <SelectItem value="10">10 / halaman</SelectItem>
+                      <SelectItem value="20">20 / halaman</SelectItem>
+                      <SelectItem value="50">50 / halaman</SelectItem>
+                      <SelectItem value="100">100 / halaman</SelectItem>
                     </SelectContent>
                   </Select>
 
                   {(searchQuery || statusFilter !== "all" || platformFilter !== "all") && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => {
-                        setSearchQuery("")
-                        setStatusFilter("all")
-                        setPlatformFilter("all")
-                      }}
-                    >
-                      Reset filter
-                    </Button>
+                    <>
+                      <div className="h-5 w-px bg-border/50 hidden md:block"></div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="h-8 rounded-lg px-3 text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setSearchQuery("")
+                          setStatusFilter("all")
+                          setPlatformFilter("all")
+                        }}
+                      >
+                        Reset
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
 
-              {/* Pagination Controls - Removed from top */}
-
-              {/* Status Overview */}
-              <div className="px-4 lg:px-6">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 10%, transparent), transparent 62%)" }} />
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-foreground">Selesai</CardTitle>
-                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))]">
-                        <IconCheck className="h-4 w-4 text-[var(--foreground)]" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.completed}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Meeting selesai</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 12%, transparent), transparent 62%)" }} />
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-foreground">Aktif</CardTitle>
-                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_10%,var(--card))]">
-                        <IconLoader2 className="h-4 w-4 text-[var(--primary)]" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.active}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Sedang diproses</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 62%)" }} />
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-foreground">Menunggu</CardTitle>
-                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--muted)]">
-                        <IconClock className="h-4 w-4 text-[var(--muted-foreground)]" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.pending}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Dalam antrian</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="relative overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40">
-                    <div aria-hidden="true" className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: "radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--destructive) 10%, transparent), transparent 62%)" }} />
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-foreground">Gagal</CardTitle>
-                      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[color-mix(in_oklch,var(--destructive)_24%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_9%,var(--card))]">
-                        <IconAlertCircle className="h-4 w-4 text-[var(--destructive)]" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="relative text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{statusCounts.failed}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Error teknis</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-
               {/* Meeting List */}
-              <div className="px-4 lg:px-6">
-                <h2 className="text-lg font-semibold mb-4">
+              <div className="px-4 lg:px-8">
+                <h2 className="text-lg font-bold tracking-tight text-foreground mb-4">
                   {statusFilter !== "all" || platformFilter !== "all" || searchQuery 
-                    ? "Hasil sesuai filter Anda"
-                    : "Semua proses meeting"}
+                    ? "Hasil Sesuai Filter Anda"
+                    : "Daftar Proses Meeting"}
                 </h2>
                 
                 {isLoading ? (
@@ -746,27 +753,27 @@ function StatusMeetingContent() {
                       <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : filteredMeetings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="flex flex-col items-center justify-center py-12 text-center bg-card rounded-2xl border border-border/60">
                     {meetings.length === 0 ? (
                       <>
-                        <p className="text-lg font-medium text-foreground">Belum ada proses yang jalan</p>
-                        <p className="text-sm text-muted-foreground mt-1">Mulai meeting baru, lalu progresnya akan muncul di sini.</p>
+                        <p className="text-lg font-bold tracking-tight text-foreground">Belum ada proses yang berjalan</p>
+                        <p className="text-sm text-muted-foreground mt-1">Mulai meeting baru, dan pantau progresnya di sini.</p>
                       </>
                     ) : (
                       <>
-                        <IconFilter className="h-12 w-12 text-muted-foreground mb-4" />
-                        <p className="text-lg font-medium">Belum ketemu yang cocok</p>
-                        <p className="text-sm text-muted-foreground mt-1">Coba ubah kata kunci atau reset filternya.</p>
+                        <IconFilter className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                        <p className="text-lg font-bold tracking-tight text-foreground">Tidak ada hasil</p>
+                        <p className="text-sm text-muted-foreground mt-1">Coba ubah kata kunci atau reset filter Anda.</p>
                         <Button 
                           variant="outline" 
-                          className="mt-4"
+                          className="mt-6 rounded-xl"
                           onClick={() => {
                             setSearchQuery("")
                             setStatusFilter("all")
                             setPlatformFilter("all")
                           }}
                         >
-                          Reset semua filter
+                          Reset Semua Filter
                         </Button>
                       </>
                     )}
@@ -777,7 +784,7 @@ function StatusMeetingContent() {
                       {filteredMeetings.map((meeting) => (
                         <Card 
                           key={meeting._id} 
-                          className={`group overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40 motion-reduce:transition-none ${
+                          className={`group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-xs hover:shadow-md transition-all duration-300 hover:border-primary/40 motion-reduce:transition-none ${
                           meetingIdFromUrl === meeting._id ? 'ring-2 ring-primary' : ''
                         }`}
                       >
@@ -972,31 +979,32 @@ function StatusMeetingContent() {
                                 </div>
                               )}
                             </div>
-
-                            {/* Actions */}
-                            <div className="flex flex-row lg:flex-col items-center gap-3 shrink-0">
-                              {getStatusBadge(meeting.status)}
+                            
+                            {/* Actions Group */}
+                            <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
                               {meeting.status === "completed" && (
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   onClick={() => handleViewSummary(meeting._id)}
-                                  className="bg-primary text-primary-foreground shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
+                                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-none rounded-xl px-4"
                                 >
-                                  <IconEye className="h-4 w-4 mr-2" />
-                                  Buka hasil meeting
+                                  <IconEye className="h-4 w-4 sm:mr-2" />
+                                  <span className="hidden sm:inline">Buka hasil meeting</span>
                                 </Button>
                               )}
-                              {meeting.status === "failed" && (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
+
+                              {(meeting.status === "failed") && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
                                   onClick={() => handleRetry(meeting._id)}
-                                  className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 rounded-xl px-4"
                                 >
-                                  <IconRefresh className="h-4 w-4 mr-2" />
-                                  Coba proses lagi
+                                  <IconRefresh className="h-4 w-4 sm:mr-2" />
+                                  <span className="hidden sm:inline">Coba proses lagi</span>
                                 </Button>
                               )}
+
                               {/* Delete - Owner/Admin only */}
                               {(meeting.userRole === 'owner' || meeting.userRole === 'admin') && (
                                 <Button 
@@ -1004,7 +1012,7 @@ function StatusMeetingContent() {
                                   variant="ghost"
                                   onClick={() => handleDelete(meeting._id)}
                                   disabled={deletingId === meeting._id}
-                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl px-2.5"
                                 >
                                   {deletingId === meeting._id ? (
                                     <IconLoader2 className="h-4 w-4 animate-spin" />
