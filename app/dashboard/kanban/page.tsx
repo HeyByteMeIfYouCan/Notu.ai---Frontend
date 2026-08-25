@@ -12,7 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import NewBoardModal from "@/components/custom/NewBoardModal"
 import BoardCard from "@/components/custom/BoardCard"
 import useListParams from "@/hooks/use-list-params"
-import { IconPlus, IconLayoutBoard } from "@tabler/icons-react"
+import { IconPlus, IconLayoutBoard, IconSearch } from "@tabler/icons-react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { ModernPagination } from "@/components/custom/ModernPagination"
@@ -87,80 +87,94 @@ export default function KanbanListPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex min-h-screen flex-col bg-slate-50/50">
-          <div className="flex flex-1 flex-col p-6 lg:p-10 gap-6 max-w-7xl mx-auto w-full">
-            <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Kanban Boards</h1>
-                    <p className="text-sm text-muted-foreground">Manage and collaborate on meeting tasks efficiently.</p>
+        <div className="flex flex-1 flex-col bg-background">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-6 py-6">
+              
+              {/* Header */}
+              <div className="px-4 lg:px-6 mb-2">
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)]">Kanban Boards</h2>
+                    <p className="text-base text-muted-foreground mt-2 max-w-2xl">
+                      Kelola dan kolaborasikan action items dari meeting secara efisien.
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                      <div className="hidden sm:block">
-                        <Input placeholder="Search boards..." value={controls.searchInput} onChange={(e:any)=>controls.setSearchInput(e.target.value)} className="w-64" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Select value={controls.filter} onValueChange={(v:any)=>controls.setFilter(v)}>
-                          <SelectTrigger className="w-[160px] bg-background-2">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="mine">My Boards</SelectItem>
-                            <SelectItem value="shared">Shared with me</SelectItem>
-                          </SelectContent>
-                        </Select>
+                  <Button 
+                    onClick={() => setIsModalOpen(true)} 
+                    className="self-start sm:self-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl"
+                  >
+                    <IconPlus className="mr-2 h-4 w-4" /> Board Baru
+                  </Button>
+                </div>
 
-                        <Select value={controls.source || 'all'} onValueChange={(v:any)=>controls.setSource(v)}>
-                          <SelectTrigger className="w-[160px] bg-background-2">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Any Source</SelectItem>
-                            <SelectItem value="generated">Generated from Meeting</SelectItem>
-                            <SelectItem value="manual">Manual</SelectItem>
-                          </SelectContent>
-                        </Select>
+                {/* Filter Toolbar */}
+                <div className="flex flex-wrap items-center gap-0 rounded-xl border border-border bg-card overflow-hidden divide-x divide-border mt-4">
+                  <div className="relative flex-1 min-w-[180px]">
+                    <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    <Input 
+                      placeholder="Cari board..." 
+                      value={controls.searchInput} 
+                      onChange={(e:any)=>controls.setSearchInput(e.target.value)} 
+                      className="h-10 pl-9 pr-4 bg-transparent border-none shadow-none rounded-none focus-visible:ring-0 text-sm" 
+                    />
+                  </div>
+                  
+                  <Select value={controls.filter} onValueChange={(v:any)=>controls.setFilter(v)}>
+                    <SelectTrigger className="h-10 w-[140px] bg-transparent border-none shadow-none rounded-none focus:ring-0 text-sm text-muted-foreground">
+                      <SelectValue placeholder="Semua Board" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua</SelectItem>
+                      <SelectItem value="mine">Board Saya</SelectItem>
+                      <SelectItem value="shared">Dibagikan</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                        <Select value={String(controls.pageSize)} onValueChange={(v:any)=>controls.setPageSize(Number(v))}>
-                          <SelectTrigger className="w-[120px] bg-background-2">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="10">10 / page</SelectItem>
-                            <SelectItem value="12">12 / page</SelectItem>
-                            <SelectItem value="20">20 / page</SelectItem>
-                            <SelectItem value="50">50 / page</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button 
-                        onClick={() => setIsModalOpen(true)} 
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                      >
-                          <IconPlus className="mr-2 h-4 w-4" /> New Board
-                        </Button>
-                    </div>
-            </div>
+                  <Select value={controls.source || 'all'} onValueChange={(v:any)=>controls.setSource(v)}>
+                    <SelectTrigger className="h-10 w-[160px] bg-transparent border-none shadow-none rounded-none focus:ring-0 text-sm text-muted-foreground">
+                      <SelectValue placeholder="Sumber" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Sumber</SelectItem>
+                      <SelectItem value="generated">Dari Meeting</SelectItem>
+                      <SelectItem value="manual">Manual</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-            {isLoading ? (
-              <div className="flex h-[400px] items-center justify-center rounded-lg border-2 border-dashed border-border bg-card">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                  <p className="text-sm font-medium text-muted-foreground">Loading your boards...</p>
+                  <Select value={String(controls.pageSize)} onValueChange={(v:any)=>controls.setPageSize(Number(v))}>
+                    <SelectTrigger className="h-10 w-[100px] bg-transparent border-none shadow-none rounded-none focus:ring-0 text-sm text-muted-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="12">12 / hal</SelectItem>
+                      <SelectItem value="24">24 / hal</SelectItem>
+                      <SelectItem value="48">48 / hal</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            ) : boards.length === 0 ? (
-              <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-card text-center p-10">
-                <div className="p-4 rounded-full bg-muted mb-4">
-                  <IconLayoutBoard className="h-10 w-10 text-muted-foreground" />
+
+            <div className="px-4 lg:px-6">
+              {isLoading ? (
+                <div className="flex h-[350px] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/50">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                    <p className="text-sm font-medium text-muted-foreground">Memuat data board...</p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-bold text-foreground">No boards found</h3>
-                <p className="text-muted-foreground max-w-xs mt-2">Generate a board from your meeting notes to get started with task management.</p>
-                <Button variant="outline" className="mt-6 font-semibold" onClick={() => router.push('/dashboard/meeting')}>
-                  Go to Meetings
-                </Button>
-              </div>
-            ) : (
+              ) : boards.length === 0 ? (
+                <div className="flex h-[350px] flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/30 text-center p-10">
+                  <div className="p-4 rounded-full bg-primary/5 mb-4 ring-1 ring-primary/10">
+                    <IconLayoutBoard className="h-10 w-10 text-primary/60" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">Belum ada board</h3>
+                  <p className="text-muted-foreground max-w-xs mt-2 text-sm leading-relaxed">Buat board baru secara manual atau *generate* otomatis dari halaman detail meeting.</p>
+                  <Button variant="outline" className="mt-6 font-semibold rounded-xl shadow-sm" onClick={() => router.push('/dashboard/meeting')}>
+                    Lihat Meeting Anda
+                  </Button>
+                </div>
+              ) : (
               <div className="space-y-8 w-full">
                 {/* Pinned Section */}
                 {pinnedBoards.length > 0 && (
@@ -178,11 +192,11 @@ export default function KanbanListPage() {
                 {/* Main List - Unpinned */}
                 {unpinnedBoards.length > 0 && (
                   <section className="space-y-4">
-                     <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-semibold text-foreground">
-                        {controls.filter === 'all' ? 'All Boards' : (controls.filter === 'mine' ? 'My Boards' : 'Shared with me')}
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold tracking-tight text-foreground">
+                        {controls.filter === 'all' ? 'Semua Board' : (controls.filter === 'mine' ? 'Board Saya' : 'Dibagikan dengan saya')}
                       </h2>
-                      <span className="px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">{unpinnedBoards.length}</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-muted/60 text-muted-foreground text-xs font-semibold">{unpinnedBoards.length}</span>
                     </div>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                       {unpinnedBoards.map((b) => <BoardCard key={b._id} board={b} />)}
@@ -192,17 +206,20 @@ export default function KanbanListPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <ModernPagination
-                    currentPage={controls.page}
-                    totalPages={totalPages}
-                    totalItems={totalPages * controls.pageSize}
-                    itemsPerPage={controls.pageSize}
-                    onPageChange={(p) => controls.setPage(p)}
-                    className="mt-6"
-                  />
+                  <div className="flex justify-center pt-2">
+                    <ModernPagination
+                      currentPage={controls.page}
+                      totalPages={totalPages}
+                      totalItems={totalPages * controls.pageSize}
+                      itemsPerPage={controls.pageSize}
+                      onPageChange={(p) => controls.setPage(p)}
+                      className="mt-6"
+                    />
+                  </div>
                 )}
               </div>
             )}
+            </div>
           </div>
         </div>
       </SidebarInset>

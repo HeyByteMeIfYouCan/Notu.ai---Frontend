@@ -144,14 +144,13 @@ export default function BoardCard({ board, onPinChange, onDelete }: BoardCardPro
     <>
       <Card
         onClick={handleClick}
-        className="cursor-pointer hover:shadow-lg transition-shadow relative group"
-        style={{ borderRadius: 'var(--kanban-card-radius)', boxShadow: 'var(--kanban-card-shadow)', background: 'var(--kanban-card-bg)' }}
+        className="cursor-pointer bg-card border border-border/60 hover:border-primary/40 hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative group rounded-2xl overflow-hidden"
       >
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="p-3 rounded-md flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.03)' }}>
-                <IconLayoutBoard className="h-5 w-5 text-primary" />
+              <div className="p-2.5 rounded-xl flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                <IconLayoutBoard className="h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -160,19 +159,19 @@ export default function BoardCard({ board, onPinChange, onDelete }: BoardCardPro
                     <IconPinFilled className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                   )}
                 </div>
-                <CardDescription className="text-xs text-muted-foreground line-clamp-2">{board.description || 'No description'}</CardDescription>
+                <CardDescription className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{board.description || 'Tidak ada deskripsi'}</CardDescription>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <span className="text-xs text-muted-foreground">{new Date(board.updatedAt).toLocaleDateString()}</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 hover:bg-muted transition-colors"
+                    className="h-8 w-8 rounded-full hover:bg-muted text-muted-foreground/70 hover:text-foreground transition-colors"
                   >
-                    <IconDots className="h-4 w-4 text-muted-foreground" />
+                    <IconDots className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -249,11 +248,11 @@ export default function BoardCard({ board, onPinChange, onDelete }: BoardCardPro
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-wrap">
               {board.labels && board.labels.slice(0,3).map((l: any) => (
-                <span key={l.name || l} className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{l.name || l}</span>
+                <span key={l.name || l} className="text-[11px] px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-medium border border-border/50">{l.name || l}</span>
               ))}
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${roleBadgeColor}`}>{roleLabel}</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold border ${roleBadgeColor.replace('bg-', 'bg-').replace('text-', 'text-').replace('/10', '/5 border-primary/20')}`}>{roleLabel}</span>
             </div>
           </div>
         </CardContent>
