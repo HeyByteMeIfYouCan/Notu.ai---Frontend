@@ -1,6 +1,7 @@
 "use client"
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
+import * as TabsPrimitive from "@radix-ui/react-tabs"
 import { Input } from "@/components/ui/input"
 import { 
   IconReload, 
@@ -257,32 +258,38 @@ export function MeetingTranscript({
   return (
     <div className="w-[22rem] border-l border-border/50 hidden xl:flex xl:flex-col bg-background shadow-[-1px_0_10px_rgba(0,0,0,0.02)] z-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
-        <TabsList className="w-full rounded-none border-b border-border bg-transparent p-0 h-12 flex">
-          <TabsTrigger value="transcript" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold outline-none focus-visible:ring-0">Transkrip</TabsTrigger>
-          {/* Only show Ask AI tab if user has permission */}
+        <TabsPrimitive.List className="w-full rounded-none border-b border-border bg-transparent p-0 h-12 flex">
+          <TabsPrimitive.Trigger 
+            value="transcript" 
+            className="flex-1 h-full rounded-none bg-transparent border-0 border-b-2 border-b-transparent text-muted-foreground font-semibold text-sm transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:border-b-primary data-[state=active]:text-foreground outline-none"
+          >
+            Transkrip
+          </TabsPrimitive.Trigger>
           {canAskAI && (
-            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold outline-none focus-visible:ring-0">
+            <TabsPrimitive.Trigger 
+              value="ask-ai" 
+              className="flex-1 h-full flex items-center justify-center gap-2 rounded-none bg-transparent border-0 border-b-2 border-b-transparent text-muted-foreground font-semibold text-sm transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:border-b-primary data-[state=active]:text-foreground outline-none"
+            >
               <div className="w-5 h-5 rounded-md bg-indigo-500/10 flex items-center justify-center text-[10px] font-bold text-indigo-600">AI</div>
               Ask AI
-            </TabsTrigger>
+            </TabsPrimitive.Trigger>
           )}
-        </TabsList>
+        </TabsPrimitive.List>
 
         <TabsContent value="transcript" className="flex-1 flex flex-col overflow-hidden m-0">
           {isVideoFile && (
-            <div className={`transition-all duration-300 ${isVideoPopupOpen ? 'fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-0' : 'p-4 bg-muted/10 border-b border-border/40'}`}>
+            <div className={`transition-all duration-300 ${isVideoPopupOpen ? 'fixed inset-0 z-[100] bg-black flex items-center justify-center' : 'p-4 bg-muted/10 border-b border-border/40'}`}>
               <div 
-                className={`relative overflow-hidden bg-black shadow-md transition-all duration-300 ${isVideoPopupOpen ? 'w-full h-full max-h-screen' : 'rounded-2xl aspect-video ring-1 ring-border/50 group'}`}
+                className={`relative overflow-hidden bg-black shadow-md transition-all duration-300 ${isVideoPopupOpen ? 'w-full h-full' : 'rounded-2xl aspect-video ring-1 ring-border/50 group'}`}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={() => { if (isPlaying) setControlsVisible(false) }}
-                onClick={togglePlayPause}
-                onDoubleClick={() => setIsVideoPopupOpen(!isVideoPopupOpen)}
               >
                 {videoUrl && (
                   <video
                     ref={videoRef}
                     src={videoUrl}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); togglePlayPause() }}
                   />
                 )}
                 

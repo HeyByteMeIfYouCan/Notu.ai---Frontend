@@ -233,9 +233,13 @@ export default function MeetingDetailPage() {
       setCurrentTime(time)
       
       // Update active segment based on current time
+      // Use findLastIndex so we get the LATEST segment that has started by this time.
+      // This is the correct approach: if time=60.0 and seg[n].start=57, seg[n+1].start=60,
+      // findLastIndex returns n+1 (menit 1), not n (detik 57).
       if (meeting?.transcription?.segments && meeting.transcription.segments.length > 0) {
-        const activeIndex = meeting.transcription.segments.findIndex(
-          (seg: any) => (seg.start - 0.5) <= time && (seg.end + 0.5) >= time
+        const segs = meeting.transcription.segments
+        const activeIndex = segs.findLastIndex(
+          (seg: any) => seg.start <= time
         )
         
         // Update active segment index whenever it changes
