@@ -20,7 +20,8 @@ import {
   IconX,
   IconInfoCircle,
   IconSubtitles,
-  IconSubscript
+  IconSubscript,
+  IconMessage
 } from "@tabler/icons-react"
 import { RefObject, useState, useMemo, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -602,7 +603,7 @@ export function MeetingTranscript({
                       className={`hover:bg-white/20 rounded-full transition-colors p-2 relative ${subtitlesEnabled ? 'bg-primary/30 text-primary' : 'opacity-60'}`}
                       title={subtitlesEnabled ? "Nonaktifkan Subtitle" : "Aktifkan Subtitle"}
                     >
-                      <IconMessage className="h-5 w-5" />
+                      <IconSubtitles className="h-5 w-5" />
                       {!subtitlesEnabled && (
                         <span className="absolute w-0.5 h-6 bg-white rotate-45 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                       )}
