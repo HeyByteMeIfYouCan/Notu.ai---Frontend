@@ -62,7 +62,8 @@ export function TaskForm({
           value={state.title || ""} 
           onChange={(e) => setState((s: any) => ({ ...s, title: e.target.value }))} 
           placeholder="Contoh: Implementasi autentikasi Google" 
-          className="h-10 text-sm font-medium"
+          className="h-10 text-sm font-medium rounded-xl border-border/60 bg-background/50 shadow-xs focus-visible:ring-primary/30"
+          autoFocus
         />
       </div>
 
@@ -73,7 +74,7 @@ export function TaskForm({
         </Label>
         <textarea 
           id="desc" 
-          className="w-full rounded-xl border border-input bg-background p-3 text-xs leading-relaxed text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[90px] resize-y" 
+          className="w-full rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/30 shadow-xs min-h-[90px] resize-y" 
           rows={3} 
           value={state.description || ""} 
           onChange={(e) => setState((s: any) => ({ ...s, description: e.target.value }))} 
@@ -90,30 +91,21 @@ export function TaskForm({
             <span>Assignee</span>
           </Label>
           <div className="flex items-center gap-2">
-            {assignedMember ? (
-              <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/60 text-xs font-medium text-foreground">
-                <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">
-                  {assignedMember.name.charAt(0).toUpperCase()}
-                </div>
-                <span className="truncate max-w-[110px]">{assignedMember.name}</span>
-                <button 
-                  type="button" 
-                  onClick={() => setState((s: any) => ({ ...s, assignee: null }))}
-                  className="text-muted-foreground hover:text-destructive text-xs ml-1"
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground italic">Belum dipilih</span>
-            )}
-
             <Dialog.Root>
               <Dialog.Trigger asChild>
-                <Button size="sm" variant="outline" className="h-8 text-xs font-medium gap-1 rounded-lg">
-                  <IconPlus className="h-3 w-3" />
-                  {assignedMember ? "Ganti" : "Pilih"}
-                </Button>
+                <button type="button" className="flex-1 flex items-center justify-between h-9 px-3 rounded-xl border border-border/60 bg-background/50 hover:bg-muted/50 transition-colors shadow-xs">
+                  {assignedMember ? (
+                    <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+                      <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">
+                        {assignedMember.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="truncate max-w-[120px]">{assignedMember.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Pilih Assignee...</span>
+                  )}
+                  <IconPlus className="h-3.5 w-3.5 text-muted-foreground/70" />
+                </button>
               </Dialog.Trigger>
               <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 animate-in fade-in" />
@@ -162,27 +154,32 @@ export function TaskForm({
             <IconTag className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Labels</span>
           </Label>
-          <div className="flex items-center gap-2 flex-wrap">
-            {(state.labelIds || []).map((id: string) => {
-              const item = labels.find((l) => l.id === id)
-              if (!item) return null
-              return (
-                <span 
-                  key={id} 
-                  className="text-[10px] font-medium px-2 py-0.5 rounded-full text-white inline-flex items-center" 
-                  style={{ backgroundColor: item.color }}
-                >
-                  {item.name}
-                </span>
-              )
-            })}
+          <div className="flex flex-col gap-2">
+            {/* Selected labels preview */}
+            {(state.labelIds || []).length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {(state.labelIds || []).map((id: string) => {
+                  const item = labels.find((l) => l.id === id)
+                  if (!item) return null
+                  return (
+                    <span 
+                      key={id} 
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full text-white inline-flex items-center shadow-xs" 
+                      style={{ backgroundColor: item.color }}
+                    >
+                      {item.name}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
             
             <Dialog.Root>
               <Dialog.Trigger asChild>
-                <Button size="sm" variant="outline" className="h-8 text-xs font-medium gap-1 rounded-lg">
-                  <IconPlus className="h-3 w-3" />
-                  Kelola
-                </Button>
+                <button type="button" className="flex w-full items-center justify-between h-9 px-3 rounded-xl border border-border/60 bg-background/50 hover:bg-muted/50 transition-colors shadow-xs">
+                  <span className="text-xs text-muted-foreground">Pilih atau tambah Label...</span>
+                  <IconPlus className="h-3.5 w-3.5 text-muted-foreground/70" />
+                </button>
               </Dialog.Trigger>
               <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 animate-in fade-in" />
@@ -303,7 +300,7 @@ export function TaskForm({
           <Input 
             id="dueDate"
             type="datetime-local" 
-            className="h-9 text-xs rounded-xl"
+            className="h-9 text-xs rounded-xl border-border/60 bg-background/50 shadow-xs focus-visible:ring-primary/30"
             value={state.dueDate ? new Date(state.dueDate).toISOString().slice(0, 16) : ""} 
             onChange={(e) => setState((s: any) => ({ ...s, dueDate: e.target.value }))} 
           />
@@ -325,8 +322,8 @@ export function TaskForm({
                   onClick={() => setState((s: any) => ({ ...s, priority: p.value }))}
                   className={`h-9 text-xs font-semibold rounded-xl border transition-all ${
                     isSelected 
-                      ? `${p.colorClass} ring-1.5 ring-primary/40 shadow-xs scale-[1.02]` 
-                      : 'bg-muted/40 text-muted-foreground border-border/60 hover:bg-muted'
+                      ? `${p.colorClass} ring-1 ring-primary/30 shadow-xs` 
+                      : 'bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted'
                   }`}
                 >
                   {p.label}
