@@ -101,7 +101,7 @@ export function MeetingHeader({
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-[color-mix(in_oklch,var(--card)_94%,transparent)] backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-xl">
       <div className="flex items-center justify-between px-4 lg:px-6 py-4">
         <div className="flex items-center gap-3 flex-1 mr-4 overflow-hidden">
           {/* Back button */}

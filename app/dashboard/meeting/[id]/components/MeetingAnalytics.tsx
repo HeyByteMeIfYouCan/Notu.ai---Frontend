@@ -88,7 +88,7 @@ export function MeetingAnalytics({
   const sortedTalkTime = [...talkTime].sort((a, b) => b.total - a.total)
 
   return (
-    <div className="w-80 border-r border-border/50 hidden lg:flex lg:flex-col bg-background shadow-[1px_0_10px_rgba(0,0,0,0.02)] z-10">
+    <div className="w-80 border-r border-border/50 hidden lg:flex lg:flex-col bg-card shadow-[1px_0_10px_rgba(0,0,0,0.02)] z-10">
       <div className="p-6 border-b border-border/40 shrink-0">
         {/* Analytics Header */}
         <div className="flex items-center justify-between group">

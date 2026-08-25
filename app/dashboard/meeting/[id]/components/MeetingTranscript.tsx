@@ -272,7 +272,7 @@ export function MeetingTranscript({
   }
 
   return (
-    <div className="w-[22rem] border-l border-border/50 hidden xl:flex xl:flex-col bg-background shadow-[-4px_0_24px_-8px_rgba(0,0,0,0.08)] z-10">
+    <div className="w-[22rem] border-l border-border/50 hidden xl:flex xl:flex-col bg-card shadow-[-4px_0_24px_-8px_rgba(0,0,0,0.08)] z-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
         <TabsList className="w-full rounded-none border-b border-border bg-transparent p-0 h-12 flex">
           <TabsTrigger value="transcript" className="flex-1 rounded-none border-0 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">Transkrip</TabsTrigger>
