@@ -1048,64 +1048,32 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
         </div>
 
         {/* ================= METRICS & STATS FOOTER ================= */}
-        <div className="px-4 lg:px-6 mt-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {/* Total Tasks */}
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border/70 dark:border-border/40 shadow-2xs">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <IconLayoutBoard className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground font-medium truncate">Total Task</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-bold text-foreground">{totalTasks}</span>
-                  <span className="text-[11px] text-muted-foreground">tasks</span>
-                </div>
-              </div>
+        <div className="px-4 lg:px-6 py-4 mt-auto border-t border-border/40 bg-background/50 backdrop-blur-md sticky bottom-0 z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-[13px] font-medium text-muted-foreground flex-wrap">
+            <span className="text-foreground font-semibold">{totalTasks} Tasks</span>
+            <div className="w-1 h-1 rounded-full bg-border hidden sm:block"></div>
+            
+            <div className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-default">
+               <span className="w-2 h-2 rounded-full bg-blue-500 shadow-sm"></span> 
+               <span>To Do <span className="text-foreground/60 ml-0.5">({todoCount})</span></span>
             </div>
-
-            {/* To Do */}
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 shadow-2xs">
-              <div className="h-10 w-10 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                <IconListCheck className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-blue-900/80 dark:text-blue-300/80 font-medium truncate">To Do</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-bold text-blue-700 dark:text-blue-300">{todoCount}</span>
-                  <span className="text-[11px] text-blue-600/70 dark:text-blue-400/70 font-medium">({todoPercent}%)</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-default">
+               <span className="w-2 h-2 rounded-full bg-amber-500 shadow-sm"></span> 
+               <span>In Progress <span className="text-foreground/60 ml-0.5">({inProgressCount})</span></span>
             </div>
-
-            {/* In Progress */}
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 shadow-2xs">
-              <div className="h-10 w-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <IconClockPlay className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-amber-900/80 dark:text-amber-300/80 font-medium truncate">In Progress</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-bold text-amber-700 dark:text-amber-300">{inProgressCount}</span>
-                  <span className="text-[11px] text-amber-600/70 dark:text-amber-400/70 font-medium">({inProgressPercent}%)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Completed */}
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 shadow-2xs">
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <IconCircleCheck className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-emerald-900/80 dark:text-emerald-300/80 font-medium truncate">Selesai</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{doneCount}</span>
-                  <span className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70 font-medium">({donePercent}%)</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-default">
+               <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></span> 
+               <span>Selesai <span className="text-foreground/60 ml-0.5">({doneCount})</span></span>
             </div>
           </div>
+          
+          {totalTasks > 0 && (
+            <div className="w-full sm:w-64 h-2 bg-muted/60 rounded-full overflow-hidden flex ring-1 ring-inset ring-border/50">
+              <div className="bg-emerald-500 hover:bg-emerald-400 transition-all duration-500" style={{ width: `${donePercent}%` }} title={`Selesai: ${donePercent}%`}></div>
+              <div className="bg-amber-500 hover:bg-amber-400 transition-all duration-500" style={{ width: `${inProgressPercent}%` }} title={`In Progress: ${inProgressPercent}%`}></div>
+              <div className="bg-blue-500 hover:bg-blue-400 transition-all duration-500" style={{ width: `${todoPercent}%` }} title={`To Do: ${todoPercent}%`}></div>
+            </div>
+          )}
         </div>
       </div>
 
