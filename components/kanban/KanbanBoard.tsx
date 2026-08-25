@@ -855,7 +855,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="group h-9 gap-1.5 rounded-xl border-border/70 text-xs font-semibold bg-background hover:bg-accent hover:text-accent-foreground hover:border-border transition-all shadow-sm active:scale-[0.98]" 
+                      className="group h-9 gap-1.5 rounded-xl border-border/70 text-xs font-semibold bg-background hover:bg-muted hover:text-foreground transition-all shadow-sm active:scale-[0.98]" 
                       onClick={handleGenerateShare}
                     >
                       <IconShare2 className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />

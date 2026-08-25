@@ -153,6 +153,7 @@ export function OnlinePresence({
                     <img
                       src={u.image}
                       alt={u.name || 'User'}
+                      referrerPolicy="no-referrer"
                       className={`w-7 h-7 rounded-full border-2 bg-background object-cover ${
                         u.isOnline 
                           ? 'border-emerald-500 ring-1 ring-emerald-500/30' 
