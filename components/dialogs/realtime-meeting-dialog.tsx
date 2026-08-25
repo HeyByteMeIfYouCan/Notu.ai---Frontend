@@ -283,91 +283,67 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
           }
         }}
       >
-        {/* Header */}
-        <div className={cn(
-          "px-6 py-4 border-b transition-colors duration-300",
-          isLocked ? "bg-primary/5 dark:bg-primary/10 border-primary/20 dark:border-primary/30" : "bg-background"
-        )}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "rounded-xl border p-2 transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-                isRecording && !isPaused 
-                  ? "border-primary/30 bg-primary text-primary-foreground"
-                  : isPaused 
-                    ? "bg-amber-500 text-white"
-                    : isProcessingFinal
-                      ? "bg-primary/80 text-primary-foreground"
-                      : "bg-muted"
-              )}>
-                <Mic className="h-5 w-5" />
-              </div>
-              <div>
-                <DialogTitle className="text-lg font-semibold">
-                  Rekam langsung dari mic
-                </DialogTitle>
-                <DialogDescription className="text-xs mt-0.5">
-                  {isLocked ? (
-                    <span className="flex items-center gap-1 text-primary dark:text-primary">
-                      <Lock className="h-3 w-3" />
-                      Rekaman sedang berlangsung—selesaikan sebelum menutup dialog
-                    </span>
-                  ) : (
-                    "Silakan berbicara seperti biasa, Notu akan membantu membuat transkrip"
-                  )}
-                </DialogDescription>
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden p-6 gap-4 pb-4">
+          {/* Header */}
+          <DialogHeader className="mb-2">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+              <Mic className="h-6 w-6 text-primary" />
+            </div>
+            <DialogTitle className="text-center text-xl font-semibold tracking-tight">
+              Rekam langsung dari mic
+            </DialogTitle>
+            <DialogDescription className="text-center mt-1.5 text-sm text-muted-foreground">
+              {isLocked ? (
+                <span className="flex items-center justify-center gap-1 text-primary">
+                  <Lock className="h-3.5 w-3.5" />
+                  Rekaman sedang berlangsung—selesaikan sebelum menutup
+                </span>
+              ) : (
+                "Silakan berbicara seperti biasa, Notu akan membantu membuat transkrip otomatis."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Value Proposition Banner (Only shown before recording starts) */}
+          {!isRecording && !isProcessingFinal && !isStarting && !finalResult && !canRetryFinalization && (
+            <div className="mb-2 rounded-lg bg-primary/5 p-4 border border-primary/10">
+              <div className="flex items-start gap-3 text-sm text-primary/80">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <p className="leading-relaxed font-medium">Bicaralah dengan bebas! Notu akan merekam suara Anda, mentranskrip secara real-time, dan membuat notulen.</p>
               </div>
             </div>
-            
-            {/* Close button - disabled when locked */}
-            {/* {!isLocked && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full"
-                onClick={handleClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )} */}
-            {isLocked && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 dark:bg-primary/20 rounded-full">
-                <Lock className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-medium text-primary">Terkunci</span>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex flex-col flex-1 min-h-0 overflow-hidden p-6 gap-4">
+          )}
           {/* Meeting Name Input - Only show before recording */}
           {!isRecording && !isProcessingFinal && !isStarting && !finalResult && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-              <label className="text-sm font-medium text-muted-foreground">
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className="text-sm font-medium text-foreground">
                 Nama meeting
               </label>
               <Input
-                placeholder="Nama meeting (opsional)"
+                placeholder="Contoh: Sync Mingguan (Opsional)"
                 value={meetingName}
                 onChange={(e) => setMeetingName(e.target.value)}
-                className="h-11"
+                className="h-10"
               />
             </div>
           )}
 
           {/* Timer & Status Display */}
           <div className={cn(
-            "relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] py-6 transition-[background-color,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+            "relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border py-10 transition-all duration-500",
             isRecording && !isPaused 
-              ? "bg-[color-mix(in_oklch,var(--primary)_9%,var(--card))]"
+              ? "bg-primary/5 border-primary/30 shadow-[0_0_40px_rgba(var(--primary),0.1)_inset]"
               : isPaused 
-                ? "bg-[color-mix(in_oklch,var(--chart-4)_10%,var(--card))]"
+                ? "bg-amber-500/5 border-amber-500/30 shadow-[0_0_40px_rgba(var(--amber-500),0.1)_inset]"
                 : isProcessingFinal
-                  ? "bg-[color-mix(in_oklch,var(--primary)_7%,var(--card))]"
+                  ? "bg-primary/5 border-primary/20"
                   : finalResult
-                    ? "bg-[color-mix(in_oklch,var(--chart-2)_9%,var(--card))]"
+                    ? "bg-emerald-500/5 border-emerald-500/30 shadow-[0_0_40px_rgba(var(--emerald-500),0.1)_inset]"
                     : "bg-muted/30"
           )}>
+            {/* Subtle Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+
             {/* Audio Visualizer */}
             {isRecording && !isPaused && (
               <div className="flex items-end gap-1 h-8 mb-3">
@@ -385,7 +361,8 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
             
             {/* Timer */}
             <div className={cn(
-              "text-6xl font-mono tabular-nums font-bold tracking-tight transition-colors duration-300",
+              "relative z-10 text-6xl md:text-7xl font-mono tabular-nums font-bold tracking-tighter transition-colors duration-300",
+
               isRecording && !isPaused 
                 ? "text-primary" 
                 : isPaused 
@@ -525,128 +502,129 @@ export function RealtimeMeetingDialog({ isOpen, onClose, onComplete }: RealtimeM
             </div>
           )}
 
-          {/* Control Buttons - Fixed at bottom */}
-          <div className="flex gap-3 pt-4 mt-auto border-t bg-background flex-shrink-0">
-            {/* Start Recording Button */}
-            {!isRecording && !isProcessingFinal && !isStarting && !finalResult && !canRetryFinalization && (
+        </div>
+
+        {/* Control Buttons - Separated Footer */}
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4 flex-shrink-0">
+          {/* Start Recording Button */}
+          {!isRecording && !isProcessingFinal && !isStarting && !finalResult && !canRetryFinalization && (
+            <>
+              <Button type="button" variant="outline" onClick={handleClose} className="h-10 px-6 flex-1 sm:flex-none">
+                Batal
+              </Button>
               <Button 
                 onClick={handleStart}
-                className="h-12 w-full bg-primary text-primary-foreground shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
-                size="lg"
+                className="h-10 px-6 flex-1 sm:flex-none bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-none"
               >
-                <Mic className="h-5 w-5 mr-2" />
+                <Mic className="h-4 w-4 mr-2" />
                 Mulai rekam sekarang
               </Button>
-            )}
+            </>
+          )}
 
-            {isStarting && (
-              <Button disabled className="h-12 w-full" size="lg">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                {lifecycleState === 'requesting_permission'
-                  ? 'Mohon izinkan akses mikrofon...'
-                  : 'Menyiapkan sesi realtime yang aman...'}
+          {isStarting && (
+            <Button disabled className="h-10 px-6 w-full sm:w-auto">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {lifecycleState === 'requesting_permission'
+                ? 'Mohon izinkan akses mikrofon...'
+                : 'Menyiapkan sesi...'}
+            </Button>
+          )}
+
+          {canRetryFinalization && !finalResult && (
+            <div className="flex w-full gap-2 justify-end">
+              <Button onClick={handleNewRecording} variant="outline" className="h-10 px-6">
+                Batal & Rekam ulang
               </Button>
-            )}
-
-            {canRetryFinalization && !finalResult && (
-              <div className="flex w-full gap-2">
-                <Button
-                  onClick={retryFinalization}
-                  className="h-12 flex-1 bg-primary text-primary-foreground shadow-none"
-                  size="lg"
-                >
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Coba buat notulen lagi
-                </Button>
-                <Button onClick={handleNewRecording} variant="outline" size="lg" className="h-12">
-                  Rekam ulang
-                </Button>
-              </div>
-            )}
-
-            {/* Recording Controls */}
-            {isRecording && (
-              <div className="flex gap-2 w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {isPaused ? (
-                  <Button 
-                    onClick={resumeRecording} 
-                    variant="outline" 
-                    size="lg"
-                    className="h-12 px-6 border-2 hover:bg-amber-50 dark:hover:bg-amber-950/50"
-                  >
-                    <Play className="h-5 w-5 mr-2 text-amber-600" />
-                    Lanjutkan
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={pauseRecording} 
-                    variant="outline" 
-                    size="lg"
-                    className="h-12 px-6 border-2 hover:bg-amber-50 dark:hover:bg-amber-950/50"
-                  >
-                    <Pause className="h-5 w-5 mr-2 text-amber-600" />
-                    Jeda
-                  </Button>
-                )}
-                <Button 
-                  onClick={handleStop}
-                  className="h-12 flex-1 bg-primary text-primary-foreground shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
-                  size="lg"
-                >
-                  <Square className="h-4 w-4 mr-2" />
-                  Selesai dan buat notulen
-                </Button>
-                <Button 
-                  onClick={cancelRecording} 
-                  variant="outline"
-                  size="lg"
-                  className="h-12 px-4 border-2 border-destructive/30 hover:bg-destructive/10"
-                >
-                  <MicOff className="h-5 w-5 text-destructive" />
-                </Button>
-              </div>
-            )}
-
-            {/* Processing State */}
-            {isProcessingFinal && (
-              <Button disabled className="w-full h-12" size="lg">
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Mohon tunggu sebentar, notulen Anda sedang dibuat...
+              <Button
+                onClick={retryFinalization}
+                className="h-10 px-6 bg-primary text-primary-foreground shadow-none"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Coba buat notulen lagi
               </Button>
-            )}
+            </div>
+          )}
 
-            {/* Final Result Actions */}
-            {finalResult && (
-              <div className="flex gap-2 w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {/* Recording Controls */}
+          {isRecording && (
+            <div className="flex gap-2 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Button 
+                onClick={cancelRecording} 
+                variant="outline"
+                className="h-10 px-4 border-destructive/30 hover:bg-destructive/10 text-destructive"
+              >
+                <MicOff className="h-4 w-4 mr-2" />
+                Batal
+              </Button>
+              {isPaused ? (
                 <Button 
-                  onClick={handleNewRecording} 
+                  onClick={resumeRecording} 
                   variant="outline" 
-                  className="flex-1 h-12 border-2" 
-                  disabled={isSaving}
+                  className="h-10 px-6 hover:bg-amber-50 dark:hover:bg-amber-950/50"
                 >
-                  <Mic className="h-4 w-4 mr-2" />
-                  Rekam meeting lain
+                  <Play className="h-4 w-4 mr-2 text-amber-600" />
+                  Lanjutkan
                 </Button>
+              ) : (
                 <Button 
-                  onClick={handleSaveAndClose} 
-                  className="h-12 flex-1 bg-primary shadow-none transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none"
-                  disabled={isSaving}
+                  onClick={pauseRecording} 
+                  variant="outline" 
+                  className="h-10 px-6 hover:bg-amber-50 dark:hover:bg-amber-950/50"
                 >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Mohon tunggu, hasil meeting sedang disimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4 mr-2" />
-                      Simpan hasil meeting
-                    </>
-                  )}
+                  <Pause className="h-4 w-4 mr-2 text-amber-600" />
+                  Jeda
                 </Button>
-              </div>
-            )}
-          </div>
+              )}
+              <Button 
+                onClick={handleStop}
+                className="h-10 px-6 flex-1 sm:flex-none bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-none"
+              >
+                <Square className="h-3.5 w-3.5 mr-2" />
+                Selesai merekam
+              </Button>
+            </div>
+          )}
+
+          {/* Processing State */}
+          {isProcessingFinal && (
+            <Button disabled className="h-10 px-6 w-full sm:w-auto">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Notulen sedang dibuat...
+            </Button>
+          )}
+
+          {/* Final Result Actions */}
+          {finalResult && (
+            <div className="flex gap-2 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <Button 
+                onClick={handleNewRecording} 
+                variant="outline" 
+                className="h-10 px-6 flex-1 sm:flex-none" 
+                disabled={isSaving}
+              >
+                <Mic className="h-4 w-4 mr-2" />
+                Rekam baru
+              </Button>
+              <Button 
+                onClick={handleSaveAndClose} 
+                className="h-10 px-6 flex-1 sm:flex-none bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-none"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Simpan & Buka notulen
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

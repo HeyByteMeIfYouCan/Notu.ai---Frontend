@@ -7,7 +7,7 @@ import {
 } from "../ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { IconCopy, IconLoader2, IconExternalLink } from "@tabler/icons-react"
+import { IconCopy, IconLoader2, IconExternalLink, IconVideo, IconSparkles, IconBrandGoogle } from "@tabler/icons-react"
 import { useState, useEffect } from "react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
@@ -122,90 +122,133 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="overflow-hidden border-[var(--border)] p-0 sm:max-w-[650px]">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28" style={{ background: "radial-gradient(ellipse at 78% 0%, color-mix(in oklch, var(--primary) 16%, transparent), transparent 68%)" }} />
-        <div className="relative p-6">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold tracking-[-0.025em]">
-            {mode === 'live' ? "Notu sedang mengikuti meeting" : "Undang Notu ke meeting"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === 'live' 
-              ? "Pantau percakapan secara live di sini, atau buka halaman status kapan saja."
-              : "Tempel link Google Meet Anda. Notu akan bergabung dan membantu mencatat percakapan."}
-          </DialogDescription>
-        </DialogHeader>
-
+      <DialogContent className="overflow-hidden border-border p-0 sm:max-w-[500px]">
         {mode === 'input' ? (
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Input
-                placeholder="Nama meeting (opsional)"
-                value={meetingName}
-                onChange={(e) => setMeetingName(e.target.value)}
-                disabled={isLoading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Tempel link Google Meet Anda di bawah ini.
-              </p>
-              <div className="relative">
-                <Input
-                  placeholder="Meeting link"
-                  value={meetingLink}
-                  onChange={(e) => setMeetingLink(e.target.value)}
-                  disabled={isLoading}
-                  required
+          <>
+            <div className="p-6 pb-4">
+              <DialogHeader className="mb-4">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+                  <IconVideo className="h-6 w-6 text-primary" />
+                </div>
+                <DialogTitle className="text-center text-xl font-semibold tracking-tight">
+                  Undang Notu ke meeting
+                </DialogTitle>
+                <DialogDescription className="text-center mt-1.5 text-sm text-muted-foreground">
+                  Tempel link Google Meet Anda. Notu akan bergabung dan mencatat percakapan otomatis.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="mb-6 rounded-lg bg-primary/5 p-4 border border-primary/10">
+                <div className="flex items-start gap-3 text-sm text-primary/80">
+                  <IconSparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <p className="leading-relaxed font-medium">Notu akan menyamar sebagai peserta biasa, mentranskrip secara real-time, dan membuat ringkasan aksi untuk Anda.</p>
+                </div>
+              </div>
+
+              <form id="online-meeting-form" onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground">
+                    Nama meeting
+                  </label>
+                  <Input
+                    placeholder="Contoh: Sync Mingguan (Opsional)"
+                    value={meetingName}
+                    onChange={(e) => setMeetingName(e.target.value)}
+                    disabled={isLoading}
+                    className="h-10"
+                  />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground">
+                    Tautan Google Meet
+                  </label>
+                  <div className="relative">
+                    <img 
+                      src="/google-meet.png" 
+                      alt="Google Meet" 
+                      className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 object-contain" 
+                    />
+                    <Input
+                      placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                      value={meetingLink}
+                      onChange={(e) => setMeetingLink(e.target.value)}
+                      disabled={isLoading}
+                      required
+                      className="h-10 pl-9 pr-10"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => navigator.clipboard.writeText(meetingLink)}
+                      type="button"
+                      disabled={isLoading}
+                    >
+                      <IconCopy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 border-t bg-muted/30 px-6 py-4">
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="h-10 px-6">
+                Batal
+              </Button>
+              <Button 
+                form="online-meeting-form"
+                type="submit" 
+                className="h-10 px-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-none"
+                disabled={isLoading || !isReady}
+              >
+                {isLoading ? (
+                  <>
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Bergabung...
+                  </>
+                ) : (
+                  "Kirim Notu"
+                )}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="p-6">
+            <DialogHeader className="mb-6">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+                <IconSparkles className="h-6 w-6 text-primary" />
+              </div>
+              <DialogTitle className="text-center text-xl font-semibold tracking-tight">
+                Notu sedang mengikuti meeting
+              </DialogTitle>
+              <DialogDescription className="text-center mt-1.5 text-sm text-muted-foreground">
+                Pantau percakapan secara live di sini, atau buka halaman status kapan saja.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {activeMeetingId && (
+                <BotLiveTranscript 
+                  meetingId={activeMeetingId}
+                  onComplete={() => {
+                    toast.success("Meeting selesai processed")
+                  }}
                 />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
-                  onClick={() => navigator.clipboard.writeText(meetingLink)}
-                  type="button"
-                  disabled={isLoading}
-                >
-                  <IconCopy className="h-4 w-4" />
+              )}
+              
+              <div className="flex items-center justify-end gap-3 pt-4 border-t mt-6">
+                <Button variant="outline" onClick={handleClose} className="h-10 px-4">
+                  Tutup
+                </Button>
+                <Button onClick={handleGoToDetails} className="h-10 px-4 shadow-none">
+                  <IconExternalLink className="mr-2 h-4 w-4" />
+                  Buka status meeting
                 </Button>
               </div>
             </div>
-            <Button 
-              type="submit" 
-              className="h-11 w-full bg-[var(--primary)] text-[var(--primary-foreground)] transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[color-mix(in_oklch,var(--primary)_90%,black)] motion-reduce:transition-none"
-              disabled={isLoading || !isReady}
-            >
-              {isLoading ? (
-                <>
-                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Mohon tunggu, Notu sedang bergabung dengan meeting...
-                </>
-              ) : (
-                "Kirim Notu ke meeting"
-              )}
-            </Button>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            {activeMeetingId && (
-              <BotLiveTranscript 
-                meetingId={activeMeetingId}
-                onComplete={() => {
-                  toast.success("Meeting selesai processed")
-                }}
-              />
-            )}
-            
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleClose}>
-                Tutup
-              </Button>
-              <Button onClick={handleGoToDetails}>
-                <IconExternalLink className="mr-2 h-4 w-4" />
-                Buka status meeting
-              </Button>
-            </div>
           </div>
         )}
-        </div>
       </DialogContent>
     </Dialog>
   )
