@@ -355,7 +355,9 @@ export function MeetingTranscript({
           <div ref={transcriptContainerRef} className="flex-1 overflow-y-auto px-4 space-y-4 pb-24 pt-4 bg-muted/10">
             {(searchQuery ? filteredSegments : transcriptSegments).length > 0 ? (
               (searchQuery ? filteredSegments : transcriptSegments).map((segment, index) => {
-                const isActive = activeSegmentIndex === index 
+                // Find the absolute index so active state works even during search
+                const absoluteIndex = transcriptSegments.findIndex((s) => s.start === segment.start)
+                const isActive = activeSegmentIndex === absoluteIndex 
                 
                 // Deterministic color logic for speakers based on first letter
                 const speakerChar = segment.speaker ? segment.speaker.charAt(segment.speaker.length - 1).toUpperCase() : 'S'
@@ -364,10 +366,10 @@ export function MeetingTranscript({
                 return (
                   <div 
                     key={index} 
-                    className={`group cursor-pointer rounded-xl bg-card p-3 transition-[border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                    className={`group cursor-pointer rounded-xl p-3 transition-[border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
                       isActive 
                         ? 'border-2 border-primary shadow-md bg-primary/10' 
-                        : 'border-2 border-border bg-background hover:border-primary/30'
+                        : 'border-2 border-border bg-card hover:border-primary/30'
                     }`}
                     onClick={() => jumpToTimestamp(segment.start)}
                   >

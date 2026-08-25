@@ -235,7 +235,7 @@ export default function MeetingDetailPage() {
       // Update active segment based on current time
       if (meeting?.transcription?.segments && meeting.transcription.segments.length > 0) {
         const activeIndex = meeting.transcription.segments.findIndex(
-          (seg: any) => seg.start <= time && seg.end >= time
+          (seg: any) => (seg.start - 0.5) <= time && (seg.end + 0.5) >= time
         )
         
         // Update active segment index whenever it changes
