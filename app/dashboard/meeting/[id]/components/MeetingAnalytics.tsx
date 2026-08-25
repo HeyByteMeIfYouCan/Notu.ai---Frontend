@@ -154,49 +154,50 @@ export function MeetingAnalytics({
                     const displayText = match ? match[1] : item.speaker.charAt(0).toUpperCase();
                     
                     return (
-                      <div 
-                        key={index} 
-                        className="group/speaker relative grid cursor-default grid-cols-4 items-center gap-2 rounded-xl p-2.5 transition-all hover:bg-muted/50 hover:shadow-sm bg-transparent border border-transparent hover:border-border/40"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className={`w-8 h-8 rounded-xl ${bgColor} flex items-center justify-center text-white text-sm font-bold shadow-sm transition-transform group-hover/speaker:scale-105 flex-shrink-0`}>
-                            {displayText}
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className="group/speaker relative grid cursor-default grid-cols-4 items-center gap-2 rounded-xl p-2.5 transition-all hover:bg-muted/50 hover:shadow-sm bg-transparent border border-transparent hover:border-border/40"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className={`w-8 h-8 rounded-xl ${bgColor} flex items-center justify-center text-white text-sm font-bold shadow-sm transition-transform group-hover/speaker:scale-105 flex-shrink-0`}>
+                                {displayText}
+                              </div>
+                              <span className={`truncate text-sm font-semibold ${textColor}`}>
+                                {item.speaker}
+                              </span>
+                            </div>
+                            <div className="text-xs font-medium text-muted-foreground group-hover/speaker:text-foreground transition-colors">
+                              {item.words}
+                            </div>
+                            <div className="text-xs font-medium text-muted-foreground group-hover/speaker:text-foreground transition-colors">
+                              {item.talks}x
+                            </div>
+                            <div className="flex items-center justify-end gap-2">
+                              <span className={`text-xs font-bold ${textColor}`}>
+                                {item.total}%
+                              </span>
+                              <div className="relative w-5 h-5 flex-shrink-0">
+                                <svg className="w-full h-full -rotate-90" viewBox="0 0 20 20" preserveAspectRatio="xMidYMid meet">
+                                  <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" className="text-muted/30" strokeWidth="3"/>
+                                  <circle 
+                                    cx="10" 
+                                    cy="10" 
+                                    r="8" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    className={textColor}
+                                    strokeWidth="3" 
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={dashOffset}
+                                    strokeLinecap="round"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
                           </div>
-                          <span className={`truncate text-sm font-semibold ${textColor}`}>
-                            {item.speaker}
-                          </span>
-                        </div>
-                        <div className="text-xs font-medium text-muted-foreground group-hover/speaker:text-foreground transition-colors">
-                          {item.words}
-                        </div>
-                        <div className="text-xs font-medium text-muted-foreground group-hover/speaker:text-foreground transition-colors">
-                          {item.talks}x
-                        </div>
-                        <div className="flex items-center justify-end gap-2">
-                          <span className={`text-xs font-bold ${textColor}`}>
-                            {item.total}%
-                          </span>
-                          <div className="relative w-5 h-5 flex-shrink-0">
-                            <svg className="w-full h-full -rotate-90" viewBox="0 0 20 20" preserveAspectRatio="xMidYMid meet">
-                              <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" className="text-muted/30" strokeWidth="3"/>
-                              <circle 
-                                cx="10" 
-                                cy="10" 
-                                r="8" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                className={textColor}
-                                strokeWidth="3" 
-                                strokeDasharray={circumference}
-                                strokeDashoffset={dashOffset}
-                                strokeLinecap="round"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                        
-                        {/* Hover Tooltip */}
-                        <div className="absolute ring-1 ring-border left-full ml-4 top-1/2 -translate-y-1/2 bg-popover text-popover-foreground px-4 py-3 rounded-xl shadow-xl opacity-0 group-hover/speaker:opacity-100 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap text-sm scale-95 group-hover/speaker:scale-100">
+                        </TooltipTrigger>
+                        <TooltipContent side="right" sideOffset={16} className="bg-popover text-popover-foreground px-4 py-3 rounded-xl shadow-xl ring-1 ring-border z-[100] whitespace-nowrap">
                           <div className="font-bold mb-2 flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${bgColor}`}></div>
                             {item.speaker}
@@ -206,8 +207,8 @@ export function MeetingAnalytics({
                             <div className="flex justify-between gap-4"><span>Kali berbicara:</span> <span className="font-semibold text-foreground">{item.talks}x</span></div>
                             <div className="flex justify-between gap-4"><span>Total waktu:</span> <span className="font-semibold text-foreground">{item.total}%</span></div>
                           </div>
-                        </div>
-                      </div>
+                        </TooltipContent>
+                      </Tooltip>
                     )
                   })
                 ) : (
