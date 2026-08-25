@@ -280,17 +280,21 @@ export default function MeetingDetailPage() {
     if (video) {
       video.addEventListener('timeupdate', handleTimeUpdate)
       video.addEventListener('ended', handleEnded)
+      video.addEventListener('play', handlePlay)
+      video.addEventListener('pause', handlePause)
       video.addEventListener('loadedmetadata', handleLoadedMetadata)
       // If already loaded, get duration immediately
       if (video.duration && isFinite(video.duration)) {
         setMediaDuration(video.duration)
       }
     }
+    
     if (audio) {
       audio.addEventListener('timeupdate', handleTimeUpdate)
       audio.addEventListener('ended', handleEnded)
+      audio.addEventListener('play', handlePlay)
+      audio.addEventListener('pause', handlePause)
       audio.addEventListener('loadedmetadata', handleLoadedMetadata)
-      // If already loaded, get duration immediately
       if (audio.duration && isFinite(audio.duration)) {
         setMediaDuration(audio.duration)
       }
@@ -300,11 +304,15 @@ export default function MeetingDetailPage() {
       if (video) {
         video.removeEventListener('timeupdate', handleTimeUpdate)
         video.removeEventListener('ended', handleEnded)
+        video.removeEventListener('play', handlePlay)
+        video.removeEventListener('pause', handlePause)
         video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       }
       if (audio) {
         audio.removeEventListener('timeupdate', handleTimeUpdate)
         audio.removeEventListener('ended', handleEnded)
+        audio.removeEventListener('play', handlePlay)
+        audio.removeEventListener('pause', handlePause)
         audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
       }
     }
@@ -515,7 +523,7 @@ export default function MeetingDetailPage() {
     <SidebarProvider defaultOpen={false}>
       <AppSidebar className="z-[100]" />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
-        <div className="min-h-screen bg-background flex flex-col h-screen overflow-hidden">
+        <div className="min-h-screen bg-slate-50/50 dark:bg-background flex flex-col h-screen overflow-hidden w-full">
           <RealtimeBanner 
             meetingId={meetingId}
             currentUserName={user?.name}
