@@ -154,14 +154,20 @@ export function MeetingTranscript({
     
     const video = videoRef.current
     const handleTimeUpdate = () => {
-      setPopupCurrentTime(video.currentTime)
+      const time = video.currentTime
+      setPopupCurrentTime(time)
       
-      // Auto-scroll to active segment in popup
-      if (popupSegmentsRef.current) {
-        const activeIndex = transcriptSegments.findIndex(
-          (seg: TranscriptionSegment) => seg.start <= video.currentTime && seg.end >= video.currentTime
+      // Update active segment based on current time
+      if (meeting?.transcription?.segments && meeting.transcription.segments.length > 0) {
+        // Use findLastIndex to gracefully handle small gaps and floating point precision
+        let activeIndex = meeting.transcription.segments.findLastIndex(
+          (seg: any) => seg.start <= time + 0.1
         )
-        if (activeIndex !== -1) {
+        // If clicking right at the start or before the first segment, default to the first one
+        if (activeIndex === -1 && time < meeting.transcription.segments[0].start) {
+          activeIndex = 0
+        }
+        if (activeIndex !== -1 && popupSegmentsRef.current) {
           const segmentElement = popupSegmentsRef.current.children[activeIndex] as HTMLElement
           if (segmentElement) {
             segmentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -389,13 +395,13 @@ export function MeetingTranscript({
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-primary/10 hover:text-primary text-muted-foreground/70"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleEditSpeaker(index, segment.speaker)
                                 }}
                               >
-                                <IconPencil className="h-3 w-3 text-muted-foreground" />
+                                <IconPencil className="h-3.5 w-3.5 currentColor" />
                               </Button>
                             )}
                           </div>
@@ -428,41 +434,51 @@ export function MeetingTranscript({
       </Tabs>
 
       <Dialog open={isEditingSpeaker} onOpenChange={setIsEditingSpeaker}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Nama Pembicara</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="speaker-name">Nama Baru</Label>
+        <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-2xl p-0 overflow-hidden">
+          <div className="bg-gradient-to-b from-primary/10 to-background px-6 py-6 pb-4 border-b border-border/50">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <IconUser className="w-5 h-5 text-primary" />
+              Edit Nama Pembicara
+            </DialogTitle>
+          </div>
+          <div className="px-6 py-6 space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="speaker-name" className="text-sm font-semibold">Nama Baru</Label>
               <Input
                 id="speaker-name"
                 value={newSpeakerName}
                 onChange={(e) => setNewSpeakerName(e.target.value)}
-                placeholder="Masukkan nama pembicara..."
+                placeholder="Contoh: John Doe"
+                className="h-11 rounded-xl bg-muted/30 focus-visible:ring-primary/20"
                 autoFocus
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="update-scope">Cakupan Pembaruan</Label>
-              <select 
-                id="update-scope"
-                value={updateScope}
-                onChange={(e) => setUpdateScope(e.target.value === 'single' ? 'single' : 'all')}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="single">Ganti hanya segmen ini saja</option>
-                <option value="all">Ganti di semua percakapan ({editingSegment?.name})</option>
-              </select>
+            <div className="space-y-2">
+              <Label htmlFor="update-scope" className="text-sm font-semibold">Cakupan Pembaruan</Label>
+              <div className="relative">
+                <select 
+                  id="update-scope"
+                  value={updateScope}
+                  onChange={(e) => setUpdateScope(e.target.value === 'single' ? 'single' : 'all')}
+                  className="appearance-none flex h-11 w-full rounded-xl border border-input bg-muted/30 px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="single">Hanya percakapan ini saja</option>
+                  <option value="all">Semua percakapan dari "{editingSegment?.name}"</option>
+                </select>
+                <IconChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg border border-primary/10 italic">
-              <strong className="text-foreground">Tips:</strong> Gunakan "Semua Segmen" untuk mengganti identitas pembicara di seluruh transkrip secara otomatis.
-            </div>
+            {updateScope === 'all' && (
+              <div className="text-[11px] text-primary bg-primary/5 p-3 rounded-xl border border-primary/10 flex items-start gap-2">
+                <IconInfoCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <p>Opsi ini akan mengubah nama pembicara secara otomatis pada seluruh transkrip percakapan.</p>
+              </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditingSpeaker(false)} disabled={isSubmitting}>Batal</Button>
+          <DialogFooter className="px-6 py-4 bg-muted/20 border-t border-border/50 sm:justify-between">
+            <Button variant="ghost" onClick={() => setIsEditingSpeaker(false)} disabled={isSubmitting} className="rounded-xl hover:bg-muted/50">Batal</Button>
             <Button 
-              className="bg-primary hover:opacity-90 transition-opacity flex items-center gap-2 px-8 font-semibold"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2 rounded-xl px-6 font-semibold shadow-sm"
               disabled={isSubmitting || !newSpeakerName.trim()}
               onClick={submitSpeakerUpdate}
             >
