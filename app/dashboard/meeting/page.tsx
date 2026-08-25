@@ -127,33 +127,59 @@ export default function MeetingPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-6 py-6">
-              {/* Generate Your Meeting Section */}
-              <div className="px-4 lg:px-6">
-                <div className="relative mb-8 overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-[var(--card)] px-6 py-8 sm:px-9 sm:py-10">
-                  <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-[48%] opacity-90" style={{ background: "radial-gradient(ellipse at 70% 48%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 60%)" }} />
-                  <svg aria-hidden="true" viewBox="0 0 420 210" className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 text-[var(--primary)] sm:block">
-                    <path d="M8 170c72-7 98-58 162-54 60 4 80 47 142 23 38-15 59-58 108-69" fill="none" stroke="currentColor" strokeOpacity=".13" strokeWidth="1.5" />
-                    <path d="M2 193c90-2 113-46 172-41 64 5 82 38 144 17 42-15 55-44 102-54" fill="none" stroke="currentColor" strokeOpacity=".07" />
-                    <circle cx="169" cy="116" r="5" fill="var(--card)" stroke="currentColor" strokeWidth="2" />
-                    <circle cx="312" cy="139" r="4" fill="var(--card)" stroke="currentColor" strokeWidth="2" />
-                  </svg>
+              {/* Hero Section */}
+              <div className="px-4 lg:px-6 mb-2">
+                <div className="mb-6">
+                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)]">
+                    Meeting jalan, catatan tetap aman.
+                  </h2>
+                  <p className="text-base text-muted-foreground mt-2 max-w-2xl">
+                    Pilih cara Anda memulai. Undang Notu ke platform meeting online Anda, atau rekam diskusi langsung dari mikrofon. Kami urus sisanya.
+                  </p>
+                </div>
 
-                  <div className="relative z-10 max-w-xl">
-                    <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">Siap mulai?</p>
-                    <h1 className="mb-3 text-3xl font-semibold tracking-[-0.035em] text-[var(--foreground)] sm:text-4xl">Meeting jalan, catatan tetap aman.</h1>
-                    <p className="mb-7 max-w-lg text-sm leading-6 text-[var(--muted-foreground)]">Undang Notu ke Google Meet atau rekam langsung dari mikrofon. Anda dapat fokus berdiskusi, sementara Notu membantu menyiapkan catatannya.</p>
-
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <Button className="h-11 bg-primary px-5 text-primary-foreground transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 motion-reduce:transition-none" onClick={() => setIsOnlineMeetingOpen(true)}>
-                        <IconPlus className="mr-2 h-4 w-4" />
-                        Undang Notu ke Google Meet
-                      </Button>
-                      <Button variant="outline" className="h-11 border-[var(--border)] bg-[color-mix(in_oklch,var(--card)_80%,transparent)] px-5 text-[var(--foreground)] transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[color-mix(in_oklch,var(--primary)_28%,var(--border))] hover:bg-[var(--muted)] motion-reduce:transition-none" onClick={() => setIsRealtimeMeetingOpen(true)}>
-                        <IconMicrophone className="mr-2 h-4 w-4" />
-                        Rekam langsung dari mikrofon
-                      </Button>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {/* Action Card 1: Google Meet */}
+                  <button 
+                    onClick={() => setIsOnlineMeetingOpen(true)}
+                    className="group relative isolate flex flex-col w-full h-full min-h-[180px] overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-all duration-300 hover:shadow-md hover:border-primary/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <div className="flex h-full flex-col justify-between p-6">
+                      <div className="flex items-start justify-between mb-8">
+                         <div className="flex h-11 w-11 items-center justify-center rounded-xl text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10 shadow-sm ring-1 ring-inset ring-black/5 dark:ring-white/10 transition-transform group-hover:scale-110 duration-300">
+                            <IconPlus className="h-5 w-5" strokeWidth={2} />
+                         </div>
+                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Meeting online</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <h3 className="text-[1.05rem] font-semibold tracking-tight text-foreground">Undang Notu ke Google Meet</h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground text-balance">
+                          Tempel link meeting, lalu Notu akan membantu mencatat percakapan secara live.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </button>
+
+                  {/* Action Card 2: Microphone */}
+                  <button 
+                    onClick={() => setIsRealtimeMeetingOpen(true)}
+                    className="group relative isolate flex flex-col w-full h-full min-h-[180px] overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-all duration-300 hover:shadow-md hover:border-primary/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <div className="flex h-full flex-col justify-between p-6">
+                      <div className="flex items-start justify-between mb-8">
+                         <div className="flex h-11 w-11 items-center justify-center rounded-xl text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10 shadow-sm ring-1 ring-inset ring-black/5 dark:ring-white/10 transition-transform group-hover:scale-110 duration-300">
+                            <IconMicrophone className="h-5 w-5" strokeWidth={2} />
+                         </div>
+                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Meeting di ruangan</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <h3 className="text-[1.05rem] font-semibold tracking-tight text-foreground">Mulai rekam dari mikrofon</h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground text-balance">
+                          Sekali klik, obrolan langsung direkam dan diubah jadi transkrip.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
 
@@ -171,9 +197,14 @@ export default function MeetingPage() {
                     <IconLoader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
                   </div>
                 ) : meetings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="text-lg font-medium text-[var(--foreground)]">Belum ada meeting</p>
-                    <p className="text-sm text-[var(--muted-foreground)] mt-1">Mari undang Notu ke meeting pertama Anda.</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-center bg-card/30 rounded-2xl border border-dashed border-border/60">
+                    <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center mb-5 ring-1 ring-primary/10">
+                      <IconMicrophone className="h-8 w-8 text-primary/60" />
+                    </div>
+                    <p className="text-xl font-bold tracking-tight text-foreground mb-2">Belum ada meeting yang tercatat</p>
+                    <p className="text-sm text-muted-foreground max-w-[320px] mx-auto leading-relaxed">
+                      Ruang kerja Anda masih kosong. Mari mulai dengan merekam diskusi atau mengundang Notu ke panggilan online.
+                    </p>
                   </div>
                 ) : (
                   <>
