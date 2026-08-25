@@ -77,6 +77,7 @@ export function MeetingHeader({
   const [isEditingDesc, setIsEditingDesc] = useState(false)
   const [editTitle, setEditTitle] = useState(title)
   const [editDesc, setEditDesc] = useState(description)
+  const [imgError, setImgError] = useState(false)
   
   const router = useRouter()
 
@@ -129,6 +130,7 @@ export function MeetingHeader({
             resourceId={meetingId}
             currentUserId={user?.id}
             collaborators={participants || collaborators}
+            owner={user ? { _id: user.id || '', name: user.name, image: user.image } : undefined}
             maxAvatars={4}
           />
           
@@ -383,11 +385,16 @@ export function MeetingHeader({
               <div className="text-sm font-semibold text-foreground">{user?.name || 'User'}</div>
               <div className="text-xs text-muted-foreground">{user?.plan || 'Free'}</div>
             </div>
-            {user?.image ? (
-              <img src={user.image} className="w-9 h-9 rounded-full border border-border" alt="" />
+            {user?.image && !imgError ? (
+              <img 
+                src={user.image} 
+                className="w-9 h-9 rounded-full border border-border object-cover bg-background" 
+                alt={user.name || "User"} 
+                onError={() => setImgError(true)}
+              />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                {user?.name?.[0] || 'U'}
+              <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold shadow-sm">
+                {user?.name?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
           </div>
