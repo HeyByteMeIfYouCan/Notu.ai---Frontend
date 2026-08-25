@@ -222,6 +222,7 @@ export default function KanbanListPage() {
             </div>
           </div>
         </div>
+      </div>
       </SidebarInset>
       <NewBoardModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </SidebarProvider>
