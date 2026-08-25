@@ -268,6 +268,8 @@ export default function MeetingDetailPage() {
     }
     
     const handleEnded = () => setIsPlaying(false)
+    const handlePlay = () => setIsPlaying(true)
+    const handlePause = () => setIsPlaying(false)
     
     // Get actual duration from media element when metadata loads
     const handleLoadedMetadata = () => {
