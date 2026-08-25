@@ -247,7 +247,7 @@ export function TaskForm({
                                 <Button 
                                   size="icon" 
                                   variant="ghost" 
-                                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                  className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     setEditingLabelId(lbl.id)
@@ -259,7 +259,7 @@ export function TaskForm({
                                 <Button 
                                   size="icon" 
                                   variant="ghost" 
-                                  className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                                  className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     if (confirm(`Hapus label "${lbl.name}"?`)) onDeleteLabel(lbl.id)

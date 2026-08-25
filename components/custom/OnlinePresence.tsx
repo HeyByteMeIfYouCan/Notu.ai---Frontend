@@ -145,8 +145,8 @@ export function OnlinePresence({
     <TooltipProvider>
       <div className="flex items-center gap-2">
         <div className="flex -space-x-1.5 items-center">
-          {displayUsers.map((u) => (
-            <Tooltip key={u.id}>
+          {displayUsers.map((u, i) => (
+            <Tooltip key={u.id || `user-${i}`}>
               <TooltipTrigger asChild>
                 <div className="relative group cursor-pointer transition-transform hover:scale-110 hover:z-20">
                   {u.image ? (
