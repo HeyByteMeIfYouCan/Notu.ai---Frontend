@@ -119,26 +119,8 @@ export function MeetingTrendsChart({ data, className, type = 'line' }: MeetingTr
 
   return (
     <div className={className}>
-      {/* Stats Cards Row */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
-          <div className="text-xl font-bold text-foreground">{totalMeetings}</div>
-          <div className="text-[11px] text-muted-foreground">Total Meetings</div>
-        </div>
-        <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
-          <div className="text-xl font-bold text-foreground">
-            {Math.floor(totalDuration / 60)}h {totalDuration % 60}m
-          </div>
-          <div className="text-[11px] text-muted-foreground">Total Duration</div>
-        </div>
-        <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
-          <div className="text-xl font-bold text-foreground">{avgMeetingsPerDay}</div>
-          <div className="text-[11px] text-muted-foreground">Avg / Day</div>
-        </div>
-      </div>
-
       {/* Chart Container */}
-      <div className="relative h-44 bg-muted/20 border border-border/50 rounded-xl p-4">
+      <div className="relative h-44 rounded-xl bg-muted/30 p-4">
         {/* Hover Info Tooltip */}
         {hoveredData && (
           <div 
