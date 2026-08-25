@@ -110,7 +110,7 @@ export function MeetingMainContent({
       {/* Meeting Header Info */}
       <div className="group relative overflow-hidden bg-background py-8 shadow-sm">
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(ellipse at 100% 50%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 70%)" }} />
-        <div className="flex flex-col gap-4 max-w-5xl mx-auto px-8">
+        <div className="flex flex-col gap-4 max-w-6xl mx-auto px-8">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
@@ -196,7 +196,7 @@ export function MeetingMainContent({
       </div>
 
       {/* Main Content Sections */}
-      <div className="space-y-6 px-8 py-8 pb-32 max-w-5xl mx-auto">
+      <div className="space-y-6 px-8 py-8 pb-32 max-w-6xl mx-auto">
         {!isAiContentAvailable ? (
           <div className="relative mt-4 flex flex-col items-center justify-center overflow-hidden rounded-[2rem] border border-border bg-background px-8 py-24 text-center shadow-sm">
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1/2" style={{ background: "radial-gradient(ellipse at 50% 0%, color-mix(in oklch, var(--primary) 12%, transparent), transparent 70%)" }} />
