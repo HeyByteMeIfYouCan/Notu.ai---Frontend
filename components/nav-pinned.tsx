@@ -14,7 +14,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -77,11 +77,35 @@ export function NavPinned() {
   const [infoDialog, setInfoDialog] = useState<{ type: 'meeting' | 'board'; item: PinnedMeeting | PinnedBoard } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'meeting' | 'board'; id: string; title: string } | null>(null);
 
+  const fetchPinnedItems = useCallback(async () => {
+    if (!isReady) return;
+    try {
+      setIsLoading(true);
+      const [meetingsRes, boardsRes] = await Promise.all([
+        api.getPinnedMeetings(),
+        api.getPinnedBoards(),
+      ]);
+      
+      // Handle API response structure
+      const meetingsData = meetingsRes?.data || meetingsRes || [];
+      const boardsData = boardsRes?.data || boardsRes || [];
+      
+      setPinnedMeetings(Array.isArray(meetingsData) ? meetingsData : []);
+      setPinnedBoards(Array.isArray(boardsData) ? boardsData : []);
+    } catch (error) {
+      console.error("Failed to fetch pinned items:", error);
+      setPinnedMeetings([]);
+      setPinnedBoards([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [api, isReady]);
+
   useEffect(() => {
     if (isReady) {
       fetchPinnedItems();
     }
-  }, [isReady]);
+  }, [isReady, fetchPinnedItems]);
 
   // Subscribe to pin events for realtime sync
   useEffect(() => {
@@ -106,30 +130,7 @@ export function NavPinned() {
     });
 
     return () => unsubscribe();
-  }, []);
-
-  const fetchPinnedItems = async () => {
-    try {
-      setIsLoading(true);
-      const [meetingsRes, boardsRes] = await Promise.all([
-        api.getPinnedMeetings(),
-        api.getPinnedBoards(),
-      ]);
-      
-      // Handle API response structure
-      const meetingsData = meetingsRes?.data || meetingsRes || [];
-      const boardsData = boardsRes?.data || boardsRes || [];
-      
-      setPinnedMeetings(Array.isArray(meetingsData) ? meetingsData : []);
-      setPinnedBoards(Array.isArray(boardsData) ? boardsData : []);
-    } catch (error) {
-      console.error("Failed to fetch pinned items:", error);
-      setPinnedMeetings([]);
-      setPinnedBoards([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [fetchPinnedItems]);
 
   const handleUnpinMeeting = async (id: string) => {
     try {
