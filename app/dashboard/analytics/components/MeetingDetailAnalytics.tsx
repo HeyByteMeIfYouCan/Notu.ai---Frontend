@@ -1,7 +1,7 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   IconArrowLeft,
   IconClock,
@@ -17,7 +17,7 @@ import {
   IconTrendingUp,
   IconTrendingDown,
   IconMinus,
-  IconNotes
+  IconNotes,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 
@@ -28,15 +28,25 @@ interface MeetingDetailAnalyticsProps {
   onBack: () => void
 }
 
+// Distinct colors for speaker donut & list
+const SPEAKER_COLORS = [
+  "#6366f1", // indigo (primary-like)
+  "#a855f7", // violet
+  "#f59e0b", // amber
+  "#10b981", // emerald
+  "#f43f5e", // rose
+  "#0ea5e9", // sky
+]
+
 export function MeetingDetailAnalytics({ meetingId, data, isLoading, onBack }: MeetingDetailAnalyticsProps) {
   const router = useRouter()
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-24">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="mt-4 text-sm text-muted-foreground">Loading meeting analytics...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          <p className="mt-4 text-sm text-muted-foreground">Memuat analytics meeting...</p>
         </div>
       </div>
     )
@@ -44,9 +54,9 @@ export function MeetingDetailAnalytics({ meetingId, data, isLoading, onBack }: M
 
   if (!data) {
     return (
-      <div className="text-center py-20">
-        <p className="text-muted-foreground">No data available</p>
-        <Button variant="ghost" onClick={onBack} className="mt-4">Go Back</Button>
+      <div className="text-center py-24">
+        <p className="text-muted-foreground">Data tidak tersedia</p>
+        <Button variant="ghost" onClick={onBack} className="mt-4">Kembali</Button>
       </div>
     )
   }
@@ -62,30 +72,24 @@ export function MeetingDetailAnalytics({ meetingId, data, isLoading, onBack }: M
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return ""
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    return new Date(dateStr).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   }
 
   const getTypeInfo = (type: string) => {
-    if (type === 'online') return { icon: <IconVideo className="h-4 w-4" />, label: 'Online Meeting', color: 'text-blue-500' }
-    if (type === 'realtime') return { icon: <IconMicrophone className="h-4 w-4" />, label: 'Realtime Recording', color: 'text-green-500' }
-    return { icon: <IconFileUpload className="h-4 w-4" />, label: 'Uploaded File', color: 'text-purple-500' }
+    if (type === 'online') return { icon: <IconVideo className="h-4 w-4" />, label: 'Online Meeting' }
+    if (type === 'realtime') return { icon: <IconMicrophone className="h-4 w-4" />, label: 'Realtime Recording' }
+    return { icon: <IconFileUpload className="h-4 w-4" />, label: 'File Upload' }
   }
 
   const typeInfo = getTypeInfo(meeting?.type)
-
-  // Use totalWords from API, fallback to calculating from speakers
   const totalWords = apiTotalWords || speakers?.reduce((sum: number, s: any) => sum + (s.words || 0), 0) || 0
-
-  // Calculate engagement score (based on speakers diversity and word count)
   const speakerDiversity = speakers?.length > 1 ? Math.min(speakers.length / 5, 1) : 0.2
   const engagementScore = Math.round((speakerDiversity * 50) + (Math.min(totalWords / 1000, 1) * 50))
 
-  // Color helper for comparison
   const getComparisonColor = (value: number, inverse: boolean = false) => {
     if (value === 0) return 'text-muted-foreground'
-    if (inverse) return value > 0 ? 'text-red-500' : 'text-green-500'
-    return value > 0 ? 'text-green-500' : 'text-red-500'
+    if (inverse) return value > 0 ? 'text-destructive' : 'text-emerald-600 dark:text-emerald-400'
+    return value > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'
   }
 
   const getComparisonIcon = (value: number) => {
@@ -94,23 +98,54 @@ export function MeetingDetailAnalytics({ meetingId, data, isLoading, onBack }: M
     return <IconMinus className="h-4 w-4" />
   }
 
+  // Priority badge styles using semantic CSS vars (dark-mode safe)
+  const getPriorityStyle = (priority: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'bg-destructive/10 text-destructive border border-destructive/20'
+      case 'high':
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+      case 'medium':
+        return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20'
+      default:
+        return 'bg-muted text-muted-foreground border border-border'
+    }
+  }
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'done':
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+      case 'in-progress':
+        return 'bg-primary/10 text-primary border border-primary/20'
+      default:
+        return 'bg-muted text-muted-foreground border border-border'
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    if (status === 'done') return 'Selesai'
+    if (status === 'in-progress') return 'Berlangsung'
+    return 'To Do'
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header with Back Button */}
+      {/* Back + Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex-1">
-          <Button variant="ghost" size="sm" onClick={onBack} className="mb-3 -ml-2">
+          <Button variant="ghost" size="sm" onClick={onBack} className="mb-3 -ml-2 rounded-xl">
             <IconArrowLeft className="h-4 w-4 mr-2" />
-            Back to List
+            Kembali ke Daftar
           </Button>
 
-          <h2 className="text-2xl font-bold text-foreground">{meeting?.title || 'Untitled Meeting'}</h2>
+          <h2 className="text-2xl font-extrabold tracking-tight text-foreground">{meeting?.title || 'Untitled Meeting'}</h2>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className={`flex items-center gap-1.5 text-sm ${typeInfo.color}`}>
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
               {typeInfo.icon}
               {typeInfo.label}
             </span>
-            <span className="text-sm text-muted-foreground">•</span>
+            <span className="text-muted-foreground/40">•</span>
             <span className="text-sm text-muted-foreground">{formatDate(meeting?.createdAt)}</span>
           </div>
           {meeting?.description && (
@@ -118,366 +153,304 @@ export function MeetingDetailAnalytics({ meetingId, data, isLoading, onBack }: M
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/dashboard/meeting/${meetingId}`)}
-          >
-            <IconNotes className="h-4 w-4 mr-2" />
-            View Full Meeting
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-xl"
+          onClick={() => router.push(`/dashboard/meeting/${meetingId}`)}
+        >
+          <IconNotes className="h-4 w-4 mr-2" />
+          Lihat Meeting Lengkap
+        </Button>
       </div>
 
-      {/* Key Metrics Row */}
+      {/* Key Metrics — 5 chip-stat horizontal */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Card className="col-span-1">
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <IconClock className="h-4 w-4" />
-              <span className="text-xs font-medium">Duration</span>
+        {[
+          { icon: <IconClock className="h-4 w-4" />, label: "Durasi", value: formatDuration(meeting?.duration) },
+          { icon: <IconUsers className="h-4 w-4" />, label: "Speaker", value: speakers?.length || 0 },
+          { icon: <IconMessage className="h-4 w-4" />, label: "Kata", value: totalWords.toLocaleString() },
+          { icon: <IconTags className="h-4 w-4" />, label: "Topik", value: topics?.length || 0 },
+          { icon: <IconListCheck className="h-4 w-4" />, label: "Action Items", value: actionItems?.length || 0 },
+        ].map((m, i) => (
+          <div key={i} className="p-4 rounded-2xl border border-border bg-card flex flex-col gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <span className="text-primary">{m.icon}</span>
+              {m.label}
             </div>
-            <div className="text-xl font-bold text-foreground">{formatDuration(meeting?.duration)}</div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <IconUsers className="h-4 w-4" />
-              <span className="text-xs font-medium">Speakers</span>
-            </div>
-            <div className="text-xl font-bold text-foreground">{speakers?.length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <IconMessage className="h-4 w-4" />
-              <span className="text-xs font-medium">Words</span>
-            </div>
-            <div className="text-xl font-bold text-foreground">{totalWords.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <IconTags className="h-4 w-4" />
-              <span className="text-xs font-medium">Topics</span>
-            </div>
-            <div className="text-xl font-bold text-foreground">{topics?.length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <IconListCheck className="h-4 w-4" />
-              <span className="text-xs font-medium">Actions</span>
-            </div>
-            <div className="text-xl font-bold text-foreground">{actionItems?.length || 0}</div>
-          </CardContent>
-        </Card>
+            <span className="text-2xl font-extrabold tracking-tight text-foreground">{m.value}</span>
+          </div>
+        ))}
       </div>
 
-      {/* Comparison with Average */}
+      {/* Comparison vs Average */}
       {comparison && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Performance vs Your Average</CardTitle>
-            <CardDescription>How this meeting compares to your typical meetings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-              <div className="text-center p-3 bg-muted/30 rounded-lg">
-                <div className={`flex items-center justify-center gap-1 text-lg font-bold ${getComparisonColor(comparison.vsAverage?.duration || 0, true)}`}>
-                  {getComparisonIcon(comparison.vsAverage?.duration || 0)}
-                  {Math.abs(comparison.vsAverage?.duration || 0)}%
+        <Card className="p-5 rounded-2xl border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-foreground">Performa vs Rata-rata Anda</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Perbandingan meeting ini dengan meeting tipikal Anda</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {[
+              { label: "Durasi", value: comparison.vsAverage?.duration || 0, sub: `avg: ${comparison.avgDuration}m`, inverse: true },
+              { label: "Speaker", value: comparison.vsAverage?.participants || 0, sub: `avg: ${comparison.avgParticipants?.toFixed(1)}`, inverse: false },
+              { label: "Action Items", value: comparison.vsAverage?.actionItems || 0, sub: `avg: ${comparison.avgActionItems?.toFixed(1)}`, inverse: false },
+            ].map((item, i) => (
+              <div key={i} className="p-3 rounded-xl bg-muted/50 border border-border text-center">
+                <div className={`flex items-center justify-center gap-1 text-xl font-extrabold ${getComparisonColor(item.value, item.inverse)}`}>
+                  {getComparisonIcon(item.value)}
+                  {Math.abs(item.value)}%
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">Duration</div>
-                <div className="text-[10px] text-muted-foreground">avg: {comparison.avgDuration}m</div>
+                <div className="text-xs font-semibold text-foreground mt-1">{item.label}</div>
+                <div className="text-[11px] text-muted-foreground">{item.sub}</div>
               </div>
-              <div className="text-center p-3 bg-muted/30 rounded-lg">
-                <div className={`flex items-center justify-center gap-1 text-lg font-bold ${getComparisonColor(comparison.vsAverage?.participants || 0)}`}>
-                  {getComparisonIcon(comparison.vsAverage?.participants || 0)}
-                  {Math.abs(comparison.vsAverage?.participants || 0)}%
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">Speakers</div>
-                <div className="text-[10px] text-muted-foreground">avg: {comparison.avgParticipants?.toFixed(1)}</div>
-              </div>
-              <div className="text-center p-3 bg-muted/30 rounded-lg">
-                <div className={`flex items-center justify-center gap-1 text-lg font-bold ${getComparisonColor(comparison.vsAverage?.actionItems || 0)}`}>
-                  {getComparisonIcon(comparison.vsAverage?.actionItems || 0)}
-                  {Math.abs(comparison.vsAverage?.actionItems || 0)}%
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">Action Items</div>
-                <div className="text-[10px] text-muted-foreground">avg: {comparison.avgActionItems?.toFixed(1)}</div>
-              </div>
-              <div className="text-center p-3 bg-muted/30 rounded-lg col-span-3 md:col-span-1">
-                <div className="text-lg font-bold text-primary">{engagementScore}</div>
-                <div className="text-xs text-muted-foreground mt-1">Engagement Score</div>
-                <div className="text-[10px] text-muted-foreground">out of 100</div>
-              </div>
-              <div className="text-center p-3 bg-muted/30 rounded-lg col-span-3 md:col-span-2">
-                <div className="text-lg font-bold text-foreground">
-                  {meeting?.duration > 0 ? Math.round(totalWords / (meeting.duration / 60)) : 0}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">Words per Minute</div>
-                <div className="text-[10px] text-muted-foreground">conversation pace</div>
-              </div>
+            ))}
+
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center col-span-1">
+              <div className="text-xl font-extrabold text-primary">{engagementScore}</div>
+              <div className="text-xs font-semibold text-foreground mt-1">Engagement</div>
+              <div className="text-[11px] text-muted-foreground">dari 100</div>
             </div>
-          </CardContent>
+
+            <div className="p-3 rounded-xl bg-muted/50 border border-border text-center col-span-1">
+              <div className="text-xl font-extrabold text-foreground">
+                {meeting?.duration > 0 ? Math.round(totalWords / (meeting.duration / 60)) : 0}
+              </div>
+              <div className="text-xs font-semibold text-foreground mt-1">Kata/Menit</div>
+              <div className="text-[11px] text-muted-foreground">kecepatan bicara</div>
+            </div>
+          </div>
         </Card>
       )}
 
-      {/* Speaker Analytics with Donut Chart */}
+      {/* Speaker Analytics */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Speaker Distribution</CardTitle>
-            <CardDescription>Talk time breakdown by speaker</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {speakers && speakers.length > 0 ? (
-              <div className="flex gap-6">
-                {/* Mini Donut Chart */}
-                <div className="relative flex-shrink-0">
-                  <svg className="w-32 h-32 -rotate-90">
-                    {speakers.map((speaker: any, index: number) => {
-                      const offset = speakers.slice(0, index).reduce((sum: number, s: any) => sum + (s.total || 0), 0)
-                      const hue = (index * 360 / speakers.length) % 360
-                      return (
-                        <circle
-                          key={index}
-                          cx="64" cy="64" r="48"
-                          fill="none"
-                          stroke={`hsl(${hue}, 70%, 50%)`}
-                          strokeWidth="16"
-                          strokeDasharray={`${(speaker.total || 0) * 3.01} 301`}
-                          strokeDashoffset={`-${offset * 3.01}`}
-                        />
-                      )
-                    })}
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-lg font-bold">{speakers.length}</div>
-                      <div className="text-[10px] text-muted-foreground">speakers</div>
-                    </div>
-                  </div>
-                </div>
+        {/* Donut + list */}
+        <Card className="p-5 rounded-2xl border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-foreground">Distribusi Speaker</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Porsi bicara tiap speaker</p>
+          </div>
 
-                {/* Speaker List */}
-                <div className="flex-1 space-y-2 max-h-48 overflow-y-auto">
+          {speakers && speakers.length > 0 ? (
+            <div className="flex gap-6 items-center">
+              <div className="relative shrink-0">
+                <svg className="w-28 h-28 -rotate-90">
                   {speakers.map((speaker: any, index: number) => {
-                    const speakerName = speaker.speaker || `Speaker ${index + 1}`
-                    const displayName = speakerName.match(/^SPEAKER[_\s]*(\d+)$/i)
-                      ? `Speaker ${speakerName.match(/\d+/)?.[0]}`
-                      : speakerName
-                    const hue = (index * 360 / speakers.length) % 360
-
+                    const offset = speakers.slice(0, index).reduce((sum: number, s: any) => sum + (s.total || 0), 0)
+                    const color = SPEAKER_COLORS[index % SPEAKER_COLORS.length]
                     return (
-                      <div key={index} className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: `hsl(${hue}, 70%, 50%)` }}
-                        />
-                        <span className="text-sm font-medium text-foreground truncate flex-1">{displayName}</span>
-                        <span className="text-sm text-muted-foreground">{speaker.total || 0}%</span>
-                      </div>
+                      <circle
+                        key={index}
+                        cx="56" cy="56" r="42"
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="14"
+                        strokeDasharray={`${(speaker.total || 0) * 2.64} 264`}
+                        strokeDashoffset={`-${offset * 2.64}`}
+                      />
                     )
                   })}
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-xl font-extrabold text-foreground">{speakers.length}</div>
+                    <div className="text-[10px] text-muted-foreground font-semibold">speakers</div>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <IconUsers className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No speaker data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Speaker Details Table */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Speaker Statistics</CardTitle>
-            <CardDescription>Detailed speaking metrics</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {speakers && speakers.length > 0 ? (
-              <div className="space-y-3">
+              <div className="flex-1 space-y-2 max-h-44 overflow-y-auto">
                 {speakers.map((speaker: any, index: number) => {
                   const speakerName = speaker.speaker || `Speaker ${index + 1}`
                   const displayName = speakerName.match(/^SPEAKER[_\s]*(\d+)$/i)
                     ? `Speaker ${speakerName.match(/\d+/)?.[0]}`
                     : speakerName
-                  const hue = (index * 360 / speakers.length) % 360
-
+                  const color = SPEAKER_COLORS[index % SPEAKER_COLORS.length]
                   return (
-                    <div key={index} className="p-3 bg-muted/30 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div
-                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                          style={{ backgroundColor: `hsl(${hue}, 70%, 50%)` }}
-                        >
-                          {displayName.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="font-medium text-foreground">{displayName}</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 text-center">
-                        <div>
-                          <div className="text-lg font-bold">{speaker.total || 0}%</div>
-                          <div className="text-[10px] text-muted-foreground">Talk Time</div>
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold">{(speaker.words || 0).toLocaleString()}</div>
-                          <div className="text-[10px] text-muted-foreground">Words</div>
-                        </div>
-                        <div>
-                          <div className="text-lg font-bold">{speaker.talks || 0}</div>
-                          <div className="text-[10px] text-muted-foreground">Turns</div>
-                        </div>
-                      </div>
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                      <span className="text-sm font-medium text-foreground truncate flex-1">{displayName}</span>
+                      <span className="text-sm font-bold text-foreground">{speaker.total || 0}%</span>
                     </div>
                   )
                 })}
               </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">No speaker statistics available</p>
-              </div>
-            )}
-          </CardContent>
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <IconUsers className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">Tidak ada data speaker</p>
+            </div>
+          )}
         </Card>
-      </div>
 
-      {/* Topics & Keywords */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Topics & Keywords</CardTitle>
-          <CardDescription>Main discussion points from this meeting</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {topics && topics.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {topics.map((topic: any, index: number) => {
-                const hue = (index * 25) % 360
+        {/* Speaker Statistics */}
+        <Card className="p-5 rounded-2xl border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-foreground">Statistik Speaker</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Metrik bicara terperinci</p>
+          </div>
+
+          {speakers && speakers.length > 0 ? (
+            <div className="space-y-2.5">
+              {speakers.map((speaker: any, index: number) => {
+                const speakerName = speaker.speaker || `Speaker ${index + 1}`
+                const displayName = speakerName.match(/^SPEAKER[_\s]*(\d+)$/i)
+                  ? `Speaker ${speakerName.match(/\d+/)?.[0]}`
+                  : speakerName
+                const color = SPEAKER_COLORS[index % SPEAKER_COLORS.length]
+
                 return (
-                  <div
-                    key={index}
-                    className="px-3 py-1.5 rounded-full text-sm font-medium text-white transition-transform hover:scale-105"
-                    style={{ backgroundColor: `hsl(${hue}, 70%, 45%)` }}
-                  >
-                    {topic.name}
+                  <div key={index} className="p-3.5 rounded-xl bg-muted/40 border border-border/60">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                        style={{ backgroundColor: color }}
+                      >
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-semibold text-foreground text-sm truncate">{displayName}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div>
+                        <div className="text-lg font-extrabold text-foreground">{speaker.total || 0}%</div>
+                        <div className="text-[10px] text-muted-foreground font-medium">Talk Time</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-extrabold text-foreground">{(speaker.words || 0).toLocaleString()}</div>
+                        <div className="text-[10px] text-muted-foreground font-medium">Kata</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-extrabold text-foreground">{speaker.talks || 0}</div>
+                        <div className="text-[10px] text-muted-foreground font-medium">Giliran</div>
+                      </div>
+                    </div>
                   </div>
                 )
               })}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <IconTags className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No topics extracted</p>
-              <p className="text-xs mt-1">Topics are analyzed from the meeting transcription</p>
+            <div className="text-center py-10">
+              <p className="text-sm text-muted-foreground">Tidak ada statistik speaker</p>
             </div>
           )}
-        </CardContent>
+        </Card>
+      </div>
+
+      {/* Topics & Keywords */}
+      <Card className="p-5 rounded-2xl border border-border bg-card shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-bold text-foreground">Topik & Kata Kunci</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Poin diskusi utama dari meeting ini</p>
+          </div>
+          {topics && topics.length > 0 && (
+            <span className="text-xs font-semibold text-muted-foreground">{topics.length} topik</span>
+          )}
+        </div>
+
+        {topics && topics.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {topics.map((topic: any, index: number) => (
+              <div
+                key={index}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+              >
+                {topic.name}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <IconTags className="h-7 w-7 mx-auto mb-2 text-muted-foreground/40" />
+            <p className="text-sm font-semibold text-foreground">Tidak ada topik diekstrak</p>
+            <p className="text-xs text-muted-foreground mt-1">Topik dianalisis dari transkrip meeting</p>
+          </div>
+        )}
       </Card>
 
       {/* Action Items */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base">Action Items</CardTitle>
-              <CardDescription>{actionItems?.length || 0} items generated from this meeting</CardDescription>
-            </div>
-            {actionItems && actionItems.length > 0 && (
-              <div className="flex gap-2 text-xs">
-                <span className="px-2 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded">
-                  {actionItems.filter((i: any) => i.priority === 'urgent' || i.priority === 'high').length} High
-                </span>
-                <span className="px-2 py-1 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 rounded">
-                  {actionItems.filter((i: any) => i.priority !== 'urgent' && i.priority !== 'high').length} Normal
-                </span>
-              </div>
-            )}
+      <Card className="p-5 rounded-2xl border border-border bg-card shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-bold text-foreground">Action Items</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{actionItems?.length || 0} item dihasilkan dari meeting ini</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          {actionItems && actionItems.length > 0 ? (
-            <div className="space-y-3">
-              {actionItems.map((item: any, index: number) => (
-                <div key={index} className="p-3 border border-border rounded-lg hover:bg-muted/30 transition-colors">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">{item.title}</h4>
-                      {item.description && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
-                      )}
-                      <div className="flex items-center gap-3 mt-2 flex-wrap">
-                        {item.priority && (
-                          <span className={`px-2 py-0.5 text-xs font-medium rounded ${item.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                              item.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                item.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                  'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                            }`}>
-                            {item.priority}
-                          </span>
-                        )}
-                        {item.status && (
-                          <span className={`px-2 py-0.5 text-xs font-medium rounded ${item.status === 'done' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                              item.status === 'in-progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                            }`}>
-                            {item.status}
-                          </span>
-                        )}
-                        {item.assignee && (
-                          <span className="text-xs text-muted-foreground">👤 {item.assignee}</span>
-                        )}
-                        {item.dueDate && (
-                          <span className="text-xs text-muted-foreground">
-                            📅 {new Date(item.dueDate).toLocaleDateString('id-ID')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <IconListCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No action items</p>
-              <p className="text-xs mt-1">Action items are extracted from the meeting content</p>
+          {actionItems && actionItems.length > 0 && (
+            <div className="flex gap-2 text-xs">
+              <span className={`px-2.5 py-1 rounded-full font-semibold ${getPriorityStyle('high')}`}>
+                {actionItems.filter((i: any) => i.priority === 'urgent' || i.priority === 'high').length} High
+              </span>
+              <span className={`px-2.5 py-1 rounded-full font-semibold ${getPriorityStyle('low')}`}>
+                {actionItems.filter((i: any) => i.priority !== 'urgent' && i.priority !== 'high').length} Normal
+              </span>
             </div>
           )}
-        </CardContent>
+        </div>
+
+        {actionItems && actionItems.length > 0 ? (
+          <div className="space-y-2.5">
+            {actionItems.map((item: any, index: number) => (
+              <div key={index} className="p-3.5 rounded-xl border border-border bg-muted/20 hover:bg-muted/40 transition-colors">
+                <h4 className="font-semibold text-foreground text-sm">{item.title}</h4>
+                {item.description && (
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                )}
+                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                  {item.priority && (
+                    <span className={`px-2 py-0.5 text-[11px] font-semibold rounded-full capitalize ${getPriorityStyle(item.priority)}`}>
+                      {item.priority}
+                    </span>
+                  )}
+                  {item.status && (
+                    <span className={`px-2 py-0.5 text-[11px] font-semibold rounded-full ${getStatusStyle(item.status)}`}>
+                      {getStatusLabel(item.status)}
+                    </span>
+                  )}
+                  {item.assignee && (
+                    <span className="text-[11px] text-muted-foreground">👤 {item.assignee}</span>
+                  )}
+                  {item.dueDate && (
+                    <span className="text-[11px] text-muted-foreground">
+                      📅 {new Date(item.dueDate).toLocaleDateString('id-ID')}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <IconListCheck className="h-7 w-7 mx-auto mb-2 text-muted-foreground/40" />
+            <p className="text-sm font-semibold text-foreground">Tidak ada action items</p>
+            <p className="text-xs text-muted-foreground mt-1">Action items diekstrak dari konten meeting</p>
+          </div>
+        )}
       </Card>
 
-      {/* Meeting Summary Card */}
-      <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <IconChartPie className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground">Meeting Analytics Summary</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                This {formatDuration(meeting?.duration)} meeting had {speakers?.length || 0} speakers discussing {topics?.length || 0} topics,
-                generating {actionItems?.length || 0} action items with an engagement score of {engagementScore}/100.
-              </p>
-            </div>
-            <Button onClick={() => router.push(`/dashboard/meeting/${meetingId}`)}>
-              View Full Details
-              <IconExternalLink className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Summary CTA */}
+      <div className="p-5 rounded-2xl border border-border bg-card flex items-center gap-4 flex-wrap">
+        <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 shrink-0">
+          <IconChartPie className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-foreground text-sm">Ringkasan Analytics</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Meeting {formatDuration(meeting?.duration)} ini melibatkan {speakers?.length || 0} speaker membahas {topics?.length || 0} topik,
+            menghasilkan {actionItems?.length || 0} action items dengan engagement score {engagementScore}/100.
+          </p>
+        </div>
+        <Button
+          size="sm"
+          className="rounded-xl shrink-0"
+          onClick={() => router.push(`/dashboard/meeting/${meetingId}`)}
+        >
+          Lihat Detail Lengkap
+          <IconExternalLink className="h-4 w-4 ml-2" />
+        </Button>
+      </div>
     </div>
   )
 }
