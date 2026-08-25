@@ -60,9 +60,15 @@ export function MeetingMainContent({
   // Get permissions based on user role
   const permissions = useMemo(() => getPermissions(userRole), [userRole])
 
-  const executiveSummary = meeting.transcription?.summary || ""
-  const highlights = meeting.transcription?.highlights || {}
-  const conclusion = meeting.transcription?.conclusion || ""
+  const parseNewlines = (str: string) => typeof str === 'string' ? str.replace(/\\n/g, '\n') : str
+
+  const executiveSummary = parseNewlines(meeting.transcription?.summary || "")
+  const conclusion = parseNewlines(meeting.transcription?.conclusion || "")
+  
+  const rawHighlights = meeting.transcription?.highlights || {}
+  const highlights = Object.fromEntries(
+    Object.entries(rawHighlights).map(([k, v]) => [k, typeof v === 'string' ? parseNewlines(v) : v])
+  )
 
   const isAiContentAvailable = !!(executiveSummary && 
     executiveSummary.trim().length > 20 && 
