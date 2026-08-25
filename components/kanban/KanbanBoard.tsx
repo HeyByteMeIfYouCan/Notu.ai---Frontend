@@ -1066,14 +1066,6 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                <span>Selesai <span className="text-foreground/60 ml-0.5">({doneCount})</span></span>
             </div>
           </div>
-          
-          {totalTasks > 0 && (
-            <div className="w-full sm:w-64 h-2 bg-muted/60 rounded-full overflow-hidden flex ring-1 ring-inset ring-border/50">
-              <div className="bg-emerald-500 hover:bg-emerald-400 transition-all duration-500" style={{ width: `${donePercent}%` }} title={`Selesai: ${donePercent}%`}></div>
-              <div className="bg-amber-500 hover:bg-amber-400 transition-all duration-500" style={{ width: `${inProgressPercent}%` }} title={`In Progress: ${inProgressPercent}%`}></div>
-              <div className="bg-blue-500 hover:bg-blue-400 transition-all duration-500" style={{ width: `${todoPercent}%` }} title={`To Do: ${todoPercent}%`}></div>
-            </div>
-          )}
         </div>
       </div>
 
