@@ -117,9 +117,9 @@ export function MeetingMainContent({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-muted/20">
+    <div className="flex-1 overflow-y-auto bg-transparent">
       {/* Meeting Header Info */}
-      <div className="group relative overflow-hidden bg-background py-8 shadow-sm">
+      <div className="group relative overflow-hidden bg-card py-8 shadow-sm">
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(ellipse at 100% 50%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 70%)" }} />
         <div className="flex flex-col gap-4 max-w-6xl mx-auto px-8">
           <div className="flex items-start justify-between">
