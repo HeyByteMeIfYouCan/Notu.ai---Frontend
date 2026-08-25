@@ -91,48 +91,105 @@ export default function KanbanListPage() {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-6 py-6">
               
-              {/* Header */}
+              {/* Header & Hero Section */}
               <div className="px-4 lg:px-6 mb-2">
-                <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                  <div>
-                    <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)]">Kanban Boards</h2>
-                    <p className="text-base text-muted-foreground mt-2 max-w-2xl">
-                      Kelola dan kolaborasikan action items dari meeting secara efisien.
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={() => setIsModalOpen(true)} 
-                    className="self-start sm:self-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl"
-                  >
-                    <IconPlus className="mr-2 h-4 w-4" /> Board Baru
-                  </Button>
+                <div className="mb-8">
+                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)]">Kanban Boards</h2>
+                  <p className="text-base text-muted-foreground mt-2 max-w-2xl">
+                    Kelola dan kolaborasikan action items dari meeting secara visual dan efisien.
+                  </p>
                 </div>
 
-                {/* Filter Toolbar */}
-                <div className="flex flex-wrap items-center gap-0 rounded-xl border border-border bg-card overflow-hidden divide-x divide-border mt-4">
-                  <div className="relative flex-1 min-w-[180px]">
-                    <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                  {/* Action Card: New Board */}
+                  <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="group relative isolate flex flex-col w-full min-h-[140px] overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-all duration-300 hover:shadow-md hover:border-primary/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <div className="flex h-full flex-col justify-between p-6">
+                      <div className="flex items-start justify-between mb-4">
+                         <div className="flex h-11 w-11 items-center justify-center rounded-xl text-primary bg-primary/10 shadow-sm ring-1 ring-inset ring-black/5 dark:ring-white/10 transition-transform group-hover:scale-110 duration-300">
+                            <IconPlus className="h-5 w-5" strokeWidth={2} />
+                         </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <h3 className="text-[1.05rem] font-semibold tracking-tight text-foreground">Buat Board Baru</h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground text-balance">
+                          Mulai dari nol atau buat board kustom untuk melacak tugas tim Anda.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Action Card: Generate from Meeting */}
+                  <button 
+                    onClick={() => router.push('/dashboard/meeting')}
+                    className="group relative isolate flex flex-col w-full min-h-[140px] overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-all duration-300 hover:shadow-md hover:border-primary/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <div className="flex h-full flex-col justify-between p-6">
+                      <div className="flex items-start justify-between mb-4">
+                         <div className="flex h-11 w-11 items-center justify-center rounded-xl text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-500/10 shadow-sm ring-1 ring-inset ring-black/5 dark:ring-white/10 transition-transform group-hover:scale-110 duration-300">
+                            <IconLayoutBoard className="h-5 w-5" strokeWidth={2} />
+                         </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <h3 className="text-[1.05rem] font-semibold tracking-tight text-foreground">Generate dari Meeting</h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground text-balance">
+                          Buka detail meeting dan ubah hasil rangkuman menjadi action items.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* List Section */}
+              <div className="px-4 lg:px-6">
+                <h2 className="mb-1 text-xl font-semibold tracking-[-0.02em] text-foreground">Semua Kanban Anda</h2>
+                <p className="mb-6 text-sm text-[var(--muted-foreground)]">Cari, kelola, atau buka kanban yang sedang aktif.</p>
+
+                {/* Filter Toolbar (ListToolbar style) */}
+                <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-border/50 bg-card p-1.5 shadow-sm">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input 
                       placeholder="Cari board..." 
                       value={controls.searchInput} 
                       onChange={(e:any)=>controls.setSearchInput(e.target.value)} 
-                      className="h-10 pl-9 pr-4 bg-transparent border-none shadow-none rounded-none focus-visible:ring-0 text-sm" 
+                      className="h-9 pl-9 pr-4 bg-transparent border-none shadow-none focus-visible:ring-0 text-foreground placeholder:text-muted-foreground" 
                     />
                   </div>
                   
+                  <div className="h-5 w-px bg-border/50 hidden md:block"></div>
+
                   <Select value={controls.filter} onValueChange={(v:any)=>controls.setFilter(v)}>
-                    <SelectTrigger className="h-10 w-[140px] bg-transparent border-none shadow-none rounded-none focus:ring-0 text-sm text-muted-foreground">
+                    <SelectTrigger className="h-9 w-[160px] bg-transparent border-none shadow-none focus:ring-0 text-muted-foreground hover:text-foreground font-medium">
                       <SelectValue placeholder="Semua Board" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Semua</SelectItem>
+                      <SelectItem value="all">Semua Board</SelectItem>
                       <SelectItem value="mine">Board Saya</SelectItem>
-                      <SelectItem value="shared">Dibagikan</SelectItem>
+                      <SelectItem value="shared">Dibagikan ke Saya</SelectItem>
                     </SelectContent>
                   </Select>
 
+                  <div className="h-5 w-px bg-border/50 hidden md:block"></div>
+
+                  <Select value={String(controls.pageSize)} onValueChange={(v:any)=>controls.setPageSize(Number(v))}>
+                    <SelectTrigger className="h-9 w-[130px] bg-transparent border-none shadow-none focus:ring-0 text-muted-foreground hover:text-foreground font-medium">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="12">12 / halaman</SelectItem>
+                      <SelectItem value="24">24 / halaman</SelectItem>
+                      <SelectItem value="48">48 / halaman</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="h-5 w-px bg-border/50 hidden md:block"></div>
+
                   <Select value={controls.source || 'all'} onValueChange={(v:any)=>controls.setSource(v)}>
-                    <SelectTrigger className="h-10 w-[160px] bg-transparent border-none shadow-none rounded-none focus:ring-0 text-sm text-muted-foreground">
+                    <SelectTrigger className="h-9 w-[160px] bg-transparent border-none shadow-none focus:ring-0 text-muted-foreground hover:text-foreground font-medium">
                       <SelectValue placeholder="Sumber" />
                     </SelectTrigger>
                     <SelectContent>
@@ -141,21 +198,7 @@ export default function KanbanListPage() {
                       <SelectItem value="manual">Manual</SelectItem>
                     </SelectContent>
                   </Select>
-
-                  <Select value={String(controls.pageSize)} onValueChange={(v:any)=>controls.setPageSize(Number(v))}>
-                    <SelectTrigger className="h-10 w-[100px] bg-transparent border-none shadow-none rounded-none focus:ring-0 text-sm text-muted-foreground">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="12">12 / hal</SelectItem>
-                      <SelectItem value="24">24 / hal</SelectItem>
-                      <SelectItem value="48">48 / hal</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
-              </div>
-
-            <div className="px-4 lg:px-6">
               {isLoading ? (
                 <div className="flex h-[350px] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/50">
                   <div className="flex flex-col items-center gap-4">
