@@ -87,23 +87,23 @@ export default function DetailAnalyticsPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <div className="flex flex-col gap-6 py-6">
               {/* Header */}
-              <div className="px-4 lg:px-8">
-                <Link href="/dashboard/analytics">
-                  <Button variant="ghost" size="sm" className="mb-4 -ml-2 rounded-xl">
-                    <IconArrowLeft className="h-4 w-4 mr-2" />
+              <div className="px-4 lg:px-6 mb-2">
+                <div className="mb-6">
+                  <Link href="/dashboard/analytics" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4">
+                    <IconArrowLeft className="h-4 w-4" />
                     Kembali ke Analytics
-                  </Button>
-                </Link>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">Meeting Details</h1>
-                <p className="text-base text-muted-foreground mt-2">
-                  Analytics terperinci untuk setiap meeting individual
-                </p>
+                  </Link>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)]">Meeting Details</h2>
+                  <p className="text-base text-muted-foreground mt-2 max-w-2xl">
+                    Analytics terperinci untuk setiap meeting individual.
+                  </p>
+                </div>
               </div>
 
               {/* Content */}
-              <div className="px-4 lg:px-8">
+              <div className="px-4 lg:px-6">
                 <DetailAnalyticsList
                   meetings={detailMeetings}
                   pagination={detailPagination}
