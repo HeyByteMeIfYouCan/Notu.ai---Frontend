@@ -19,7 +19,7 @@ import {
   IconVolume3,
   IconX,
   IconInfoCircle,
-  IconClosedCaptioning,
+  IconClosedCaption,
   IconSubscript
 } from "@tabler/icons-react"
 import { RefObject, useState, useMemo, useRef, useCallback, useEffect } from "react"
@@ -106,7 +106,33 @@ export function MeetingTranscript({
   const [popupCurrentTime, setPopupCurrentTime] = useState(0)
   const [subtitlesEnabled, setSubtitlesEnabled] = useState(true)
   const [wasPlayingBeforeTabSwitch, setWasPlayingBeforeTabSwitch] = useState(false)
+  const [controlsVisible, setControlsVisible] = useState(true)
   const popupSegmentsRef = useRef<HTMLDivElement>(null)
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseMove = useCallback(() => {
+    setControlsVisible(true)
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current)
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (isPlaying) setControlsVisible(false)
+    }, 2500)
+  }, [isPlaying])
+
+  useEffect(() => {
+    return () => {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isVideoPopupOpen) {
+        setIsVideoPopupOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isVideoPopupOpen])
 
   // Permission checks
   const permissions = useMemo(() => getPermissions(userRole), [userRole])
@@ -232,10 +258,10 @@ export function MeetingTranscript({
     <div className="w-[22rem] border-l border-border/50 hidden xl:flex xl:flex-col bg-background shadow-[-1px_0_10px_rgba(0,0,0,0.02)] z-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
         <TabsList className="w-full rounded-none border-b border-border bg-transparent p-0 h-12 flex">
-          <TabsTrigger value="transcript" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">Transkrip</TabsTrigger>
+          <TabsTrigger value="transcript" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold outline-none focus-visible:ring-0">Transkrip</TabsTrigger>
           {/* Only show Ask AI tab if user has permission */}
           {canAskAI && (
-            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">
+            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold outline-none focus-visible:ring-0">
               <div className="w-5 h-5 rounded-md bg-indigo-500/10 flex items-center justify-center text-[10px] font-bold text-indigo-600">AI</div>
               Ask AI
             </TabsTrigger>
@@ -245,7 +271,13 @@ export function MeetingTranscript({
         <TabsContent value="transcript" className="flex-1 flex flex-col overflow-hidden m-0">
           {isVideoFile && (
             <div className={`transition-all duration-300 ${isVideoPopupOpen ? 'fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-0' : 'p-4 bg-muted/10 border-b border-border/40'}`}>
-              <div className={`relative overflow-hidden bg-black group shadow-md transition-all duration-300 ${isVideoPopupOpen ? 'w-full h-full max-h-screen' : 'rounded-2xl aspect-video ring-1 ring-border/50'}`}>
+              <div 
+                className={`relative overflow-hidden bg-black shadow-md transition-all duration-300 ${isVideoPopupOpen ? 'w-full h-full max-h-screen' : 'rounded-2xl aspect-video ring-1 ring-border/50 group'}`}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={() => { if (isPlaying) setControlsVisible(false) }}
+                onClick={togglePlayPause}
+                onDoubleClick={() => setIsVideoPopupOpen(!isVideoPopupOpen)}
+              >
                 {videoUrl && (
                   <video
                     ref={videoRef}
@@ -264,7 +296,10 @@ export function MeetingTranscript({
                 )}
                 
                 {/* Video Controls Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div 
+                  className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 transition-opacity duration-300 ${!isVideoPopupOpen ? 'opacity-0 group-hover:opacity-100' : (controlsVisible || !isPlaying ? 'opacity-100' : 'opacity-0')}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {/* Progress Bar */}
                   <div 
                     className="w-full bg-white/20 rounded-full cursor-pointer group/bar mb-2.5 h-1.5 transition-all hover:h-2"
@@ -318,7 +353,7 @@ export function MeetingTranscript({
                         className={`hover:bg-white/20 rounded-full transition-colors p-1.5 relative ${subtitlesEnabled ? 'text-white' : 'text-white/50'}`}
                         title={subtitlesEnabled ? "Nonaktifkan Subtitle" : "Aktifkan Subtitle"}
                       >
-                        <IconClosedCaptioning className="h-5 w-5" />
+                        <IconClosedCaption className="h-5 w-5" />
                         {!subtitlesEnabled && (
                           <span className="absolute w-0.5 h-5 bg-current rotate-45 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                         )}
@@ -490,170 +525,6 @@ export function MeetingTranscript({
         </DialogContent>
       </Dialog>
 
-      {/* Video Popup Modal - Improved fullscreen UI */}
-      <Dialog open={isVideoPopupOpen} onOpenChange={handlePopupClose}>
-        <DialogContent className="max-w-[95vw] w-[95vw] h-[92vh] p-0 gap-0 flex flex-col overflow-hidden bg-background border-2 border-border shadow-2xl">
-          <DialogTitle className="sr-only">Video Player</DialogTitle>
-          
-          {/* Main Content - Video (65%) + Segments (35%) */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Video Section - 65% */}
-            <div className="w-[65%] bg-black flex flex-col relative">
-              {videoUrl && (
-                <video
-                  ref={videoRef}
-                  src={videoUrl}
-                  className="flex-1 w-full object-contain bg-black"
-                />
-              )}
-              
-              {/* Subtitle Overlay - Only show if enabled */}
-              {subtitlesEnabled && currentPopupSegment && (
-                <div className="absolute bottom-24 left-0 right-0 flex justify-center px-8 pointer-events-none">
-                  <div className="bg-black/85 text-white px-6 py-3 rounded-xl max-w-[85%] text-center shadow-xl backdrop-blur-sm">
-                    <span className="text-primary font-semibold">{currentPopupSegment.speaker}: </span>
-                    <span className="text-base leading-relaxed">{currentPopupSegment.text}</span>
-                  </div>
-                </div>
-              )}
-              
-              {/* Video Controls - Fixed at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent px-6 py-5">
-                {/* Progress Bar */}
-                <div 
-                  className="group mb-4 h-1.5 w-full cursor-pointer rounded-full bg-white/20 transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:h-2.5 motion-reduce:transition-none"
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    const percent = (e.clientX - rect.left) / rect.width
-                    if (videoRef.current) {
-                      videoRef.current.currentTime = percent * totalDuration
-                    }
-                  }}
-                >
-                  <div 
-                    className="relative h-full rounded-full bg-primary transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-                    style={{ width: `${totalDuration > 0 ? (popupCurrentTime / totalDuration) * 100 : 0}%` }}
-                  >
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg border-2 border-primary" />
-                  </div>
-                </div>
-                
-                {/* Controls Row */}
-                <div className="flex items-center justify-between text-white">
-                  <div className="flex items-center gap-4">
-                    <button 
-                      onClick={togglePlayPause}
-                      className="hover:bg-white/20 rounded-full transition-colors p-2.5 bg-white/10"
-                    >
-                      {isPlaying ? (
-                        <IconPlayerPause className="h-7 w-7" />
-                      ) : (
-                        <IconPlayerPlay className="h-7 w-7" />
-                      )}
-                    </button>
-                    <button 
-                      onClick={toggleMute}
-                      className="hover:bg-white/20 rounded-full transition-colors p-2"
-                    >
-                      {isMuted ? (
-                        <IconVolume3 className="h-5 w-5" />
-                      ) : (
-                        <IconVolume className="h-5 w-5" />
-                      )}
-                    </button>
-                    <span className="text-sm font-medium tabular-nums">
-                      {formatTime(popupCurrentTime)} / {formatTime(totalDuration)}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => setSubtitlesEnabled(!subtitlesEnabled)}
-                      className={`hover:bg-white/20 rounded-full transition-colors p-2 relative ${subtitlesEnabled ? 'bg-primary/30 text-primary' : 'opacity-60'}`}
-                      title={subtitlesEnabled ? "Nonaktifkan Subtitle" : "Aktifkan Subtitle"}
-                    >
-                      <IconMessage className="h-5 w-5" />
-                      {!subtitlesEnabled && (
-                        <span className="absolute w-0.5 h-6 bg-white rotate-45 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                      )}
-                    </button>
-                    <button 
-                      onClick={handlePopupClose}
-                      className="hover:bg-white/20 rounded-full transition-colors p-2"
-                      title="Tutup"
-                    >
-                      <IconMinimize className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Segments Section - 35% */}
-            <div className="w-[35%] border-l-2 border-border flex flex-col bg-background">
-              <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-muted/30">
-                <div>
-                  <h4 className="font-semibold text-base text-foreground">Transkrip</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">{transcriptSegments.length} segmen</p>
-                </div>
-                {/* <button 
-                  onClick={handlePopupClose}
-                  className="p-2 hover:bg-muted rounded-lg transition-colors"
-                  title="Tutup"
-                >
-                  <IconX className="h-5 w-5 text-muted-foreground" />
-                </button> */}
-              </div>
-              <div 
-                ref={popupSegmentsRef}
-                className="flex-1 overflow-y-auto p-4 space-y-3"
-              >
-                {transcriptSegments.map((segment, index) => {
-                  const isActive = segment.start <= popupCurrentTime && segment.end >= popupCurrentTime
-                  return (
-                    <div 
-                      key={index}
-                      className={`cursor-pointer rounded-xl bg-card p-4 transition-[border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
-                        isActive 
-                          ? 'border-2 border-primary ring-2 ring-primary/20'
-                          : 'border border-border hover:border-primary/30'
-                      }`}
-                      onClick={() => {
-                        if (videoRef.current) {
-                          videoRef.current.currentTime = segment.start
-                        }
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
-                            isActive ? 'bg-primary' : 'bg-emerald-500'
-                          }`}>
-                            {segment.speaker ? segment.speaker.charAt(segment.speaker.length - 1) : 'S'}
-                          </div>
-                          <span className={`text-sm font-semibold ${
-                            isActive ? 'text-primary' : 'text-foreground'
-                          }`}>{segment.speaker}</span>
-                        </div>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {formatTime(segment.start)}
-                        </span>
-                      </div>
-                      <p className={`text-sm leading-relaxed ${
-                        isActive ? 'text-foreground' : 'text-muted-foreground'
-                      }`}>
-                        {segment.text}
-                      </p>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
