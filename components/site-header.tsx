@@ -175,26 +175,26 @@ export function SiteHeader() {
             orientation="vertical"
             className="mx-2 data-[orientation=vertical]:h-4 hidden lg:block"
           />
-          <h1 className="text-base font-medium hidden lg:block">Documents</h1>
+          <h1 className="text-sm font-semibold tracking-wide text-foreground/80 hidden lg:block">Documents</h1>
         </div>
         
         {/* Center - Quota & Upgrade */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 p-1 pl-2.5 sm:pl-3 rounded-full bg-primary/10 border border-primary/20">
-            <div className="flex items-center gap-1.5">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary text-[11px] font-bold ring-1 ring-primary/30">
+          <div className="flex items-center gap-2.5 p-1 pl-3 sm:pl-4 rounded-full bg-background border border-border/80 shadow-sm transition-all hover:border-primary/30 hover:shadow-md">
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold ring-1 ring-primary/20">
                 1
               </span>
-              <span className="text-xs font-medium text-foreground/80 hidden sm:inline">
-                Free meeting
+              <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
+                Sisa kuota gratis
               </span>
             </div>
             <Button
               size="sm"
               onClick={() => router.push('/dashboard/settings')}
-              className="h-7 rounded-full px-3 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs border-0 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className="h-7 rounded-full px-4 text-xs font-semibold bg-gradient-to-r from-primary to-indigo-600 hover:opacity-90 text-primary-foreground shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-none"
             >
-              Upgrade
+              Upgrade Pro
             </Button>
           </div>
 
@@ -205,87 +205,28 @@ export function SiteHeader() {
 
           {/* Right - Actions and Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <Button className="h-8 sm:h-9 px-3 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs rounded-lg sm:rounded-xl text-xs sm:text-sm transition-all cursor-pointer">
+            <Button className="h-8 sm:h-9 px-3 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-[0_4px_12px_rgba(var(--primary),0.2)] rounded-lg sm:rounded-xl text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-none">
               <IconVideo className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Capture</span>
+              <span className="hidden sm:inline">Rekam Meet</span>
             </Button>
+            
             <button 
               type="button"
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors hidden sm:flex items-center justify-center cursor-pointer"
+              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors hidden sm:flex items-center justify-center cursor-pointer"
               title="Voice recording"
             >
               <IconMicrophone className="h-4 w-4" />
             </button>
             
-            {/* User Profile Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0 ring-2 ring-transparent hover:ring-primary/20 transition-all cursor-pointer">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                      {getInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64 rounded-xl p-1.5 shadow-xl border border-border/80 bg-popover/95 backdrop-blur-md" align="end" sideOffset={6} forceMount>
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/40 mb-1 border border-border/40 text-left text-sm">
-                    <Avatar className="h-9 w-9 rounded-lg ring-1 ring-border/50">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-semibold">
-                        {getInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
-                      <span className="truncate font-semibold text-foreground">{user.name}</span>
-                      <span className="text-muted-foreground truncate text-xs">
-                        {user.email}
-                      </span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem 
-                    onClick={() => router.push('/dashboard/settings')} 
-                    className="cursor-pointer rounded-lg px-2.5 py-2 text-sm font-medium text-foreground/90 transition-colors duration-150 focus:bg-muted focus:text-foreground hover:bg-muted hover:text-foreground [&_svg]:size-4 [&_svg]:text-muted-foreground focus:[&_svg]:text-foreground hover:[&_svg]:text-foreground"
-                  >
-                    <IconUserCircle className="mr-2" />
-                    <span>Profil Akun</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => router.push('/dashboard/settings')} 
-                    className="cursor-pointer rounded-lg px-2.5 py-2 text-sm font-medium text-foreground/90 transition-colors duration-150 focus:bg-muted focus:text-foreground hover:bg-muted hover:text-foreground [&_svg]:size-4 [&_svg]:text-muted-foreground focus:[&_svg]:text-foreground hover:[&_svg]:text-foreground"
-                  >
-                    <IconCreditCard className="mr-2" />
-                    <span>Paket & Tagihan</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => router.push('/dashboard/settings')} 
-                    className="cursor-pointer rounded-lg px-2.5 py-2 text-sm font-medium text-foreground/90 transition-colors duration-150 focus:bg-muted focus:text-foreground hover:bg-muted hover:text-foreground [&_svg]:size-4 [&_svg]:text-muted-foreground focus:[&_svg]:text-foreground hover:[&_svg]:text-foreground"
-                  >
-                    <IconNotification className="mr-2" />
-                    <span>Notifikasi</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => router.push('/dashboard/settings')} 
-                    className="cursor-pointer rounded-lg px-2.5 py-2 text-sm font-medium text-foreground/90 transition-colors duration-150 focus:bg-muted focus:text-foreground hover:bg-muted hover:text-foreground [&_svg]:size-4 [&_svg]:text-muted-foreground focus:[&_svg]:text-foreground hover:[&_svg]:text-foreground"
-                  >
-                    <IconSettings className="mr-2" />
-                    <span>Pengaturan</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-border/60 -mx-1 my-1" />
-                <DropdownMenuItem 
-                  onClick={handleLogout} 
-                  className="cursor-pointer rounded-lg px-2.5 py-2 text-sm font-medium text-red-600 dark:text-red-400 transition-colors duration-150 focus:bg-red-500/10 focus:text-red-600 dark:focus:bg-red-500/20 dark:focus:text-red-400 hover:bg-red-500/10 hover:text-red-600 [&_svg]:size-4 [&_svg]:!text-red-600 dark:[&_svg]:!text-red-400"
-                >
-                  <IconLogout className="mr-2" />
-                  <span>Keluar</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Notification Bell */}
+            <button
+              type="button"
+              className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors flex items-center justify-center cursor-pointer ml-1"
+              title="Notifications"
+            >
+              <IconBell className="h-5 w-5" />
+              <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background"></span>
+            </button>
           </div>
         </div>
       </div>

@@ -35,10 +35,14 @@ export function NavMain({
                   asChild
                   tooltip={item.title}
                   isActive={isActive}
-                  className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                  className={`h-10 transition-all duration-200 ${
+                    isActive 
+                      ? "bg-primary/10 text-primary font-semibold hover:bg-primary/15 relative overflow-hidden before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-[60%] before:bg-primary before:rounded-r-full" 
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
                 >
-                  <Link href={item.url}>
-                    {item.icon && <item.icon />}
+                  <Link href={item.url} className="flex items-center gap-3 px-3">
+                    {item.icon && <item.icon className={`h-5 w-5 shrink-0 transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`} />}
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>

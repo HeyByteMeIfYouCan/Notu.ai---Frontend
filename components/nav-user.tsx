@@ -68,21 +68,21 @@ export function NavUser({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/80 transition-colors rounded-xl px-2 py-1.5 cursor-pointer"
+              className="data-[state=open]:bg-muted data-[state=open]:text-foreground hover:bg-muted/80 transition-all duration-200 rounded-xl p-2 cursor-pointer border border-transparent hover:border-border/50"
             >
-              <Avatar className="h-8 w-8 rounded-lg ring-1 ring-border/50">
+              <Avatar className="h-9 w-9 rounded-lg ring-1 ring-border/50 shadow-sm">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-semibold">
+                <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">
                   {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-foreground">{user.name}</span>
-                <span className="text-muted-foreground truncate text-xs">
+              <div className="grid flex-1 text-left text-sm leading-tight ml-1">
+                <span className="truncate font-semibold text-foreground/90">{user.name}</span>
+                <span className="text-muted-foreground truncate text-[11px] font-medium">
                   {user.email}
                 </span>
               </div>
-              <IconDotsVertical className="ml-auto size-4 text-muted-foreground" />
+              <IconDotsVertical className="ml-auto size-4 text-muted-foreground/70" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

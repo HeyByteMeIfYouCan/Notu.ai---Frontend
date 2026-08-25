@@ -49,6 +49,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isPinned, setIsPinned] = useState(data.isPinned || false)
   const [isTogglingPin, setIsTogglingPin] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Get permissions based on user role
   const permissions = useMemo(() => getPermissions(data.userRole), [data.userRole])
@@ -113,15 +114,18 @@ const MeetingCard = ({ data }: { data: Props }) => {
     }
   }
 
-  const handleDelete = async (e: React.MouseEvent) => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm("Hapus meeting ini? Data yang telah dihapus tidak dapat dipulihkan.")) return
-    
+    setShowDeleteConfirm(true)
+  }
+
+  const handleDeleteConfirm = async () => {
     setIsDeleting(true)
     try {
       await api.deleteMeeting(String(data.id))
       data.onDelete?.(String(data.id))
       toast.success("Meeting berhasil dihapus")
+      setShowDeleteConfirm(false)
     } catch (error: any) {
       toast.error(error.message || "Gagal menghapus meeting")
     } finally {
@@ -233,7 +237,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={handleDelete}
+                        onClick={handleDeleteClick}
                         className="cursor-pointer text-destructive focus:text-destructive"
                         disabled={isDeleting}
                       >
@@ -271,53 +275,86 @@ const MeetingCard = ({ data }: { data: Props }) => {
 
       {/* Info Dialog */}
       <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
-        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>Informasi Meeting</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-muted/50">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Judul</div>
-                <div className="text-sm font-semibold text-foreground">{data.title}</div>
+        <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-border/60 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-gradient-to-b from-muted/50 to-background px-6 py-5 border-b border-border/40">
+            <DialogTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <IconInfoCircle className="h-5 w-5 text-primary" />
+              Detail Meeting
+            </DialogTitle>
+          </div>
+          <div className="px-6 py-5">
+            <div className="flex flex-col gap-4 text-sm">
+              <div className="grid grid-cols-[100px_1fr] items-start gap-3">
+                <span className="text-muted-foreground font-medium mt-0.5">Judul</span>
+                <span className="text-foreground font-medium leading-snug">{data.title}</span>
               </div>
-
-              <div className="p-3 rounded-lg bg-muted/50">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Deskripsi</div>
-                <div className="text-sm text-foreground">{data.description || 'Tidak ada deskripsi'}</div>
+              <div className="grid grid-cols-[100px_1fr] items-start gap-3">
+                <span className="text-muted-foreground font-medium mt-0.5">Deskripsi</span>
+                <span className="text-foreground/80 leading-relaxed">{data.description || '—'}</span>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Tanggal</div>
-                  <div className="text-sm font-semibold text-foreground">{data.date}</div>
-                </div>
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Platform</div>
-                  <div className="text-sm font-semibold text-foreground">{data.platform || 'Unknown'}</div>
-                </div>
+              
+              <div className="my-1 h-px bg-border/40" />
+              
+              <div className="grid grid-cols-[100px_1fr] items-center gap-3">
+                <span className="text-muted-foreground font-medium">Tanggal</span>
+                <span className="text-foreground">{data.date}</span>
               </div>
-
+              <div className="grid grid-cols-[100px_1fr] items-center gap-3">
+                <span className="text-muted-foreground font-medium">Platform</span>
+                <span className="flex items-center gap-1.5 text-foreground">
+                  {data.platform === 'Google Meet' && <IconBrandGoogle className="h-4 w-4 text-muted-foreground" />}
+                  {data.platform}
+                </span>
+              </div>
               {data.userRole && (
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Akses Anda</div>
-                  <div className="text-sm font-semibold text-primary">{getRoleLabel(data.userRole)}</div>
+                <div className="grid grid-cols-[100px_1fr] items-center gap-3">
+                  <span className="text-muted-foreground font-medium">Akses</span>
+                  <div className="flex items-center">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-transparent hover:bg-primary/15 font-medium px-2 py-0.5 text-xs">
+                      {getRoleLabel(data.userRole)}
+                    </Badge>
+                  </div>
                 </div>
               )}
-
-              <div className="p-3 rounded-lg bg-muted/50">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Meeting ID</div>
+              
+              <div className="my-1 h-px bg-border/40" />
+              
+              <div className="grid grid-cols-[100px_1fr] items-center gap-3">
+                <span className="text-muted-foreground font-medium">Meeting ID</span>
                 <div className="flex items-center gap-2">
-                  <code className="text-xs font-mono text-foreground/70 truncate flex-1">{data.id}</code>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                  <code className="text-xs font-mono text-foreground bg-muted px-2 py-1 rounded-md border border-border/50">{data.id}</code>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => {
                     navigator.clipboard.writeText(String(data.id))
                     toast.success("Meeting ID disalin")
                   }}>
-                    <IconCopy className="h-3 w-3" />
+                    <IconCopy className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-md border-border/60" onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle className="text-xl">Hapus Meeting</DialogTitle>
+          </DialogHeader>
+          <div className="py-3">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Apakah Anda yakin ingin menghapus meeting <strong className="text-foreground">{data.title}</strong>? Data presentasi, transkrip, dan insight yang telah dihapus tidak dapat dipulihkan kembali.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting} className="cursor-pointer">
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting} className="cursor-pointer">
+              {isDeleting ? <IconLoader2 className="h-4 w-4 mr-2 animate-spin" /> : <IconTrash className="h-4 w-4 mr-2" />}
+              Hapus Permanen
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

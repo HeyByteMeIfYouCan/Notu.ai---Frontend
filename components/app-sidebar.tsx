@@ -77,18 +77,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar >
-      <SidebarHeader>
+      <SidebarHeader className="pt-6 pb-2 px-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#" className="flex items-center gap-2">
-                <img src={"/logo.png"} alt="logo" width={25} height={25} />
-                <span className="text-base font-semibold">Notu.ai</span>
-              </a>
-            </SidebarMenuButton>
+            <a href="/dashboard" className="flex items-center gap-3 px-2 transition-opacity hover:opacity-90">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shadow-sm">
+                <img src={"/logo.png"} alt="logo" width={20} height={20} className="object-contain" />
+              </div>
+              <span className="text-lg font-bold tracking-tight text-foreground">Notu.ai</span>
+            </a>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
