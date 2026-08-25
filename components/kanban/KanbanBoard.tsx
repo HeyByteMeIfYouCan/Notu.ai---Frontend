@@ -653,34 +653,65 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
   const [editing, setEditing] = useState<Task | null>(null)
   const [editOpen, setEditOpen] = useState(false)
 
+  const originalEditingTaskRef = useRef<Task | null>(null)
+
   const openEdit = (task: Task) => {
-    setEditing({
+    const taskWithLabels = {
       ...task,
       labelIds: task.labelIds || task.labels?.map((name: string) => labels.find(l => l.name === name)?.id).filter((id): id is string => Boolean(id)) || [],
-    })
+    }
+    originalEditingTaskRef.current = taskWithLabels
+    setEditing(taskWithLabels)
     setEditOpen(true)
   }
 
+  // Auto-save logic
+  const [isAutoSaving, setIsAutoSaving] = useState(false)
+  useEffect(() => {
+    if (!editOpen || !editing || !editing._id || !canModify) return;
+    
+    const original = originalEditingTaskRef.current;
+    if (!original) return;
+
+    const hasChanged = 
+      editing.title !== original.title ||
+      editing.description !== original.description ||
+      editing.assignee !== original.assignee ||
+      editing.dueDate !== original.dueDate ||
+      editing.priority !== original.priority ||
+      JSON.stringify(editing.labelIds || []) !== JSON.stringify(original.labelIds || []);
+
+    if (!hasChanged) return;
+
+    setIsAutoSaving(true);
+    const timer = setTimeout(async () => {
+      try {
+        const selectedLabels = editing.labelIds?.map(id => labels.find(l => l.id === id)?.name || '').filter(Boolean) || editing.labels;
+        
+        await api.updateTask(editing._id, {
+          title: editing.title,
+          description: editing.description,
+          assignee: editing.assignee,
+          dueDate: editing.dueDate,
+          priority: editing.priority,
+          labels: selectedLabels,
+        });
+
+        originalEditingTaskRef.current = { ...editing };
+        fetchTasks();
+      } catch (e) {
+        console.error("Auto-save failed", e);
+      } finally {
+        setTimeout(() => setIsAutoSaving(false), 500); // give a little time to show the saved state
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [editing, editOpen, canModify, labels, fetchTasks]);
+
   const saveEdit = async () => {
-    if (!isReady || !editing || !editing._id) return
+    // Kept for manual trigger if needed, though auto-save takes over mostly
     setEditOpen(false)
-    try {
-      const selectedLabels = editing.labelIds?.map(id => labels.find(l => l.id === id)?.name || '').filter(Boolean) || editing.labels
-      
-      await api.updateTask(editing._id, {
-        title: editing.title,
-        description: editing.description,
-        assignee: editing.assignee,
-        dueDate: editing.dueDate,
-        priority: editing.priority,
-        labels: selectedLabels,
-      })
-      fetchTasks()
-      toast.success("Perubahan task disimpan")
-    } catch (e) {
-      toast.error("Gagal memperbarui task")
-      fetchTasks()
-    }
   }
 
   const deleteTask = async (taskId: string) => {
@@ -1155,15 +1186,25 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                   </Button>
                 )}
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditOpen(false)} className="rounded-xl text-xs">
+              <div className="flex items-center gap-3">
+                {canModify && (
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    {isAutoSaving ? (
+                      <>
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <IconCheck className="h-3.5 w-3.5 text-emerald-500" />
+                        <span>Tersimpan otomatis</span>
+                      </>
+                    )}
+                  </div>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setEditOpen(false)} className="rounded-xl text-xs font-semibold">
                   Tutup
                 </Button>
-                {canModify && (
-                  <Button size="sm" onClick={saveEdit} className="rounded-xl text-xs font-semibold">
-                    Simpan Perubahan
-                  </Button>
-                )}
               </div>
             </div>
           </Dialog.Content>
