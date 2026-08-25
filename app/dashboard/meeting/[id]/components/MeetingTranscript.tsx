@@ -222,11 +222,11 @@ export function MeetingTranscript({
   return (
     <div className="w-[22rem] border-l border-border/50 hidden xl:flex xl:flex-col bg-background shadow-[-1px_0_10px_rgba(0,0,0,0.02)] z-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
-        <TabsList className="w-full rounded-none border-b border-border/50 bg-muted/20 p-0 h-12">
-          <TabsTrigger value="transcript" className="flex-1 rounded-none data-[state=active]:bg-background data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-full">Transkrip</TabsTrigger>
+        <TabsList className="w-full rounded-none border-b border-border bg-transparent p-0 h-12 flex">
+          <TabsTrigger value="transcript" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">Transkrip</TabsTrigger>
           {/* Only show Ask AI tab if user has permission */}
           {canAskAI && (
-            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none data-[state=active]:bg-background data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-full">
+            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">
               <div className="w-5 h-5 rounded-md bg-indigo-500/10 flex items-center justify-center text-[10px] font-bold text-indigo-600">AI</div>
               Ask AI
             </TabsTrigger>
@@ -364,45 +364,45 @@ export function MeetingTranscript({
                 return (
                   <div 
                     key={index} 
-                    className={`group cursor-pointer rounded-2xl p-4 transition-all duration-300 ease-out ${
+                    className={`group cursor-pointer rounded-xl bg-card p-3 transition-[border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
                       isActive 
-                        ? 'border border-primary/30 shadow-md bg-background ring-4 ring-primary/5' 
-                        : 'border border-border/40 bg-background/50 hover:border-primary/20 hover:bg-background hover:shadow-sm'
+                        ? 'border-2 border-primary shadow-md bg-primary/10' 
+                        : 'border-2 border-border bg-background hover:border-primary/30'
                     }`}
                     onClick={() => jumpToTimestamp(segment.start)}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm ${
-                        isActive ? 'bg-primary' : (isSystemSpeaker ? 'bg-slate-400' : 'bg-emerald-500')
+                    <div className="flex items-start gap-2">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
+                        isActive ? 'bg-primary' : 'bg-emerald-500'
                       }`}>
                         {speakerChar}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-sm font-bold ${
-                              isActive ? 'text-primary' : 'text-foreground/90'
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1">
+                            <span className={`text-sm font-semibold ${
+                              isActive ? 'text-primary' : 'text-foreground'
                             }`}>{segment.speaker}</span>
                             {canEditSegments && (
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-primary/10 hover:text-primary"
+                                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleEditSpeaker(index, segment.speaker)
                                 }}
                               >
-                                <IconPencil className="h-3.5 w-3.5" />
+                                <IconPencil className="h-3 w-3 text-muted-foreground" />
                               </Button>
                             )}
                           </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                            isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                          <span className={`text-xs font-medium ${
+                            isActive ? 'text-primary' : 'text-muted-foreground'
                           }`}>{formatTime(segment.start)}</span>
                         </div>
                         <p className={`text-sm leading-relaxed ${
-                          isActive ? 'text-foreground' : 'text-muted-foreground'
+                          isActive ? 'text-primary' : 'text-muted-foreground'
                         }`}>{segment.text}</p>
                       </div>
                     </div>
