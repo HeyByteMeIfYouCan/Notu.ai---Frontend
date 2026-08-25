@@ -180,13 +180,13 @@ export function MeetingMainContent({
                 </div>
                 
                 {meeting.createdAt && (
-                  <div className="flex items-center gap-1.5 rounded-full border border-border bg-background/50 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
                     <IconInfoCircle className="h-4 w-4" />
                     {formatDate(meeting.createdAt)} {formatTimeOnly(meeting.createdAt)}
                   </div>
                 )}
                 
-                <div className="flex items-center gap-1.5 rounded-full border border-border bg-background/50 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
+                <div className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
                   Durasi: {formatDuration(meeting.duration || 0)}
                 </div>
 
@@ -195,7 +195,7 @@ export function MeetingMainContent({
                     ? meeting.participants.length 
                     : (meeting.participantsCount || 0)
                   return count > 0 ? (
-                    <div className="flex items-center gap-1.5 rounded-full border border-border bg-background/50 px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
+                    <div className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
                       {count} Orang
                     </div>
                   ) : null
@@ -226,7 +226,7 @@ export function MeetingMainContent({
         ) : (
           <div className="space-y-6">
             {/* Executive Summary */}
-            <section className="rounded-[2rem] border border-border/50 bg-background p-8 shadow-sm transition-shadow hover:shadow-md">
+            <section className="rounded-[2rem] border border-border/50 bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <span className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -262,7 +262,7 @@ export function MeetingMainContent({
 
             {/* Highlights / Notes */}
             {Object.keys(highlights).length > 0 && (
-              <section className="rounded-[2rem] border border-border/50 bg-background p-8 shadow-sm transition-shadow hover:shadow-md">
+              <section className="rounded-[2rem] border border-border/50 bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                     <span className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600">
@@ -308,7 +308,7 @@ export function MeetingMainContent({
             )}
 
             {/* Action Items */}
-            <section className="rounded-[2rem] border border-border/50 bg-background p-8 shadow-sm transition-shadow hover:shadow-md relative overflow-hidden">
+            <section className="rounded-[2rem] border border-border/50 bg-card p-8 shadow-sm transition-shadow hover:shadow-md relative overflow-hidden">
               <div aria-hidden="true" className="pointer-events-none absolute top-0 right-0 h-32 w-32 -translate-y-1/2 translate-x-1/2 rounded-full bg-emerald-500/10 blur-2xl" />
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 relative z-10">
                 <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -365,7 +365,7 @@ export function MeetingMainContent({
             </section>
 
             {/* Conclusion */}
-            <section className="rounded-[2rem] border border-border/50 bg-background p-8 shadow-sm transition-shadow hover:shadow-md">
+            <section className="rounded-[2rem] border border-border/50 bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <span className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">

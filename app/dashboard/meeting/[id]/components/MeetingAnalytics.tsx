@@ -157,7 +157,7 @@ export function MeetingAnalytics({
                       <Tooltip key={index}>
                         <TooltipTrigger asChild>
                           <div 
-                            className="group/speaker relative grid cursor-default grid-cols-4 items-center gap-2 rounded-xl p-2.5 transition-all hover:bg-muted/50 hover:shadow-sm bg-transparent border border-transparent hover:border-border/40"
+                            className="group/speaker relative grid cursor-default grid-cols-4 items-center gap-2 rounded-xl p-2.5 transition-all hover:shadow-md bg-card border border-border/50 shadow-sm"
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
                               <div className={`w-8 h-8 rounded-xl ${bgColor} flex items-center justify-center text-white text-sm font-bold shadow-sm transition-transform group-hover/speaker:scale-105 flex-shrink-0`}>
@@ -235,7 +235,7 @@ export function MeetingAnalytics({
             <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
               {topics.length > 0 ? (
                 topics.map((topic, index) => (
-                  <div key={index} className="flex items-center gap-1.5 group cursor-default bg-muted/30 hover:bg-muted/60 border border-border/50 rounded-lg px-2.5 py-1.5 transition-colors">
+                  <div key={index} className="flex items-center gap-1.5 group cursor-default bg-card hover:bg-accent/50 border border-border/50 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors">
                     <div className={`w-2 h-2 rounded-full ${topic.color || 'bg-slate-400'}`}></div>
                     <span className="text-xs font-semibold text-foreground/80 group-hover:text-foreground transition-colors">{topic.name}</span>
                   </div>
