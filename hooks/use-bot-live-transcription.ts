@@ -49,19 +49,40 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const socketListenersSetupRef = useRef(false);
   const meetingIdRef = useRef(meetingId);
+  const previewTextRef = useRef(previewText);
+  const completedMeetingRef = useRef<string | null>(null);
+  const callbacksRef = useRef({
+    onStatusUpdate,
+    onPreviewUpdate,
+    onComplete,
+    onError,
+  });
 
   // Keep ref in sync
   useEffect(() => {
     meetingIdRef.current = meetingId;
   }, [meetingId]);
 
+  useEffect(() => {
+    previewTextRef.current = previewText;
+  }, [previewText]);
+
+  useEffect(() => {
+    callbacksRef.current = {
+      onStatusUpdate,
+      onPreviewUpdate,
+      onComplete,
+      onError,
+    };
+  }, [onStatusUpdate, onPreviewUpdate, onComplete, onError]);
+
   // Setup socket listeners
   useEffect(() => {
     if (!meetingId) return;
 
     const socket = getSocket();
+    completedMeetingRef.current = null;
 
     // Join meeting room to receive events
     socket.emit('join_meeting', meetingId);
@@ -78,6 +99,13 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
       console.log('[Bot] Status update:', data.status);
       setStatus(data.status);
 
+      if (data.status === 'failed') {
+        const failureMessage = data.message || 'Notu tidak dapat bergabung ke meeting.';
+        setError(failureMessage);
+      } else if (data.status === 'in_meeting' || data.status === 'recording') {
+        setError(null);
+      }
+
       if (data.chunksProcessed !== undefined) {
         setChunksProcessed(data.chunksProcessed);
       }
@@ -85,9 +113,9 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
         setDuration(data.duration);
       }
 
-      onStatusUpdate?.({
+      callbacksRef.current.onStatusUpdate?.({
         status: data.status,
-        currentPreview: previewText,
+        currentPreview: previewTextRef.current,
         chunksProcessed: data.chunksProcessed || 0,
         duration: data.duration || 0,
       });
@@ -126,15 +154,20 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
       });
 
       setPreviewText(fullText);
-      onPreviewUpdate?.(data.segment.text, data.segment.sequence);
+      callbacksRef.current.onPreviewUpdate?.(data.segment.text, data.segment.sequence);
     };
 
     const handleBotCompleted = (data: BotCompletedEvent) => {
       if (data.meetingId !== meetingIdRef.current) return;
+      if (completedMeetingRef.current === data.meetingId) {
+        console.log('[Bot] Ignored duplicate completion event:', data.meetingId);
+        return;
+      }
 
+      completedMeetingRef.current = data.meetingId;
       console.log('[Bot] Session completed');
       setStatus('completed');
-      onComplete?.(data);
+      callbacksRef.current.onComplete?.(data);
     };
 
     const handleBotError = (data: MeetingFeatureError & { meetingId: string }) => {
@@ -143,7 +176,7 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
       console.error('[Bot] Error:', data.error);
       setError(data.error);
       setStatus('failed');
-      onError?.(data.error);
+      callbacksRef.current.onError?.(data.error);
     };
 
     socket.on('connect', handleConnect);
@@ -165,7 +198,7 @@ export function useBotLiveTranscription(options: UseBotLiveTranscriptionOptions)
       socket.off('bot_completed', handleBotCompleted);
       socket.off('bot_error', handleBotError);
     };
-  }, [meetingId, onComplete, onError, onPreviewUpdate, onStatusUpdate, previewText]);
+  }, [meetingId]);
 
   // Get accumulated text from all segments
   const getAccumulatedText = useCallback(() => {

@@ -35,7 +35,7 @@ const statusLabels: Record<BotMeetingStatus, { label: string; color: string; ico
   starting: { label: "Memulai", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
   joining: { label: "Bot Memulai", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
   bot_joining: { label: "Bot Bergabung", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconRobot className="h-4 w-4" /> },
-  waiting_admission: { label: "Menunggu Host", color: "border-[color-mix(in_oklch,var(--chart-4)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-4)_10%,var(--card))] text-[var(--foreground)]", icon: <IconClock className="h-4 w-4" /> },
+  waiting_admission: { label: "Menunggu Akses", color: "border-[color-mix(in_oklch,var(--chart-4)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-4)_10%,var(--card))] text-[var(--foreground)]", icon: <IconClock className="h-4 w-4" /> },
   disabling_media: { label: "Mematikan Mic/Cam", color: "border-primary/25 bg-primary/10 text-primary", icon: <IconMicrophoneOff className="h-4 w-4" /> },
   bot_in_meeting: { label: "Bot di Meeting", color: "border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))] text-[var(--foreground)]", icon: <IconRobot className="h-4 w-4" /> },
   in_meeting: { label: "Bot di Meeting", color: "border-[color-mix(in_oklch,var(--chart-2)_25%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_10%,var(--card))] text-[var(--foreground)]", icon: <IconRobot className="h-4 w-4" /> },
@@ -62,10 +62,11 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
   const [isStopping, setIsStopping] = useState(false)
   const [isFinalizing, setIsFinalizing] = useState(false)
   const [meetingStatus, setMeetingStatus] = useState<string | null>(null)
+  const [meetingError, setMeetingError] = useState<string | null>(null)
   const [isLoadingStatus, setIsLoadingStatus] = useState(true)
   const [completedTranscript, setCompletedTranscript] = useState<Meeting | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const stopToastShownRef = useRef(false) // Prevent duplicate toasts
+  const lifecycleToastId = `bot-meeting-${meetingId}`
 
   // Fetch meeting status first to determine if it's live or completed
   useEffect(() => {
@@ -76,6 +77,7 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
       try {
         const meeting = await api.getMeeting(meetingId)
         setMeetingStatus(meeting.status)
+        setMeetingError(meeting.errorMessage || null)
         
         // If completed, load the transcript data
         if (meeting.status === 'completed') {
@@ -104,8 +106,10 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
     getAccumulatedText,
   } = useBotLiveTranscription({
     meetingId,
-    onComplete: (data) => {
-      toast.success("Transkripsi selesai!")
+    onComplete: () => {
+      toast.success("Transkripsi dan notulen meeting sudah siap.", {
+        id: lifecycleToastId,
+      })
       onComplete?.()
     },
     onError: (err) => {
@@ -149,11 +153,9 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
     try {
       await api.stopBotSession(meetingId, 'user_requested')
       
-      // Only show toast once
-      if (!stopToastShownRef.current) {
-        toast.info("Notu sudah keluar dari meeting")
-        stopToastShownRef.current = true
-      }
+      toast.info("Notu sudah keluar. Mohon tunggu, transkripnya sedang dirapikan.", {
+        id: lifecycleToastId,
+      })
     } catch (err) {
       toast.error(getErrorMessage(err instanceof Error ? err : new Error("Gagal menghentikan bot"), "Gagal menghentikan bot"))
     } finally {
@@ -217,6 +219,25 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
               </div>
             )}
           </ScrollArea>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (meetingStatus === 'failed') {
+    return (
+      <Card className="w-full border-destructive/25 shadow-none">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <IconX className="h-6 w-6 text-destructive" />
+            <CardTitle className="text-lg">Notu belum bisa masuk</CardTitle>
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-4">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {meetingError || "Undang akun Google Notu melalui Calendar, atau pastikan host menerima permintaan masuk Notu."}
+          </p>
         </CardContent>
       </Card>
     )
@@ -300,8 +321,8 @@ export function BotLiveTranscript({ meetingId, onComplete, onError }: BotLiveTra
                 {status === 'waiting_admission' ? (
                   <>
                     <IconClock className="mb-2 h-8 w-8 text-[var(--chart-4)]" />
-                    <p className="text-sm font-medium">Tinggal tunggu host</p>
-                    <p className="text-xs mt-1">Notu siap masuk begitu host kasih izin.</p>
+                    <p className="text-sm font-medium">Notu sedang meminta akses</p>
+                    <p className="text-xs mt-1">Jika belum diundang lewat Calendar, host perlu menerima permintaan masuk Notu.</p>
                   </>
                 ) : status === 'joining' || status === 'bot_joining' ? (
                   <>

@@ -6,7 +6,8 @@ import {
   IconInfoCircle, 
   IconPencil, 
   IconRefresh, 
-  IconLayoutKanban 
+  IconLayoutKanban, 
+  IconChecks
 } from "@tabler/icons-react"
 import { 
   Dialog, 
@@ -75,10 +76,17 @@ export function MeetingMainContent({
     Object.entries(rawHighlights).map(([k, v]) => [k, typeof v === 'string' ? parseNewlines(v) : v])
   )
 
-  const isAiContentAvailable = !!(executiveSummary && 
-    executiveSummary.trim().length > 20 && 
+  const hasValidSummary = !!(executiveSummary &&
+    executiveSummary.trim().length > 0 &&
     !executiveSummary.toLowerCase().includes("tidak tersedia") &&
     !executiveSummary.toLowerCase().includes("belum dibuat"));
+
+  const hasHighlights = Object.keys(highlights).length > 0
+  const hasConclusion = !!(conclusion &&
+    conclusion.trim().length > 0 &&
+    !conclusion.toLowerCase().includes("tidak tersedia"))
+  const hasActionItems = actionItems.length > 0
+  const isAiContentAvailable = hasValidSummary || hasHighlights || hasConclusion || hasActionItems
 
   const handleStartEdit = (field: string, initialValue: string) => {
     setEditingField(field)

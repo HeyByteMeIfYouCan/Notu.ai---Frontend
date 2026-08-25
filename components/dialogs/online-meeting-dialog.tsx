@@ -7,12 +7,14 @@ import {
 } from "../ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { IconCopy, IconLoader2, IconExternalLink, IconVideo, IconSparkles, IconBrandGoogle } from "@tabler/icons-react"
+import { IconCopy, IconLoader2, IconExternalLink, IconVideo, IconSparkles } from "@tabler/icons-react"
 import { useState, useEffect } from "react"
 import { useApiWithAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { BotLiveTranscript } from "@/components/custom/BotLiveTranscript"
+
+const NOTU_GOOGLE_ACCOUNT = "lontongrebus3@gmail.com"
 
 interface OnlineMeetingDialogProps {
   isOpen: boolean
@@ -86,7 +88,9 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
       const newMeetingId = response.data?.meeting?._id || response.meeting?._id
       if (response.success && response.botStarted !== false && newMeetingId) {
         setActiveMeetingId(newMeetingId)
-        toast.success("Notu berhasil bergabung dengan Google Meet.")
+        toast.success("Notu sedang menuju meeting. Jika belum diundang, host perlu menerima permintaan masuknya.", {
+          id: `bot-meeting-${newMeetingId}`,
+        })
         setMode('live')
       } else {
         throw new Error(response.message || "Layanan bot tidak dapat bergabung ke meeting.")
@@ -141,7 +145,7 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
               <div className="mb-6 rounded-lg bg-primary/5 p-4 border border-primary/10">
                 <div className="flex items-start gap-3 text-sm text-primary/80">
                   <IconSparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <p className="leading-relaxed font-medium">Notu akan menyamar sebagai peserta biasa, mentranskrip secara real-time, dan membuat ringkasan aksi untuk Anda.</p>
+                  <p className="leading-relaxed font-medium">Notu akan hadir sebagai pencatat meeting, membuat transkrip secara real-time, dan menyiapkan ringkasan untuk Anda.</p>
                 </div>
               </div>
 
@@ -157,6 +161,32 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
                     disabled={isLoading}
                     className="h-10"
                   />
+                </div>
+
+                <div className="rounded-lg border border-border bg-muted/45 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-foreground">Akun Google Notu</p>
+                      <code className="block truncate text-xs text-muted-foreground">{NOTU_GOOGLE_ACCOUNT}</code>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      type="button"
+                      className="h-8 shrink-0 px-2 text-xs"
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(NOTU_GOOGLE_ACCOUNT)
+                        toast.success("Email akun Notu sudah disalin.")
+                      }}
+                      disabled={isLoading}
+                    >
+                      <IconCopy className="mr-1.5 h-3.5 w-3.5" />
+                      Salin email
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    Opsional: undang akun ini lewat Google Calendar jika meeting dimulai tanpa host.
+                  </p>
                 </div>
                 
                 <div className="space-y-1.5">
@@ -208,7 +238,7 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
                     Bergabung...
                   </>
                 ) : (
-                  "Kirim Notu"
+                  "Hubungkan Notu"
                 )}
               </Button>
             </div>
@@ -229,11 +259,8 @@ export function OnlineMeetingDialog({ isOpen, onClose, meetingId }: OnlineMeetin
 
             <div className="space-y-4">
               {activeMeetingId && (
-                <BotLiveTranscript 
+                <BotLiveTranscript
                   meetingId={activeMeetingId}
-                  onComplete={() => {
-                    toast.success("Meeting selesai processed")
-                  }}
                 />
               )}
               
