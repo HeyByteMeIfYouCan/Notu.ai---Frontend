@@ -47,45 +47,45 @@ export function ModernPagination({
   const pageNumbers = getPageNumbers()
 
   return (
-    <div className={`flex items-center justify-between border-t bg-card pt-4 ${className}`}>
+    <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 mt-6 border-t border-border/40 ${className}`}>
       <div className="text-sm text-muted-foreground">
         {totalItems > 0 ? (
           <span>
-            Showing <span className="font-medium text-foreground">{startItem}</span> to{" "}
-            <span className="font-medium text-foreground">{endItem}</span> of{" "}
-            <span className="font-medium text-foreground">{totalItems}</span> results
+            Menampilkan <span className="font-semibold text-foreground">{startItem}</span> -{" "}
+            <span className="font-semibold text-foreground">{endItem}</span> dari{" "}
+            <span className="font-semibold text-foreground">{totalItems}</span> hasil
           </span>
         ) : (
-          <span>No results found</span>
+          <span>Tidak ada hasil</span>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="h-9 px-3 hover:bg-accent hover:text-accent-foreground border-border transition-colors"
+          className="h-9 px-3 text-muted-foreground hover:text-foreground border-border/50 shadow-sm transition-colors rounded-lg"
         >
-          <IconChevronLeft className="h-4 w-4 mr-1" />
-          <span className="hidden sm:inline">Previous</span>
+          <IconChevronLeft className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline font-medium">Sebelumnya</span>
         </Button>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 mx-1 sm:mx-2">
           {pageNumbers.map((p, i, arr) => (
             <React.Fragment key={p}>
               {i > 0 && arr[i - 1] !== p - 1 && (
-                <span className="px-2 text-muted-foreground select-none">…</span>
+                <span className="px-1 text-muted-foreground select-none">…</span>
               )}
               <Button
-                variant={currentPage === p ? "default" : "outline"}
+                variant={currentPage === p ? "default" : "ghost"}
                 size="sm"
                 className={`
-                  w-9 h-9 p-0 font-medium transition-all
+                  w-9 h-9 p-0 font-medium transition-all rounded-lg
                   ${currentPage === p 
                     ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90' 
-                    : 'border-border hover:bg-accent hover:text-accent-foreground hover:border-accent'
+                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                   }
                 `}
                 onClick={() => onPageChange(p)}
@@ -101,10 +101,10 @@ export function ModernPagination({
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          className="h-9 px-3 hover:bg-accent hover:text-accent-foreground border-border transition-colors"
+          className="h-9 px-3 text-muted-foreground hover:text-foreground border-border/50 shadow-sm transition-colors rounded-lg"
         >
-          <span className="hidden sm:inline">Next</span>
-          <IconChevronRight className="h-4 w-4 ml-1" />
+          <span className="hidden sm:inline font-medium">Selanjutnya</span>
+          <IconChevronRight className="h-4 w-4 sm:ml-1" />
         </Button>
       </div>
     </div>

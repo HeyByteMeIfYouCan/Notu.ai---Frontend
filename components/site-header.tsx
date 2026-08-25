@@ -180,9 +180,9 @@ export function SiteHeader() {
         
         {/* Center - Quota & Upgrade */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 p-1 pl-2.5 sm:pl-3 rounded-full bg-blue-500/10 dark:bg-blue-950/30 border border-blue-500/20 dark:border-blue-800/40">
+          <div className="flex items-center gap-2 p-1 pl-2.5 sm:pl-3 rounded-full bg-primary/10 border border-primary/20">
             <div className="flex items-center gap-1.5">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[11px] font-bold ring-1 ring-blue-500/30">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary text-[11px] font-bold ring-1 ring-primary/30">
                 1
               </span>
               <span className="text-xs font-medium text-foreground/80 hidden sm:inline">
@@ -192,7 +192,7 @@ export function SiteHeader() {
             <Button
               size="sm"
               onClick={() => router.push('/dashboard/settings')}
-              className="h-7 rounded-full px-3 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-xs border-0 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className="h-7 rounded-full px-3 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs border-0 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               Upgrade
             </Button>

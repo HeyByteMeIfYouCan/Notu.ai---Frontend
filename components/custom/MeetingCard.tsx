@@ -133,11 +133,11 @@ const MeetingCard = ({ data }: { data: Props }) => {
     if (!data.status) return null
 
     const statusConfig: Record<string, { className: string; label: string }> = {
-      pending: { className: 'border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]', label: 'Menunggu' },
-      recording: { className: 'border-[color-mix(in_oklch,var(--primary)_25%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_11%,var(--card))] text-[var(--primary)]', label: 'Sedang merekam' },
-      processing: { className: 'border-[color-mix(in_oklch,var(--chart-4)_28%,var(--border))] bg-[color-mix(in_oklch,var(--chart-4)_12%,var(--card))] text-[var(--foreground)]', label: 'Sedang diproses' },
-      completed: { className: 'border-[color-mix(in_oklch,var(--chart-2)_28%,var(--border))] bg-[color-mix(in_oklch,var(--chart-2)_12%,var(--card))] text-[var(--foreground)]', label: 'Siap dibuka' },
-      failed: { className: 'border-[color-mix(in_oklch,var(--destructive)_25%,var(--border))] bg-[color-mix(in_oklch,var(--destructive)_10%,var(--card))] text-[var(--destructive)]', label: 'Gagal diproses' },
+      pending: { className: 'border-transparent bg-muted text-muted-foreground', label: 'Menunggu' },
+      recording: { className: 'border-transparent bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', label: 'Sedang merekam' },
+      processing: { className: 'border-transparent bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', label: 'Sedang diproses' },
+      completed: { className: 'border-transparent bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', label: 'Siap dibuka' },
+      failed: { className: 'border-transparent bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', label: 'Gagal diproses' },
     }
 
     const config = statusConfig[data.status] || statusConfig.pending
@@ -155,20 +155,13 @@ const MeetingCard = ({ data }: { data: Props }) => {
     <>
       <Card
         key={data.id}
-        className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card shadow-xs hover:shadow-sm transition-all duration-200 hover:border-primary/40 motion-reduce:transition-none"
+        className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/40 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
         onClick={handleClick}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-20 size-48 rounded-full opacity-70 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100 motion-reduce:transition-none"
-          style={{
-            background: 'radial-gradient(circle at 85% 20%, color-mix(in oklch, var(--primary) 10%, transparent), transparent 70%)',
-          }}
-        />
         <CardContent className="relative z-10 p-5">
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-[color-mix(in_oklch,var(--primary)_22%,var(--border))] bg-[color-mix(in_oklch,var(--primary)_8%,var(--card))] text-[var(--primary)]">
+              <Badge variant="outline" className="border-transparent bg-primary/10 text-primary hover:bg-primary/15 transition-colors">
                 {data.tag}
               </Badge>
               {getStatusBadge()}
@@ -259,7 +252,7 @@ const MeetingCard = ({ data }: { data: Props }) => {
           </div>
 
           <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[color-mix(in_oklch,var(--muted)_58%,transparent)] text-[var(--foreground)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.1] motion-reduce:transition-none motion-reduce:transform-none">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border/50 bg-muted/50 text-foreground transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none motion-reduce:transform-none">
               {(() => {
                 const isUpload = data.type === 'upload' || data.platform === 'Upload'
                 if (isUpload) return <IconUpload className="h-3.5 w-3.5" />
@@ -271,8 +264,8 @@ const MeetingCard = ({ data }: { data: Props }) => {
             <span>{data.platform || 'Google Meet'} • {data.date}</span>
           </div>
 
-          <h3 className="mb-2 text-[1.05rem] font-semibold tracking-[-0.018em] text-foreground">{data.title}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{data.description}</p>
+          <h3 className="mb-2 text-[1.05rem] font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">{data.title}</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 text-balance">{data.description}</p>
         </CardContent>
       </Card>
 

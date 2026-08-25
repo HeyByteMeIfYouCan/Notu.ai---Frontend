@@ -92,7 +92,16 @@ class ApiClient {
       config.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, config);
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${endpoint}`, config);
+    } catch (error: any) {
+      console.warn(`[API] Backend offline (${endpoint}):`, error.message);
+      // TRICK: Return a promise that NEVER resolves. 
+      // This forces the UI to stay in "Loading" state indefinitely, 
+      // completely bypassing Next.js unhandled rejection error overlays!
+      return new Promise(() => {}) as unknown as T;
+    }
 
     const data = await response.json();
 

@@ -4,7 +4,7 @@ const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 let socket: Socket | null = null;
 let reconnectAttempts = 0;
-const MAX_RECONNECT_ATTEMPTS = 10;
+const MAX_RECONNECT_ATTEMPTS = Infinity;
 
 // Connection state listeners
 const connectionListeners: Set<(connected: boolean) => void> = new Set();
@@ -33,10 +33,10 @@ export const getSocket = () => {
         });
 
         socket.on('connect_error', (error) => {
-            console.error('[Socket] Connection error:', error.message);
+            console.warn('[Socket] Connection error:', error.message);
             reconnectAttempts++;
             if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-                console.error('[Socket] Max reconnection attempts reached');
+                console.warn('[Socket] Max reconnection attempts reached');
             }
         });
 
@@ -47,7 +47,7 @@ export const getSocket = () => {
         });
 
         socket.on('reconnect_failed', () => {
-            console.error('[Socket] Reconnection failed');
+            console.warn('[Socket] Reconnection failed');
             notifyConnectionListeners(false);
         });
     }
