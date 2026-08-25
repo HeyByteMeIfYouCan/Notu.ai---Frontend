@@ -205,14 +205,14 @@ export function SiteHeader() {
 
           {/* Right - Actions and Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <Button className="h-8 sm:h-9 px-3 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-[0_4px_12px_rgba(var(--primary),0.2)] rounded-lg sm:rounded-xl text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-none">
+            <Button className="h-8 sm:h-9 px-3 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-[0_4px_12px_rgba(var(--primary),0.2)] rounded-full text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer border-none">
               <IconVideo className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Rekam Meet</span>
             </Button>
             
             <button 
               type="button"
-              className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors hidden sm:flex items-center justify-center cursor-pointer"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors hidden sm:flex items-center justify-center cursor-pointer"
               title="Voice recording"
             >
               <IconMicrophone className="h-4 w-4" />
@@ -221,11 +221,11 @@ export function SiteHeader() {
             {/* Notification Bell */}
             <button
               type="button"
-              className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors flex items-center justify-center cursor-pointer ml-1"
+              className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors flex items-center justify-center cursor-pointer"
               title="Notifications"
             >
-              <IconBell className="h-5 w-5" />
-              <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background"></span>
+              <IconBell className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background"></span>
             </button>
           </div>
         </div>
