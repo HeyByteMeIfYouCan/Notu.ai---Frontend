@@ -155,8 +155,8 @@ export function KanbanColumn({
       ref={setNodeRef} 
       className={`flex flex-col rounded-2xl p-3 sm:p-4 transition-all duration-200 border ${
         isOver 
-          ? 'bg-primary/[0.03] border-primary/40 ring-1 ring-primary/20 shadow-sm' 
-          : 'bg-muted/20 dark:bg-muted/5 border-border/40 shadow-none'
+          ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/20 shadow-sm' 
+          : 'bg-muted/60 dark:bg-muted/20 border-border/60 shadow-none'
       }`}
     >
       {/* Header */}
