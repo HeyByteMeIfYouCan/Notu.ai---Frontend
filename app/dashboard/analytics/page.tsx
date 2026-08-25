@@ -1,16 +1,50 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { useApiWithAuth } from "@/hooks/use-auth"
 import {
   IconChartBar,
   IconListDetails,
   IconArrowRight,
+  IconClock,
+  IconListCheck,
+  IconCalendar,
+  IconTrendingUp,
 } from "@tabler/icons-react"
 
 export default function AnalyticsPage() {
+  const { api, isReady } = useApiWithAuth()
+  const [data, setData] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchStats() {
+      if (!isReady) return
+      try {
+        setIsLoading(true)
+        const response = await api.getGlobalAnalytics()
+        setData((response as any).data)
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchStats()
+  }, [isReady, api])
+
+  const productivityScore = (() => {
+    if (!data?.meetings?.total) return 0
+    const c = (data.meetings.completed / data.meetings.total) * 40
+    const t = data.tasks?.total ? Math.min((data.tasks.done / data.tasks.total) * 30, 30) : 0
+    const b = data.boards?.total ? Math.min(data.boards.total * 5, 30) : 0
+    return Math.round(c + t + b)
+  })()
+
   return (
     <SidebarProvider
       style={{
@@ -99,6 +133,72 @@ export default function AnalyticsPage() {
                   </Link>
 
                 </div>
+
+                {/* Quick Highlights Section */}
+                <div className="mt-10 border-t border-border/50 pt-8">
+                  <div className="mb-5 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold tracking-tight text-foreground">Sekilas Info</h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">Snapshot metrik utama dari seluruh workspace Anda.</p>
+                    </div>
+                  </div>
+
+                  {isLoading ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="h-28 rounded-2xl bg-muted/30 animate-pulse border border-border/50" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                      <div className="flex flex-col gap-3 p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors">
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                          <IconCalendar className="h-4 w-4 opacity-70" /> Total Meeting
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">{data?.meetings?.total || 0}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{data?.meetings?.completed || 0} selesai diproses</p>
+                      </div>
+
+                      <div className="flex flex-col gap-3 p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors">
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                          <IconClock className="h-4 w-4 opacity-70" /> Durasi Agregat
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+                            {data?.totalDuration ? Math.floor(data.totalDuration / 60) : 0}h
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {data?.totalDuration ? data.totalDuration % 60 : 0} menit
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-3 p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors">
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                          <IconListCheck className="h-4 w-4 opacity-70" /> Action Items
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">{data?.tasks?.total || 0}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{data?.tasks?.done || 0} telah selesai</p>
+                      </div>
+
+                      <div className="flex flex-col gap-3 p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors">
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                          <IconTrendingUp className="h-4 w-4 opacity-70" /> Prod. Score
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">{productivityScore}</span>
+                          <span className="text-xs font-medium text-muted-foreground">/100</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">Indeks performa</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
           </div>
