@@ -220,14 +220,14 @@ export function MeetingTranscript({
   }
 
   return (
-    <div className="w-80 border-l hidden xl:flex xl:flex-col bg-background-2">
+    <div className="w-[22rem] border-l border-border/50 hidden xl:flex xl:flex-col bg-background shadow-[-1px_0_10px_rgba(0,0,0,0.02)] z-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
-        <TabsList className="w-full rounded-none border-b">
-          <TabsTrigger value="transcript" className="flex-1">Transkrip</TabsTrigger>
+        <TabsList className="w-full rounded-none border-b border-border/50 bg-muted/20 p-0 h-12">
+          <TabsTrigger value="transcript" className="flex-1 rounded-none data-[state=active]:bg-background data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-full">Transkrip</TabsTrigger>
           {/* Only show Ask AI tab if user has permission */}
           {canAskAI && (
-            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-1.5">
-              <div className="w-5 h-5 rounded bg-primary flex items-center justify-center text-[10px] text-primary-foreground">AI</div>
+            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none data-[state=active]:bg-background data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-full">
+              <div className="w-5 h-5 rounded-md bg-indigo-500/10 flex items-center justify-center text-[10px] font-bold text-indigo-600">AI</div>
               Ask AI
             </TabsTrigger>
           )}
@@ -235,8 +235,8 @@ export function MeetingTranscript({
 
         <TabsContent value="transcript" className="flex-1 flex flex-col overflow-hidden m-0">
           {isVideoFile && (
-            <div className="p-3">
-              <div className="relative rounded-lg overflow-hidden bg-black aspect-video group">
+            <div className="p-4 bg-muted/10 border-b border-border/40">
+              <div className="relative rounded-2xl overflow-hidden bg-black aspect-video group shadow-md ring-1 ring-border/50">
                 {videoUrl && (
                   <video
                     ref={videoRef}
@@ -247,19 +247,19 @@ export function MeetingTranscript({
                 
                 {/* Subtitle Overlay for Mini Player */}
                 {subtitlesEnabled && currentMiniSegment && (
-                  <div className="absolute bottom-12 left-0 right-0 flex justify-center px-2 pointer-events-none">
-                    <div className="bg-black/80 text-white px-3 py-1.5 rounded-lg max-w-[95%] text-center text-[10px] leading-relaxed">
-                      <span className="font-semibold text-accent">{currentMiniSegment.speaker}: </span>
-                      <span className="text-primary-foreground/90">{currentMiniSegment.text}</span>
+                  <div className="absolute bottom-12 left-0 right-0 flex justify-center px-4 pointer-events-none">
+                    <div className="bg-black/80 backdrop-blur-sm text-white px-3.5 py-2 rounded-xl max-w-[95%] text-center text-xs leading-relaxed shadow-lg">
+                      <span className="font-semibold text-primary/90">{currentMiniSegment.speaker}: </span>
+                      <span className="text-white/90">{currentMiniSegment.text}</span>
                     </div>
                   </div>
                 )}
                 
                 {/* Video Controls Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   {/* Progress Bar */}
                   <div 
-                    className="w-full bg-white/30 rounded-full cursor-pointer group/bar mb-2 h-1"
+                    className="w-full bg-white/20 rounded-full cursor-pointer group/bar mb-2.5 h-1.5 transition-all hover:h-2"
                     onClick={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect()
                       const percent = (e.clientX - rect.left) / rect.width
@@ -269,19 +269,19 @@ export function MeetingTranscript({
                     }}
                   >
                     <div 
-                      className="relative h-full rounded-full bg-primary transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/bar:bg-primary/80 motion-reduce:transition-none"
+                      className="relative h-full rounded-full bg-primary"
                       style={{ width: `${totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0}%` }}
                     >
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg" />
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full opacity-0 group-hover/bar:opacity-100 shadow-md scale-0 group-hover/bar:scale-100 transition-all duration-200" />
                     </div>
                   </div>
                   
                   {/* Controls Row */}
                   <div className="flex items-center justify-between text-white">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button 
                         onClick={togglePlayPause}
-                        className="hover:bg-white/20 rounded-full transition-colors p-1"
+                        className="hover:bg-white/20 rounded-full transition-colors p-1.5"
                       >
                         {isPlaying ? (
                           <IconPlayerPause className="h-4 w-4" />
@@ -291,7 +291,7 @@ export function MeetingTranscript({
                       </button>
                       <button 
                         onClick={toggleMute}
-                        className="hover:bg-white/20 rounded-full transition-colors p-1"
+                        className="hover:bg-white/20 rounded-full transition-colors p-1.5"
                       >
                         {isMuted ? (
                           <IconVolume3 className="h-4 w-4" />
@@ -299,7 +299,7 @@ export function MeetingTranscript({
                           <IconVolume className="h-4 w-4" />
                         )}
                       </button>
-                      <span className="text-[10px]">
+                      <span className="text-[10px] font-medium opacity-80 ml-1 tabular-nums">
                         {formatTime(currentTime)} / {formatTime(totalDuration)}
                       </span>
                     </div>
@@ -307,7 +307,7 @@ export function MeetingTranscript({
                     <div className="flex items-center gap-1">
                       <button 
                         onClick={() => setSubtitlesEnabled(!subtitlesEnabled)}
-                        className={`hover:bg-white/20 rounded-full transition-colors p-1 relative ${subtitlesEnabled ? 'text-primary' : 'opacity-50'}`}
+                        className={`hover:bg-white/20 rounded-full transition-colors p-1.5 relative ${subtitlesEnabled ? 'text-primary' : 'opacity-50'}`}
                         title={subtitlesEnabled ? "Nonaktifkan Subtitle" : "Aktifkan Subtitle"}
                       >
                         <IconMessage className="h-4 w-4" />
@@ -317,7 +317,7 @@ export function MeetingTranscript({
                       </button>
                       <button 
                         onClick={openVideoPopup}
-                        className="hover:bg-white/20 rounded-full transition-colors p-1"
+                        className="hover:bg-white/20 rounded-full transition-colors p-1.5"
                         title="Perbesar Video"
                       >
                         <IconMaximize className="h-4 w-4" />
@@ -329,12 +329,12 @@ export function MeetingTranscript({
             </div>
           )}
 
-          <div className="px-3 pb-3 space-y-2 pt-2">
+          <div className="px-4 py-4 space-y-3 bg-background relative z-10 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
             <div className="relative">
               <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
-                placeholder="Cari transkrip..." 
-                className="pl-9 bg-gray-50 border-0 h-9 text-sm"
+                placeholder="Cari dalam transkrip..." 
+                className="pl-9 bg-muted/40 border-border/50 h-10 text-sm rounded-xl focus-visible:ring-primary/20"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -342,61 +342,67 @@ export function MeetingTranscript({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setAutoFollow(!autoFollow)}
-                className={`flex items-center gap-2 text-xs px-2 py-1 rounded font-medium transition-colors ${
-                  autoFollow ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg font-bold transition-colors ${
+                  autoFollow ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted/50 text-muted-foreground border border-transparent hover:bg-muted'
                 }`}
               >
-                {autoFollow ? "Auto Follow On" : "Auto Follow Off"}
+                <div className={`w-1.5 h-1.5 rounded-full ${autoFollow ? 'bg-primary animate-pulse' : 'bg-muted-foreground/40'}`}></div>
+                {autoFollow ? "Auto-scroll Aktif" : "Auto-scroll Nonaktif"}
               </button>
             </div>
           </div>
 
-          <div ref={transcriptContainerRef} className="flex-1 overflow-y-auto px-3 space-y-3 pb-20">
+          <div ref={transcriptContainerRef} className="flex-1 overflow-y-auto px-4 space-y-4 pb-24 pt-4 bg-muted/10">
             {(searchQuery ? filteredSegments : transcriptSegments).length > 0 ? (
               (searchQuery ? filteredSegments : transcriptSegments).map((segment, index) => {
                 const isActive = activeSegmentIndex === index 
+                
+                // Deterministic color logic for speakers based on first letter
+                const speakerChar = segment.speaker ? segment.speaker.charAt(segment.speaker.length - 1).toUpperCase() : 'S'
+                const isSystemSpeaker = /^SPEAKER/i.test(segment.speaker)
+                
                 return (
                   <div 
                     key={index} 
-                    className={`group cursor-pointer rounded-xl bg-card p-3 transition-[border-color,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                    className={`group cursor-pointer rounded-2xl p-4 transition-all duration-300 ease-out ${
                       isActive 
-                        ? 'border-2 border-primary shadow-md bg-primary/10' 
-                        : 'border-2 border-border bg-background hover:border-primary/30'
+                        ? 'border border-primary/30 shadow-md bg-background ring-4 ring-primary/5' 
+                        : 'border border-border/40 bg-background/50 hover:border-primary/20 hover:bg-background hover:shadow-sm'
                     }`}
                     onClick={() => jumpToTimestamp(segment.start)}
                   >
-                    <div className="flex items-start gap-2">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
-                        isActive ? 'bg-primary' : 'bg-emerald-500'
+                    <div className="flex items-start gap-3">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm ${
+                        isActive ? 'bg-primary' : (isSystemSpeaker ? 'bg-slate-400' : 'bg-emerald-500')
                       }`}>
-                        {segment.speaker ? segment.speaker.charAt(segment.speaker.length - 1) : 'S'}
+                        {speakerChar}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <span className={`text-sm font-semibold ${
-                              isActive ? 'text-primary' : 'text-foreground'
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-sm font-bold ${
+                              isActive ? 'text-primary' : 'text-foreground/90'
                             }`}>{segment.speaker}</span>
                             {canEditSegments && (
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-primary/10 hover:text-primary"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleEditSpeaker(index, segment.speaker)
                                 }}
                               >
-                                <IconPencil className="h-3 w-3 text-muted-foreground" />
+                                <IconPencil className="h-3.5 w-3.5" />
                               </Button>
                             )}
                           </div>
-                          <span className={`text-xs font-medium ${
-                            isActive ? 'text-primary' : 'text-muted-foreground'
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                            isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                           }`}>{formatTime(segment.start)}</span>
                         </div>
                         <p className={`text-sm leading-relaxed ${
-                          isActive ? 'text-primary' : 'text-muted-foreground'
+                          isActive ? 'text-foreground' : 'text-muted-foreground'
                         }`}>{segment.text}</p>
                       </div>
                     </div>
@@ -404,7 +410,12 @@ export function MeetingTranscript({
                 )
               })
             ) : (
-              <div className="text-sm text-muted-foreground text-center py-8">Tidak ada transkrip tersedia</div>
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center mb-3">
+                  <IconMessage className="w-6 h-6 text-muted-foreground/50" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">Tidak ada transkrip ditemukan</p>
+              </div>
             )}
           </div>
         </TabsContent>

@@ -88,15 +88,20 @@ export function MeetingAnalytics({
   const sortedTalkTime = [...talkTime].sort((a, b) => b.total - a.total)
 
   return (
-    <div className="w-72 border-r overflow-y-auto hidden lg:block bg-background-2">
-      <div className="p-4">
+    <div className="w-80 border-r border-border/50 overflow-y-auto hidden lg:block bg-background shadow-[1px_0_10px_rgba(0,0,0,0.02)] z-10">
+      <div className="p-6">
         {/* Analytics Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-semibold text-base text-foreground">Analytics</h2>
+        <div className="flex items-center justify-between mb-8 group">
+          <h2 className="font-bold text-lg text-foreground flex items-center gap-2">
+            <span className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </span>
+            Analytics
+          </h2>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
+            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
             onClick={() => router.push(`/dashboard/analytics/detail/${meetingId}`)}
           >
             <IconChevronRight className="h-4 w-4" />
@@ -104,40 +109,40 @@ export function MeetingAnalytics({
         </div>
 
         {/* TALKTIME Section */}
-        <div className="mb-6 pt-2">
+        <div className="mb-8">
           <button 
             onClick={() => toggleSection('talktime')}
-            className="flex items-center justify-between w-full mb-3 group hover:opacity-70 transition-opacity"
+            className="flex items-center justify-between w-full mb-4 group hover:opacity-80 transition-opacity"
           >
-            <h3 className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">TALKTIME</h3>
-            <IconChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${collapsedSections.talktime ? '-rotate-90' : ''}`} />
+            <h3 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">TALKTIME</h3>
+            <IconChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${collapsedSections.talktime ? '-rotate-90' : ''}`} />
           </button>
           
           {!collapsedSections.talktime && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
-              <div className="grid grid-cols-4 gap-2 text-[10px] font-medium px-1 uppercase tracking-tighter">
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="grid grid-cols-4 gap-2 text-[10px] font-bold px-2 uppercase tracking-wider text-muted-foreground/60 mb-2">
                 <div>Speaker</div>
                 <div>Kata</div>
                 <div>Bicara</div>
                 <div className="text-right">Total</div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {sortedTalkTime.length > 0 ? (
                   sortedTalkTime.map((item, index) => {
-                    const circumference = 2 * Math.PI * 6
+                    const circumference = 2 * Math.PI * 8
                     const dashOffset = circumference - (circumference * item.total / 100)
                     
                     // Generate a color for each speaker
                     const colors = [
-                      'bg-purple-500', 'bg-emerald-500', 'bg-indigo-500', 
+                      'bg-indigo-500', 'bg-emerald-500', 'bg-purple-500', 
                       'bg-rose-500', 'bg-amber-500', 'bg-blue-500', 
                       'bg-pink-500', 'bg-cyan-500', 'bg-orange-500'
                     ]
                     const textColors = [
-                      'text-purple-500', 'text-emerald-500', 'text-indigo-500', 
-                      'text-rose-500', 'text-amber-500', 'text-blue-500', 
-                      'text-pink-500', 'text-cyan-500', 'text-orange-500'
+                      'text-indigo-600 dark:text-indigo-400', 'text-emerald-600 dark:text-emerald-400', 'text-purple-600 dark:text-purple-400', 
+                      'text-rose-600 dark:text-rose-400', 'text-amber-600 dark:text-amber-400', 'text-blue-600 dark:text-blue-400', 
+                      'text-pink-600 dark:text-pink-400', 'text-cyan-600 dark:text-cyan-400', 'text-orange-600 dark:text-orange-400'
                     ]
                     const bgColor = colors[index % colors.length]
                     const textColor = textColors[index % textColors.length]
@@ -152,37 +157,37 @@ export function MeetingAnalytics({
                     return (
                       <div 
                         key={index} 
-                        className="group/speaker relative -mx-2 grid cursor-default grid-cols-4 items-center gap-2 rounded-lg p-2 transition-[background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-muted/50 motion-reduce:transition-none"
+                        className="group/speaker relative grid cursor-default grid-cols-4 items-center gap-2 rounded-xl p-2.5 transition-all hover:bg-muted/50 hover:shadow-sm bg-transparent border border-transparent hover:border-border/40"
                       >
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <div className={`w-8 h-8 rounded-full ${bgColor} flex items-center justify-center text-white text-xs font-bold shadow-sm transition-transform group-hover/speaker:scale-110 flex-shrink-0`}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-8 h-8 rounded-xl ${bgColor} flex items-center justify-center text-white text-sm font-bold shadow-sm transition-transform group-hover/speaker:scale-105 flex-shrink-0`}>
                             {displayText}
                           </div>
-                          <span className={`truncate text-xs font-medium ${textColor}`}>
+                          <span className={`truncate text-sm font-semibold ${textColor}`}>
                             {item.speaker}
                           </span>
                         </div>
-                        <div className="text-[11px] text-muted-foreground group-hover/speaker:text-foreground transition-colors">
+                        <div className="text-xs font-medium text-muted-foreground group-hover/speaker:text-foreground transition-colors">
                           {item.words}
                         </div>
-                        <div className="text-[11px] text-muted-foreground group-hover/speaker:text-foreground transition-colors">
+                        <div className="text-xs font-medium text-muted-foreground group-hover/speaker:text-foreground transition-colors">
                           {item.talks}x
                         </div>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <span className={`text-[11px] font-semibold ${textColor}`}>
+                        <div className="flex items-center justify-end gap-2">
+                          <span className={`text-xs font-bold ${textColor}`}>
                             {item.total}%
                           </span>
-                          <div className="relative w-4 h-4 flex-shrink-0">
-                            <svg className="w-full h-full -rotate-90" viewBox="0 0 16 16" preserveAspectRatio="xMidYMid meet">
-                              <circle cx="8" cy="8" r="6" fill="none" stroke="hsl(var(--border))" strokeWidth="2.5"/>
+                          <div className="relative w-5 h-5 flex-shrink-0">
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 20 20" preserveAspectRatio="xMidYMid meet">
+                              <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" className="text-muted/30" strokeWidth="3"/>
                               <circle 
-                                cx="8" 
-                                cy="8" 
-                                r="6" 
+                                cx="10" 
+                                cy="10" 
+                                r="8" 
                                 fill="none" 
                                 stroke="currentColor" 
                                 className={textColor}
-                                strokeWidth="2.5" 
+                                strokeWidth="3" 
                                 strokeDasharray={circumference}
                                 strokeDashoffset={dashOffset}
                                 strokeLinecap="round"
@@ -192,80 +197,83 @@ export function MeetingAnalytics({
                         </div>
                         
                         {/* Hover Tooltip */}
-                        <div className="absolute ring-2 ring-accent right-0 top-0 mt-1 bg-popover text-popover-foreground px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover/speaker:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap text-xs">
-                          <div className="font-semibold mb-1">{item.speaker}</div>
-                          <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                            <div>💬 {item.words} kata diucapkan</div>
-                            <div>🗣️ {item.talks} kali berbicara</div>
-                            <div>📊 {item.total}% dari total waktu</div>
+                        <div className="absolute ring-1 ring-border left-full ml-4 top-1/2 -translate-y-1/2 bg-popover text-popover-foreground px-4 py-3 rounded-xl shadow-xl opacity-0 group-hover/speaker:opacity-100 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap text-sm scale-95 group-hover/speaker:scale-100">
+                          <div className="font-bold mb-2 flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${bgColor}`}></div>
+                            {item.speaker}
+                          </div>
+                          <div className="space-y-1.5 text-xs text-muted-foreground">
+                            <div className="flex justify-between gap-4"><span>Kata diucapkan:</span> <span className="font-semibold text-foreground">{item.words}</span></div>
+                            <div className="flex justify-between gap-4"><span>Kali berbicara:</span> <span className="font-semibold text-foreground">{item.talks}x</span></div>
+                            <div className="flex justify-between gap-4"><span>Total waktu:</span> <span className="font-semibold text-foreground">{item.total}%</span></div>
                           </div>
                         </div>
                       </div>
                     )
                   })
                 ) : (
-                  <div className="text-xs text-muted-foreground py-2 italic">Tidak ada data</div>
+                  <div className="text-sm text-muted-foreground py-4 text-center rounded-xl bg-muted/20 border border-dashed">Tidak ada data</div>
                 )}
               </div>
             </div>
           )}
         </div>
 
-        <div className="h-px bg-border/50 my-6"></div>
+        <div className="h-px bg-border/40 my-8"></div>
 
         {/* TOPIK / KEYWORD Section */}
-        <div className="mb-6">
+        <div className="mb-8">
           <button 
             onClick={() => toggleSection('topics')}
-            className="flex items-center justify-between w-full mb-4 group"
+            className="flex items-center justify-between w-full mb-4 group hover:opacity-80 transition-opacity"
           >
-            <h3 className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">TOPIK / KEYWORD</h3>
-            <IconChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${collapsedSections.topics ? '-rotate-90' : ''}`} />
+            <h3 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">TOPIK / KEYWORD</h3>
+            <IconChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${collapsedSections.topics ? '-rotate-90' : ''}`} />
           </button>
           
           {!collapsedSections.topics && (
-            <div className="flex flex-wrap gap-x-4 gap-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
               {topics.length > 0 ? (
                 topics.map((topic, index) => (
-                  <div key={index} className="flex items-center gap-2 group cursor-default">
-                    <div className={`w-2 h-2 rounded-full ${topic.color || 'bg-slate-400'} shadow-sm ring-2 ring-white`}></div>
-                    <span className="text-xs font-medium text-foreground/80 group-hover:text-primary transition-colors">{topic.name}</span>
+                  <div key={index} className="flex items-center gap-1.5 group cursor-default bg-muted/30 hover:bg-muted/60 border border-border/50 rounded-lg px-2.5 py-1.5 transition-colors">
+                    <div className={`w-2 h-2 rounded-full ${topic.color || 'bg-slate-400'}`}></div>
+                    <span className="text-xs font-semibold text-foreground/80 group-hover:text-foreground transition-colors">{topic.name}</span>
                   </div>
                 ))
               ) : (
-                <div className="text-xs text-muted-foreground italic">Tidak ada topik</div>
+                <div className="text-sm text-muted-foreground italic text-center w-full py-2">Tidak ada topik</div>
               )}
             </div>
           )}
         </div>
 
-        <div className="h-px bg-border/50 my-6"></div>
+        <div className="h-px bg-border/40 my-8"></div>
 
         {/* ACTION ITEMS / TASKS Unified Section */}
         <div className="pb-10">
           <button 
             onClick={() => toggleSection('action')}
-            className="flex items-center justify-between w-full mb-4 group"
+            className="flex items-center justify-between w-full mb-5 group hover:opacity-80 transition-opacity"
           >
-            <h3 className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">ACTION ITEMS</h3>
-            <IconChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${collapsedSections.action ? '-rotate-90' : ''}`} />
+            <h3 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">ACTION ITEMS</h3>
+            <IconChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${collapsedSections.action ? '-rotate-90' : ''}`} />
           </button>
 
           {!collapsedSections.action && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
               {actionItems.length > 0 && (
                 <>
-                  <div className="flex items-center justify-between rounded-xl border border-primary/10 bg-primary/5 p-2.5 transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/8 motion-reduce:transition-none">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-primary">
+                  <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-3 transition-colors hover:bg-primary/10">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-primary">
                           <path d="M20 6L9 17l-5-5"/>
                         </svg>
                       </div>
-                      <span className="text-xs font-semibold text-primary">
+                      <span className="text-xs font-bold text-primary leading-tight">
                         {hasSyncedTasks 
-                          ? "Todolist aktif di kanban board!" 
-                          : "Todolist siap dibuat kanban!"}
+                          ? "Tersinkronisasi dengan Kanban!" 
+                          : "Siap dibuat Kanban Board"}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
