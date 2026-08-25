@@ -60,7 +60,12 @@ export function MeetingMainContent({
   // Get permissions based on user role
   const permissions = useMemo(() => getPermissions(userRole), [userRole])
 
-  const parseNewlines = (str: string) => typeof str === 'string' ? str.replace(/\\n/g, '\n') : str
+  const parseNewlines = (str: string) => {
+    if (typeof str !== 'string') return str;
+    return str
+      .replace(/\\n/g, '\n') // Convert literal \n from JSON to actual newlines
+      .replace(/(?<!\n)\n(?!\n)/g, '\n\n'); // Convert single newlines to double newlines for ReactMarkdown paragraphs
+  }
 
   const executiveSummary = parseNewlines(meeting.transcription?.summary || "")
   const conclusion = parseNewlines(meeting.transcription?.conclusion || "")

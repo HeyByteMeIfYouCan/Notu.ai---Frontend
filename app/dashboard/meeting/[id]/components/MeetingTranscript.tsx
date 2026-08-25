@@ -275,10 +275,10 @@ export function MeetingTranscript({
     <div className="w-[22rem] border-l border-border/50 hidden xl:flex xl:flex-col bg-background shadow-[-1px_0_10px_rgba(0,0,0,0.02)] z-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
         <TabsList className="w-full rounded-none border-b border-border bg-transparent p-0 h-12 flex">
-          <TabsTrigger value="transcript" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">Transkrip</TabsTrigger>
+          <TabsTrigger value="transcript" className="flex-1 rounded-none border-0 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">Transkrip</TabsTrigger>
           {/* Only show Ask AI tab if user has permission */}
           {canAskAI && (
-            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">
+            <TabsTrigger value="ask-ai" className="flex-1 flex items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground h-full font-semibold">
               <div className="w-5 h-5 rounded-md bg-indigo-500/10 flex items-center justify-center text-[10px] font-bold text-indigo-600">AI</div>
               Ask AI
             </TabsTrigger>
