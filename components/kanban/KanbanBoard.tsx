@@ -1148,7 +1148,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="text-destructive hover:bg-destructive/10 text-xs rounded-xl" 
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs rounded-xl" 
                     onClick={() => editing._id && deleteTask(editing._id)}
                   >
                     Hapus Task
