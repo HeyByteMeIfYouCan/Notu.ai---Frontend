@@ -153,15 +153,12 @@ export function KanbanColumn({
   return (
     <div 
       ref={setNodeRef} 
-      className={`flex flex-col rounded-2xl p-3 sm:p-3.5 transition-all duration-200 border ${
+      className={`flex flex-col rounded-2xl p-3 sm:p-4 transition-all duration-200 border ${
         isOver 
-          ? 'bg-primary/5 border-primary/40 ring-2 ring-primary/20 shadow-md' 
-          : 'bg-muted/30 dark:bg-muted/10 border-border/60 shadow-2xs'
+          ? 'bg-primary/[0.03] border-primary/40 ring-1 ring-primary/20 shadow-sm' 
+          : 'bg-muted/20 dark:bg-muted/5 border-border/40 shadow-none'
       }`}
     >
-      {/* Column Top Accent Line */}
-      <div className={`h-1 w-full rounded-full bg-gradient-to-r ${theme.topBorder} mb-3 opacity-80`} />
-
       {/* Header */}
       <div className="flex items-center justify-between pb-3 px-1">
         <div className="flex items-center gap-2">
@@ -210,13 +207,13 @@ export function KanbanColumn({
               ))}
               
               {tasks.length === 0 && !isLoading && (
-                <div className={`flex flex-col items-center justify-center h-32 text-center rounded-xl border border-dashed transition-colors p-4 ${
+                <div className={`flex flex-col items-center justify-center h-[140px] text-center rounded-xl border-2 border-dashed transition-all p-4 ${
                   isOver 
-                    ? 'border-primary/50 bg-primary/5 text-primary' 
-                    : 'border-border/60 bg-card/20 text-muted-foreground'
+                    ? 'border-primary/50 bg-primary/5 text-primary scale-[1.02]' 
+                    : 'border-border/40 bg-background/50 text-muted-foreground'
                 }`}>
-                  <IconInbox className="h-6 w-6 mb-1 opacity-40" />
-                  <p className="text-xs font-medium">
+                  <IconInbox className={`h-6 w-6 mb-2 ${isOver ? 'opacity-100 animate-bounce' : 'opacity-40'}`} />
+                  <p className="text-[13px] font-medium">
                     {isOver ? 'Lepaskan di sini' : 'Belum ada task'}
                   </p>
                   {canModify && !isOver && (
@@ -224,7 +221,7 @@ export function KanbanColumn({
                       variant="link" 
                       size="sm" 
                       onClick={onAddTask}
-                      className="text-xs text-primary hover:underline h-auto p-0 mt-1 font-medium transition-colors"
+                      className="text-xs text-primary hover:underline h-auto p-0 mt-1.5 font-medium transition-colors"
                     >
                       + Buat task baru
                     </Button>
@@ -241,7 +238,7 @@ export function KanbanColumn({
         <Button 
           variant="ghost" 
           onClick={onAddTask}
-          className="mt-3 w-full justify-center h-8.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background/90 dark:hover:bg-card/70 rounded-xl border border-dashed border-border/60 hover:border-primary/40 transition-all duration-150 gap-1.5 shadow-2xs hover:shadow-xs active:scale-[0.99]"
+          className="mt-3 w-full justify-center h-9 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-xl border border-dashed border-border/50 hover:border-border transition-all duration-150 gap-1.5 active:scale-[0.99]"
         >
           <IconPlus className="h-3.5 w-3.5" />
           <span>Tambah Task</span>

@@ -745,28 +745,28 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
       <div className="flex flex-col gap-5 py-5 sm:gap-6 sm:py-6 h-full">
         
         {/* ================= HEADER SECTION ================= */}
-        <div className="px-4 lg:px-6 space-y-4">
+        <div className="px-4 lg:px-6 space-y-3">
           {/* Breadcrumb & Navigation */}
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <div className="flex items-center gap-2 text-[13px] font-medium text-muted-foreground">
             <button 
               onClick={() => router.push('/dashboard/kanban')}
-              className="inline-flex items-center gap-1 hover:text-foreground transition-colors group"
+              className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors group"
             >
-              <IconArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
-              <span>Daftar Board</span>
+              <IconLayoutBoard className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <span>Kanban</span>
             </button>
-            <span>/</span>
+            <span className="text-border">/</span>
             <span className="text-foreground font-semibold truncate max-w-[200px] sm:max-w-md">
-              {board?.title || "Kanban Board"}
+              {board?.title || "Detail Board"}
             </span>
           </div>
 
           {/* Main Title & Action Buttons Bar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 border-b border-border/40 pb-5">
             {/* Title & Role */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col gap-1.5">
               {editingTitle ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mt-1">
                   <Input 
                     value={tempTitle} 
                     onChange={(e) => setTempTitle(e.target.value)} 
@@ -777,53 +777,60 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                       if (e.key === 'Escape') setEditingTitle(false)
                     }}
                   />
-                  <Button size="sm" onClick={handleUpdateTitle} className="h-9 px-3 rounded-xl">Simpan</Button>
+                  <Button size="sm" onClick={handleUpdateTitle} className="h-9 px-3 rounded-xl shadow-sm">Simpan</Button>
                   <Button size="sm" variant="ghost" onClick={() => setEditingTitle(false)} className="h-9 px-3 rounded-xl">Batal</Button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2.5">
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground text-balance">
                     {board?.title || "Kanban Board"}
                   </h1>
                   {canModify && (
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                      className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
                       onClick={() => {
                         setTempTitle(board?.title || "")
                         setEditingTitle(true)
                       }}
                       title="Edit judul board"
                     >
-                      <IconPencil className="h-4 w-4" />
+                      <IconPencil className="h-3.5 w-3.5" />
                     </Button>
                   )}
                   <RoleBadge role={role} />
                 </div>
               )}
+              {board?.description && (
+                <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                  {board.description}
+                </p>
+              )}
             </div>
 
             {/* Actions Toolbar */}
-            <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
               {/* Search filter input */}
               <div className="relative">
-                <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Cari task..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8.5 w-32 sm:w-44 pl-8 pr-7 text-xs rounded-lg border-border/60 bg-background/80 hover:border-border focus:w-52 transition-all"
+                  className="h-9 w-[160px] sm:w-[200px] pl-9 pr-8 text-sm rounded-xl bg-muted/40 border-border/60 hover:bg-muted/60 focus-visible:bg-transparent transition-all shadow-none"
                 />
                 {searchQuery && (
                   <button 
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    <IconX className="h-3 w-3" />
+                    <IconX className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
+
+              <div className="h-5 w-px bg-border/60 hidden sm:block"></div>
 
               {/* Online Presence Avatars */}
               {boardId && (
@@ -844,7 +851,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="group h-8.5 gap-1.5 rounded-lg border-border/70 text-xs font-medium bg-background hover:bg-accent/80 hover:text-accent-foreground hover:border-border transition-all duration-150 shadow-2xs hover:shadow-xs active:scale-[0.98]" 
+                      className="group h-9 gap-1.5 rounded-xl border-border/70 text-xs font-semibold bg-background hover:bg-accent hover:text-accent-foreground hover:border-border transition-all shadow-sm active:scale-[0.98]" 
                       onClick={handleGenerateShare}
                     >
                       <IconShare2 className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -854,7 +861,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                   <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 animate-in fade-in" />
                     <Dialog.Content className="fixed left-1/2 top-1/2 w-[95vw] z-[60] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card p-6 shadow-2xl space-y-4">
-                      <Dialog.Title className="text-base font-semibold text-foreground flex items-center gap-2">
+                      <Dialog.Title className="text-base font-bold text-foreground flex items-center gap-2">
                         <IconShare2 className="h-4 w-4 text-primary" />
                         <span>Bagikan Board Kolaborasi</span>
                       </Dialog.Title>
@@ -866,12 +873,12 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                             <Input 
                               readOnly 
                               value={shareToken ? `${window.location.origin}/dashboard/join/board/${shareToken}` : "Memuat tautan..."} 
-                              className="h-9 text-xs rounded-xl bg-muted/40 font-mono"
+                              className="h-10 text-xs rounded-xl bg-muted/40 font-mono focus-visible:ring-0 shadow-none border-border/60"
                             />
                             <Button 
                               size="icon" 
                               variant="outline" 
-                              className="h-9 w-9 rounded-xl shrink-0" 
+                              className="h-10 w-10 rounded-xl shrink-0 shadow-sm border-border/60 hover:bg-accent" 
                               onClick={() => {
                                 if (shareToken) {
                                   navigator.clipboard.writeText(`${window.location.origin}/dashboard/join/board/${shareToken}`)
@@ -887,19 +894,19 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                         </div>
                         
                         {permissions.canManageCollaborators && (
-                          <div className="pt-3 border-t border-border/60 space-y-3">
-                            <h3 className="text-xs font-semibold text-foreground">Kolaborator Terdaftar</h3>
-                            <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                          <div className="pt-4 border-t border-border/60 space-y-3">
+                            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground">Kolaborator Terdaftar</h3>
+                            <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
                               {board?.collaborators?.map((col) => (
-                                <div key={col.user._id} className="flex items-center justify-between p-2 rounded-xl bg-muted/40 border border-border/40 text-xs">
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ring-1 ring-primary/20 shrink-0">
+                                <div key={col.user._id} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border/60 text-xs shadow-sm">
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
                                       {col.user.name?.[0]?.toUpperCase() || 'M'}
                                     </div>
                                     <div className="min-w-0">
                                       <p className="font-semibold text-foreground truncate">{col.user.name}</p>
                                       <select 
-                                        className="text-[11px] bg-transparent border-none p-0 h-auto focus:ring-0 text-muted-foreground outline-none cursor-pointer"
+                                        className="text-[11px] font-medium bg-transparent border-none p-0 h-auto focus:ring-0 text-muted-foreground outline-none cursor-pointer hover:text-foreground"
                                         value={col.role}
                                         onChange={(e) => {
                                           api.updateBoardCollaboratorRole(boardId!, col.user._id, e.target.value).then(() => fetchBoardInfo())
@@ -914,7 +921,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="text-destructive hover:bg-destructive/10 h-7 text-xs font-medium rounded-lg" 
+                                    className="text-destructive hover:bg-destructive/10 h-8 text-xs font-medium rounded-lg px-2.5" 
                                     onClick={() => {
                                       if(boardId) api.removeBoardCollaborator(boardId, col.user._id).then(() => fetchBoardInfo())
                                     }}
@@ -924,7 +931,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                                 </div>
                               ))}
                               {(!board?.collaborators || board.collaborators.length === 0) && (
-                                <p className="text-xs text-muted-foreground text-center py-2">Belum ada anggota kolaborasi</p>
+                                <p className="text-xs text-muted-foreground text-center py-4 bg-muted/30 rounded-xl border border-dashed border-border/60">Belum ada anggota kolaborasi</p>
                               )}
                             </div>
                           </div>
@@ -941,19 +948,19 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                   <Button 
                     variant="outline" 
                     size="icon"
-                    className="group h-8.5 w-8.5 rounded-lg border-border/70 text-muted-foreground hover:text-foreground bg-background hover:bg-accent/80 hover:border-border transition-all duration-150 shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                    className="group h-9 w-9 rounded-xl border-border/70 text-muted-foreground hover:text-foreground bg-background hover:bg-accent/80 hover:border-border transition-all shadow-sm active:scale-[0.98]"
                     title="Menu opsi lainnya"
                   >
                     <IconDotsVertical className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="rounded-xl p-1 shadow-lg border border-border/60 min-w-[150px]">
-                  <DropdownMenuItem onClick={() => handleExport('csv')} className="group text-xs gap-2.5 cursor-pointer rounded-lg px-2.5 py-2 transition-colors">
-                    <IconFileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400 group-hover:text-white group-focus:text-white transition-colors" />
+                <DropdownMenuContent align="end" className="rounded-xl p-1.5 shadow-lg border border-border/60 min-w-[160px]">
+                  <DropdownMenuItem onClick={() => handleExport('csv')} className="group text-[13px] font-medium gap-2.5 cursor-pointer rounded-lg px-3 py-2.5 transition-colors focus:bg-accent">
+                    <IconFileSpreadsheet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Export CSV</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleExport('json')} className="group text-xs gap-2.5 cursor-pointer rounded-lg px-2.5 py-2 transition-colors">
-                    <IconCode className="h-4 w-4 text-blue-600 dark:text-blue-400 group-hover:text-white group-focus:text-white transition-colors" />
+                  <DropdownMenuItem onClick={() => handleExport('json')} className="group text-[13px] font-medium gap-2.5 cursor-pointer rounded-lg px-3 py-2.5 transition-colors focus:bg-accent">
+                    <IconCode className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     <span>Export JSON</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -964,7 +971,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                 <Button 
                   onClick={() => openAddTaskModal("todo")} 
                   size="sm"
-                  className="h-8.5 gap-1.5 rounded-lg text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs hover:shadow-sm transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]"
+                  className="h-9 gap-1.5 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <IconPlus className="h-3.5 w-3.5" />
                   <span>Tambah Task</span>

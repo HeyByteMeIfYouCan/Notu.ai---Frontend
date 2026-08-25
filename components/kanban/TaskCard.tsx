@@ -51,9 +51,9 @@ export function TaskCard({ task, onClick, labels = [], members = [] }: TaskCardP
   return (
     <div
       onClick={() => onClick?.(task)}
-      className="group relative rounded-xl border border-border/70 dark:border-border/40 bg-card hover:bg-card/95 hover:border-border text-card-foreground p-3.5 shadow-2xs hover:shadow-md transition-all duration-150 cursor-pointer hover:-translate-y-0.5"
+      className="group relative rounded-xl border border-border/60 bg-card text-card-foreground p-4 shadow-sm hover:border-border hover:shadow-md transition-all duration-200 cursor-pointer"
     >
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         {/* Top Header: Labels and Priority Indicator */}
         <div className="flex items-center justify-between gap-2 min-h-[22px]">
           {/* Labels */}
