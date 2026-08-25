@@ -762,55 +762,57 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
           </div>
 
           {/* Main Title & Action Buttons Bar */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 border-b border-border/40 pb-5">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 border-b border-border/40 pb-5">
             {/* Title & Role */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex-1 min-w-0 pr-0 xl:pr-6">
               {editingTitle ? (
                 <div className="flex items-center gap-2 mt-1">
                   <Input 
                     value={tempTitle} 
                     onChange={(e) => setTempTitle(e.target.value)} 
-                    className="text-xl sm:text-2xl font-bold h-10 w-[240px] sm:w-[320px] rounded-xl"
+                    className="text-xl sm:text-2xl font-bold h-10 w-full max-w-[400px] rounded-xl"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleUpdateTitle()
                       if (e.key === 'Escape') setEditingTitle(false)
                     }}
                   />
-                  <Button size="sm" onClick={handleUpdateTitle} className="h-9 px-3 rounded-xl shadow-sm">Simpan</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEditingTitle(false)} className="h-9 px-3 rounded-xl">Batal</Button>
+                  <Button size="sm" onClick={handleUpdateTitle} className="h-9 px-3 rounded-xl shadow-sm shrink-0">Simpan</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditingTitle(false)} className="h-9 px-3 rounded-xl shrink-0">Batal</Button>
                 </div>
               ) : (
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground text-balance">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground line-clamp-2">
                     {board?.title || "Kanban Board"}
                   </h1>
-                  {canModify && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
-                      onClick={() => {
-                        setTempTitle(board?.title || "")
-                        setEditingTitle(true)
-                      }}
-                      title="Edit judul board"
-                    >
-                      <IconPencil className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                  <RoleBadge role={role} />
+                  <div className="flex items-center gap-2 shrink-0">
+                    {canModify && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                        onClick={() => {
+                          setTempTitle(board?.title || "")
+                          setEditingTitle(true)
+                        }}
+                        title="Edit judul board"
+                      >
+                        <IconPencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <RoleBadge role={role} />
+                  </div>
                 </div>
               )}
               {board?.description && (
-                <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                <p className="text-sm text-muted-foreground mt-2 max-w-3xl line-clamp-2">
                   {board.description}
                 </p>
               )}
             </div>
 
             {/* Actions Toolbar */}
-            <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap mt-2 xl:mt-0">
               {/* Search filter input */}
               <div className="relative">
                 <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -818,7 +820,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
                   placeholder="Cari task..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 w-[160px] sm:w-[200px] pl-9 pr-8 text-sm rounded-xl bg-muted/40 border-border/60 hover:bg-muted/60 focus-visible:bg-transparent transition-all shadow-none"
+                  className="h-9 w-[140px] sm:w-[180px] pl-9 pr-8 text-sm rounded-xl bg-muted/40 border-border/60 hover:bg-muted/60 focus-visible:bg-transparent transition-all shadow-none"
                 />
                 {searchQuery && (
                   <button 
@@ -834,14 +836,16 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
 
               {/* Online Presence Avatars */}
               {boardId && (
-                <OnlinePresence
-                  resourceType="board"
-                  resourceId={boardId}
-                  currentUserId={(user as any)?.id || (user as any)?._id}
-                  collaborators={board?.collaborators}
-                  owner={board?.userId}
-                  maxAvatars={3}
-                />
+                <div className="hidden sm:block">
+                  <OnlinePresence
+                    resourceType="board"
+                    resourceId={boardId}
+                    currentUserId={(user as any)?.id || (user as any)?._id}
+                    collaborators={board?.collaborators}
+                    owner={board?.userId}
+                    maxAvatars={3}
+                  />
+                </div>
               )}
 
               {/* Share Dialog */}
