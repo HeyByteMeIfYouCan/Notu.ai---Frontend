@@ -78,6 +78,7 @@ export default function MeetingDetailPage() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const transcriptContainerRef = useRef<HTMLDivElement>(null)
+  const clickedTimeRef = useRef<number | null>(null)
 
   const fetchMeeting = useCallback(async () => {
     if (!isReady || !meetingId) return
@@ -232,10 +233,19 @@ export default function MeetingDetailPage() {
       const time = video?.currentTime || audio?.currentTime || 0
       setCurrentTime(time)
       
+      // If user recently clicked a segment, the video might seek to an earlier keyframe (e.g. clicked 60s, seeks to 57s)
+      // We freeze the activeSegmentIndex at the clicked segment until the video catches up.
+      if (clickedTimeRef.current !== null) {
+        if (time < clickedTimeRef.current && (clickedTimeRef.current - time) < 15) {
+          // Video is playing from a previous keyframe, wait for it to catch up
+          return
+        } else if (time >= clickedTimeRef.current || (clickedTimeRef.current - time) >= 15) {
+          // Video caught up or seeked far away, resume normal tracking
+          clickedTimeRef.current = null
+        }
+      }
+
       // Update active segment based on current time
-      // Use findLastIndex so we get the LATEST segment that has started by this time.
-      // This is the correct approach: if time=60.0 and seg[n].start=57, seg[n+1].start=60,
-      // findLastIndex returns n+1 (menit 1), not n (detik 57).
       if (meeting?.transcription?.segments && meeting.transcription.segments.length > 0) {
         const segs = meeting.transcription.segments
         const activeIndex = segs.findLastIndex(
@@ -321,8 +331,20 @@ export default function MeetingDetailPage() {
   const jumpToTimestamp = (seconds: number) => {
     const media = videoRef.current || audioRef.current
     if (media) {
+      clickedTimeRef.current = seconds
       media.currentTime = seconds
       setCurrentTime(seconds)  // Sync state immediately
+      
+      if (meeting?.transcription?.segments) {
+        let activeIndex = meeting.transcription.segments.findLastIndex(
+          (seg: any) => seg.start <= seconds + 0.1
+        )
+        if (activeIndex === -1 && seconds < meeting.transcription.segments[0].start) {
+          activeIndex = 0
+        }
+        setActiveSegmentIndex(activeIndex)
+      }
+      
       if (!isPlaying) {
         media.play().catch(err => console.error('Play failed:', err))
         setIsPlaying(true)

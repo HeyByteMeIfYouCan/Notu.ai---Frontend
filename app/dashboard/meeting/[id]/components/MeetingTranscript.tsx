@@ -185,19 +185,31 @@ export function MeetingTranscript({
     )
   }, [transcriptSegments, currentTime])
 
+  const popupClickedTimeRef = useRef<number | null>(null)
+
   // Update popup current time from video
   useEffect(() => {
     if (!isVideoPopupOpen || !fullVideoRef.current) return
     const video = fullVideoRef.current
     const handleTimeUpdate = () => {
       const time = video.currentTime
+      
+      if (popupClickedTimeRef.current !== null) {
+        if (time < popupClickedTimeRef.current && (popupClickedTimeRef.current - time) < 15) {
+          // Video is catching up
+          return
+        } else if (time >= popupClickedTimeRef.current || (popupClickedTimeRef.current - time) >= 15) {
+          popupClickedTimeRef.current = null
+        }
+      }
+      
       setPopupCurrentTime(time)
       
       // Update active segment based on current time
       if (meeting?.transcription?.segments && meeting.transcription.segments.length > 0) {
         // Use findLastIndex to gracefully handle small gaps and floating point precision
         let activeIndex = meeting.transcription.segments.findLastIndex(
-          (seg: any) => seg.start <= time + 0.1
+          (seg: any) => seg.start <= time
         )
         // If clicking right at the start or before the first segment, default to the first one
         if (activeIndex === -1 && time < meeting.transcription.segments[0].start) {
@@ -650,9 +662,9 @@ export function MeetingTranscript({
                           : 'border border-border hover:border-primary/30'
                       }`}
                       onClick={() => {
-                        if (fullVideoRef.current) {
-                          fullVideoRef.current.currentTime = segment.start
-                        }
+                        popupClickedTimeRef.current = segment.start
+                        setPopupCurrentTime(segment.start)
+                        jumpToTimestamp(segment.start)
                       }}
                     >
                       <div className="flex items-center justify-between mb-2">
