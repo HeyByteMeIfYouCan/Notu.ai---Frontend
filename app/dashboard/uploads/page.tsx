@@ -192,117 +192,130 @@ export default function UploadsPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col bg-background">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-6 py-6">
-              {/* Upload Dropzone */}
-              <div className="px-4 lg:px-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <div 
-                      className={`border-2 border-dashed rounded-xl transition-colors ${
-                          isDragging 
-                            ? 'border-[var(--primary)] bg-[var(--primary)]/10' 
-                            : 'border-[var(--border)] bg-[var(--card)]'
-                        }`}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".mp3,.wav,.mp4,.webm,audio/*,video/*"
-                        className="hidden"
-                        onChange={handleInputChange}
-                      />
-                      
-                      {selectedFile ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                          <div className="rounded-full bg-[var(--primary)]/10 p-3 text-[var(--primary)] mb-4">
-                            <IconCloudUpload className="h-6 w-6" />
-                          </div>
-                          <h2 className="text-[15px] font-semibold text-[var(--foreground)]">{selectedFile.name}</h2>
-                          <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                          </p>
-                          
-                          {isUploading && (
-                              <div className="w-64 mt-4">
-                              <div className="w-full bg-[var(--input)] rounded-full h-2 overflow-hidden">
-                                <div 
-                                  className="bg-[var(--primary)] h-2 rounded-full transition-all duration-300 ease-out" 
-                                  style={{ width: `${uploadProgress}%` }}
-                                />
-                              </div>
-                              <p className="text-xs text-[var(--muted-foreground)] mt-2">
-                                {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Processing...'}
-                              </p>
-                            </div>
-                          )}
-                          
-                          <div className="flex gap-2 mt-5">
-                            <Button 
-                              variant="outline"
-                              onClick={() => setSelectedFile(null)}
-                              disabled={isUploading}
-                            >
-                              <IconX className="h-4 w-4 mr-2" />
-                              Cancel
-                            </Button>
-                            <Button 
-                              className="bg-[var(--primary)] hover:brightness-90 text-[var(--primary-foreground)]"
-                              onClick={handleUpload}
-                              disabled={isUploading}
-                            >
-                              {isUploading ? (
-                                <>
-                                  <IconLoader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  Uploading...
-                                </>
-                              ) : (
-                                "Upload & Transcribe"
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                          <div className="rounded-full bg-[var(--primary-100)] p-3 text-[var(--primary)] mb-4">
-                            <IconCloudUpload className="h-6 w-6" />
-                          </div>
-                          <h2 className="text-base font-semibold text-foreground">Upload A File To Generate A Transcript</h2>
-                          <p className="mt-1 text-sm text-muted-foreground">Browse Or Drag And Drop MP3, WAV, Or MP4 Files. (Max Video Size 100MB)</p>
-                          <Button 
-                            className="mt-5 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-                            onClick={() => fileInputRef.current?.click()}
-                          >
-                            Upload Your Meeting
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+            <div className="flex flex-col gap-6 py-8">
+              
+              {/* Page Title */}
+              <div className="px-4 lg:px-8 mb-2">
+                <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-balance text-[var(--foreground)]">
+                  Upload file meeting
+                </h2>
+                <p className="text-base text-muted-foreground mt-2">
+                  Pilih audio atau video, lalu Notu akan mengubahnya menjadi notulen.
+                </p>
               </div>
 
-              {/* Meeting History Header */}
-              <div className="px-4 lg:px-6">
-                <div className="flex items-end justify-between gap-4 flex-wrap">
-                  <div>
-                    <h3 className="text-[16px] font-semibold text-[var(--foreground)]">Meeting History</h3>
-                    <p className="text-xs text-[var(--muted-foreground)]">Cari Meeting Anda Yang Telah Dibuat</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-full">
-                      <ListToolbar controls={controls as any} hideType gridCols={gridCols} setGridCols={setGridCols} />
+              {/* Upload Dropzone */}
+              <div className="px-4 lg:px-8">
+                <div 
+                  className={`group relative flex flex-col items-center justify-center p-12 min-h-[300px] border-2 border-dashed rounded-[1.5rem] bg-card text-center transition-all duration-300 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer ${
+                      isDragging 
+                        ? 'border-[var(--primary)] bg-[var(--primary)]/5' 
+                        : 'border-border/60'
+                    }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => !selectedFile && fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".mp3,.wav,.mp4,.webm,audio/*,video/*"
+                    className="hidden"
+                    onChange={handleInputChange}
+                  />
+                  
+                  {selectedFile ? (
+                    <div className="flex flex-col items-center justify-center w-full max-w-sm mx-auto animate-in fade-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
+                      <div className="rounded-full bg-[var(--primary)]/10 p-4 text-[var(--primary)] mb-5 ring-1 ring-primary/20">
+                        <IconCloudUpload className="h-8 w-8" />
+                      </div>
+                      <h2 className="text-lg font-bold tracking-tight text-[var(--foreground)] truncate w-full px-4">{selectedFile.name}</h2>
+                      <p className="mt-1.5 text-sm text-[var(--muted-foreground)] bg-muted px-2.5 py-0.5 rounded-md">
+                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                      
+                      {isUploading && (
+                          <div className="w-full mt-6">
+                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden shadow-inner">
+                            <div 
+                              className="bg-[var(--primary)] h-2 rounded-full transition-all duration-300 ease-out" 
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                          <p className="text-xs font-medium text-[var(--muted-foreground)] mt-2.5">
+                            {uploadProgress < 100 ? `Mengunggah... ${uploadProgress}%` : 'Memproses transkrip...'}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="flex w-full gap-3 mt-8">
+                        <Button 
+                          variant="outline"
+                          className="flex-1 rounded-xl shadow-sm"
+                          onClick={() => setSelectedFile(null)}
+                          disabled={isUploading}
+                        >
+                          <IconX className="h-4 w-4 mr-2" />
+                          Batal
+                        </Button>
+                        <Button 
+                          className="flex-1 rounded-xl bg-[var(--primary)] hover:brightness-90 text-[var(--primary-foreground)] shadow-sm"
+                          onClick={handleUpload}
+                          disabled={isUploading}
+                        >
+                          {isUploading ? (
+                            <>
+                              <IconLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Mengunggah...
+                            </>
+                          ) : (
+                            "Upload Sekarang"
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto pointer-events-none">
+                      <div className="rounded-2xl bg-primary/10 p-4 text-primary mb-6 ring-1 ring-primary/20 shadow-sm group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/40 transition-all duration-300">
+                        <IconCloudUpload className="h-8 w-8" />
+                      </div>
+                      <h2 className="text-xl font-bold tracking-tight text-foreground mb-2">Upload file untuk ditranskrip</h2>
+                      <p className="text-sm text-muted-foreground leading-relaxed text-balance">
+                        Tarik & lepas file MP3, WAV, atau MP4 di sini, atau klik tombol di bawah untuk menelusuri.
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground/60 font-medium tracking-wide">(Maksimal ukuran file 100MB)</p>
+                      <Button 
+                        className="mt-8 rounded-xl px-6 bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-sm group-hover:shadow-md pointer-events-auto"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                        }}
+                      >
+                        Pilih File Meeting
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Meeting History Section */}
+              <div className="px-4 lg:px-8 mt-4">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold tracking-tight text-[var(--foreground)]">Riwayat Upload</h2>
+                  <p className="mt-1 text-sm text-[var(--muted-foreground)]">Daftar rekaman yang telah Anda unggah.</p>
+                </div>
+
+                {/* Search and Filter Bar */}
+                <div className="mb-6">
+                  <ListToolbar controls={controls as any} hideType gridCols={gridCols} setGridCols={setGridCols} />
                 </div>
               </div>
 
               {/* Meeting Cards */}
-              <div className="px-4 lg:px-6">
+              <div className="px-4 lg:px-8">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <IconLoader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
