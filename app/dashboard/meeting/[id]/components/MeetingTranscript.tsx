@@ -10,6 +10,7 @@ import {
   IconUser,
   IconUsers,
   IconChecks,
+  IconCheck,
   IconMaximize,
   IconMinimize,
   IconPlayerPlay,
@@ -18,10 +19,12 @@ import {
   IconVolume3,
   IconX,
   IconInfoCircle,
-  IconMessage
+  IconClosedCaptioning,
+  IconSubscript
 } from "@tabler/icons-react"
 import { RefObject, useState, useMemo, useRef, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -241,8 +244,8 @@ export function MeetingTranscript({
 
         <TabsContent value="transcript" className="flex-1 flex flex-col overflow-hidden m-0">
           {isVideoFile && (
-            <div className="p-4 bg-muted/10 border-b border-border/40">
-              <div className="relative rounded-2xl overflow-hidden bg-black aspect-video group shadow-md ring-1 ring-border/50">
+            <div className={`transition-all duration-300 ${isVideoPopupOpen ? 'fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-0' : 'p-4 bg-muted/10 border-b border-border/40'}`}>
+              <div className={`relative overflow-hidden bg-black group shadow-md transition-all duration-300 ${isVideoPopupOpen ? 'w-full h-full max-h-screen' : 'rounded-2xl aspect-video ring-1 ring-border/50'}`}>
                 {videoUrl && (
                   <video
                     ref={videoRef}
@@ -253,10 +256,9 @@ export function MeetingTranscript({
                 
                 {/* Subtitle Overlay for Mini Player */}
                 {subtitlesEnabled && currentMiniSegment && (
-                  <div className="absolute bottom-12 left-0 right-0 flex justify-center px-4 pointer-events-none">
-                    <div className="bg-black/80 backdrop-blur-sm text-white px-3.5 py-2 rounded-xl max-w-[95%] text-center text-xs leading-relaxed shadow-lg">
-                      <span className="font-semibold text-primary/90">{currentMiniSegment.speaker}: </span>
-                      <span className="text-white/90">{currentMiniSegment.text}</span>
+                  <div className="absolute bottom-12 left-0 right-0 flex justify-center px-8 pointer-events-none z-20">
+                    <div className="bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-lg max-w-full text-center text-sm font-medium leading-relaxed drop-shadow-md">
+                      {currentMiniSegment.text}
                     </div>
                   </div>
                 )}
@@ -310,23 +312,23 @@ export function MeetingTranscript({
                       </span>
                     </div>
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <button 
                         onClick={() => setSubtitlesEnabled(!subtitlesEnabled)}
-                        className={`hover:bg-white/20 rounded-full transition-colors p-1.5 relative ${subtitlesEnabled ? 'text-primary' : 'opacity-50'}`}
+                        className={`hover:bg-white/20 rounded-full transition-colors p-1.5 relative ${subtitlesEnabled ? 'text-white' : 'text-white/50'}`}
                         title={subtitlesEnabled ? "Nonaktifkan Subtitle" : "Aktifkan Subtitle"}
                       >
-                        <IconMessage className="h-4 w-4" />
+                        <IconClosedCaptioning className="h-5 w-5" />
                         {!subtitlesEnabled && (
                           <span className="absolute w-0.5 h-5 bg-current rotate-45 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                         )}
                       </button>
                       <button 
-                        onClick={openVideoPopup}
-                        className="hover:bg-white/20 rounded-full transition-colors p-1.5"
-                        title="Perbesar Video"
+                        onClick={() => setIsVideoPopupOpen(!isVideoPopupOpen)}
+                        className="hover:bg-white/20 rounded-full transition-colors p-1.5 text-white/80 hover:text-white"
+                        title={isVideoPopupOpen ? "Perkecil Video" : "Perbesar Video"}
                       >
-                        <IconMaximize className="h-4 w-4" />
+                        {isVideoPopupOpen ? <IconMinimize className="h-5 w-5" /> : <IconMaximize className="h-5 w-5" />}
                       </button>
                     </div>
                   </div>
@@ -456,16 +458,15 @@ export function MeetingTranscript({
             <div className="space-y-2">
               <Label htmlFor="update-scope" className="text-sm font-semibold">Cakupan Pembaruan</Label>
               <div className="relative">
-                <select 
-                  id="update-scope"
-                  value={updateScope}
-                  onChange={(e) => setUpdateScope(e.target.value === 'single' ? 'single' : 'all')}
-                  className="appearance-none flex h-11 w-full rounded-xl border border-input bg-muted/30 px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="single">Hanya percakapan ini saja</option>
-                  <option value="all">Semua percakapan dari "{editingSegment?.name}"</option>
-                </select>
-                <IconChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Select value={updateScope} onValueChange={(val) => setUpdateScope(val as 'single' | 'all')}>
+                  <SelectTrigger className="h-11 rounded-xl bg-muted/30 border-input focus:ring-primary/20 focus:ring-2 focus:outline-none">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="single" className="rounded-lg">Hanya percakapan ini saja</SelectItem>
+                    <SelectItem value="all" className="rounded-lg">Semua percakapan dari "{editingSegment?.name}"</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             {updateScope === 'all' && (
@@ -476,13 +477,13 @@ export function MeetingTranscript({
             )}
           </div>
           <DialogFooter className="px-6 py-4 bg-muted/20 border-t border-border/50 sm:justify-between">
-            <Button variant="ghost" onClick={() => setIsEditingSpeaker(false)} disabled={isSubmitting} className="rounded-xl hover:bg-muted/50">Batal</Button>
+            <Button variant="outline" onClick={() => setIsEditingSpeaker(false)} disabled={isSubmitting} className="rounded-xl hover:bg-muted/50 border-border/50 text-foreground">Batal</Button>
             <Button 
               className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2 rounded-xl px-6 font-semibold shadow-sm"
               disabled={isSubmitting || !newSpeakerName.trim()}
               onClick={submitSpeakerUpdate}
             >
-              {isSubmitting ? <IconReload className="h-4 w-4 animate-spin" /> : <IconChecks className="h-4 w-4" />}
+              {isSubmitting ? <IconReload className="h-4 w-4 animate-spin" /> : <IconCheck className="h-4 w-4" />}
               Simpan Perubahan
             </Button>
           </DialogFooter>
