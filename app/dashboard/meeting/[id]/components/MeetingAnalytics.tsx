@@ -6,7 +6,7 @@
  * bg-slate-400 bg-slate-100 bg-red-500 bg-orange-500 bg-blue-400 bg-rose-500
  */
 
-import { IconChevronDown, IconChevronRight, IconChecks } from "@tabler/icons-react"
+import { IconChevronDown, IconChevronRight, IconChecks, IconTarget, IconCalendar, IconUser } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { IconPlus, IconLayoutKanban, IconTrash, IconLoader2 } from "@tabler/icons-react"
@@ -88,14 +88,11 @@ export function MeetingAnalytics({
   const sortedTalkTime = [...talkTime].sort((a, b) => b.total - a.total)
 
   return (
-    <div className="w-80 border-r border-border/50 overflow-y-auto hidden lg:block bg-background shadow-[1px_0_10px_rgba(0,0,0,0.02)] z-10">
-      <div className="p-6">
+    <div className="w-80 border-r border-border/50 hidden lg:flex lg:flex-col bg-background shadow-[1px_0_10px_rgba(0,0,0,0.02)] z-10">
+      <div className="p-6 border-b border-border/40 shrink-0">
         {/* Analytics Header */}
-        <div className="flex items-center justify-between mb-8 group">
+        <div className="flex items-center justify-between group">
           <h2 className="font-bold text-lg text-foreground flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-            </span>
             Analytics
           </h2>
           <Button 
@@ -107,7 +104,9 @@ export function MeetingAnalytics({
             <IconChevronRight className="h-4 w-4" />
           </Button>
         </div>
+      </div>
 
+      <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* TALKTIME Section */}
         <div className="mb-8">
           <button 
@@ -338,14 +337,14 @@ export function MeetingAnalytics({
                                 )}
                                 <div className="flex items-center gap-2 pt-1 text-[10px] opacity-70">
                                   {item.priority && (
-                                    <span className="uppercase font-bold">🎯 {item.priority}</span>
+                                    <span className="uppercase font-bold flex items-center gap-1"><IconTarget className="w-3 h-3" /> {item.priority}</span>
                                   )}
                                   {item.dueDate && (
-                                    <span>📅 {new Date(item.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                    <span className="flex items-center gap-1"><IconCalendar className="w-3 h-3" /> {new Date(item.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                   )}
                                 </div>
                                 {assigneeLabel && (
-                                  <div className="text-[10px] opacity-70">👤 {assigneeLabel}</div>
+                                  <div className="text-[10px] opacity-70 flex items-center gap-1"><IconUser className="w-3 h-3" /> {assigneeLabel}</div>
                                 )}
                               </div>
                             </TooltipContent>

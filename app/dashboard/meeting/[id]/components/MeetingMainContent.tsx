@@ -108,9 +108,9 @@ export function MeetingMainContent({
   return (
     <div className="flex-1 overflow-y-auto bg-muted/20">
       {/* Meeting Header Info */}
-      <div className="group relative overflow-hidden bg-background px-8 py-8 shadow-sm">
+      <div className="group relative overflow-hidden bg-background py-8 shadow-sm">
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-1/2" style={{ background: "radial-gradient(ellipse at 100% 50%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 70%)" }} />
-        <div className="flex flex-col gap-4 max-w-5xl mx-auto">
+        <div className="flex flex-col gap-4 max-w-5xl mx-auto px-8">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
@@ -325,9 +325,7 @@ export function MeetingMainContent({
                   <div className="grid gap-4">
                     {actionItems.map((item, index) => (
                       <div key={item.id || index} className="group flex items-start gap-4 rounded-2xl border border-border/60 bg-card p-4 transition-all hover:border-primary/30 hover:shadow-sm">
-                        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted-foreground/30 text-transparent transition-colors group-hover:border-primary/50">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 transition-opacity group-hover:opacity-50 group-hover:text-primary"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        </div>
+                        <div className="mt-1.5 flex h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500/50 group-hover:bg-emerald-500 transition-colors"></div>
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 mb-1.5">
                             <span className="font-semibold text-foreground text-base">{item.title}</span>
