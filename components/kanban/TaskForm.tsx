@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label" 
 import { Badge } from "@/components/ui/badge"
-import { IconPlus, IconPencil, IconTrash, IconCalendar, IconFlag, IconUser, IconTag } from "@tabler/icons-react"
+import { IconPlus, IconPencil, IconTrash, IconCalendar, IconFlag, IconUser, IconTag, IconSearch } from "@tabler/icons-react"
 import * as Dialog from "@radix-ui/react-dialog"
 import { useState } from "react"
 import { BoardLabel } from "./types"
@@ -185,102 +185,127 @@ export function TaskForm({
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 animate-in fade-in" />
                 <Dialog.Content className="fixed left-1/2 top-1/2 w-[92vw] z-[60] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card p-5 shadow-2xl space-y-3">
                   <Dialog.Title className="text-sm font-semibold text-foreground">Kelola Label</Dialog.Title>
-                  <Input 
-                    placeholder="Cari label..." 
-                    className="h-8 text-xs rounded-lg" 
-                    value={searchLabel}
-                    onChange={(e) => setSearchLabel(e.target.value)}
-                  />
-                  <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-                    {labels.filter(l => l.name.toLowerCase().includes(searchLabel.toLowerCase())).map((lbl) => {
-                      const active = (state.labelIds || []).includes(lbl.id)
-                      const isEditing = editingLabelId === lbl.id
-
-                      return (
-                        <div key={lbl.id} className="group flex items-center gap-1.5">
-                          {isEditing ? (
-                            <div className="flex flex-1 gap-1">
-                              <Input 
-                                value={editLabelName} 
-                                onChange={(e) => setEditLabelName(e.target.value)}
-                                className="h-7 text-xs flex-1 rounded-md"
-                                autoFocus
-                              />
-                              <Button size="sm" className="h-7 px-2 text-[10px]" onClick={async () => {
-                                if (editLabelName.trim()) {
-                                  await onUpdateLabel(lbl.id, { name: editLabelName.trim() })
-                                }
-                                setEditingLabelId(null)
-                              }}>Simpan</Button>
-                              <Button size="sm" variant="ghost" className="h-7 px-1 text-[10px]" onClick={() => setEditingLabelId(null)}>✕</Button>
-                            </div>
-                          ) : (
-                            <button 
-                              type="button" 
-                              onClick={() => setState((s: any) => {
-                                const set = new Set<string>(s.labelIds || [])
-                                active ? set.delete(lbl.id) : set.add(lbl.id)
-                                return { ...s, labelIds: Array.from(set) }
-                              })} 
-                              className="flex flex-1 items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-opacity hover:opacity-90 font-medium text-white shadow-2xs" 
-                              style={{ backgroundColor: lbl.color }}
-                            >
-                              <span>{lbl.name}</span>
-                              <span className={`h-3.5 w-3.5 rounded flex items-center justify-center text-[10px] font-bold ${active ? 'bg-white/30 text-white' : 'bg-black/10'}`}>
-                                {active ? "✓" : ""}
-                              </span>
-                            </button>
-                          )}
-
-                          {!isEditing && (
-                            <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setEditingLabelId(lbl.id)
-                                  setEditLabelName(lbl.name)
-                                }}
-                              >
-                                <IconPencil className="h-3 w-3" />
-                              </Button>
-                              <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-6 w-6 text-destructive hover:bg-destructive/10"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  if (confirm(`Hapus label "${lbl.name}"?`)) onDeleteLabel(lbl.id)
-                                }}
-                              >
-                                <IconTrash className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <div className="pt-2.5 border-t border-border/50 flex gap-2">
+                  
+                  {/* Search Input */}
+                  <div className="relative">
+                    <IconSearch className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                      placeholder="Nama label baru..." 
-                      className="h-8 text-xs rounded-lg" 
-                      value={newLabelName}
-                      onChange={(e) => setNewLabelName(e.target.value)}
+                      placeholder="Cari label yang sudah ada..." 
+                      className="h-8 pl-8 text-xs rounded-lg bg-background/50" 
+                      value={searchLabel}
+                      onChange={(e) => setSearchLabel(e.target.value)}
                     />
-                    <Button 
-                      className="h-8 px-3 text-xs shrink-0 rounded-lg" 
-                      onClick={async () => {
-                        const name = newLabelName.trim()
-                        if (!name) return
-                        await onCreateLabel({ name, color: randomLabelColor() })
-                        setNewLabelName("")
-                      }}
-                    >
-                      Tambah
-                    </Button>
+                  </div>
+
+                  {/* Label List */}
+                  <div className="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
+                    {labels.filter(l => l.name.toLowerCase().includes(searchLabel.toLowerCase())).length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-4">Label tidak ditemukan</p>
+                    ) : (
+                      labels.filter(l => l.name.toLowerCase().includes(searchLabel.toLowerCase())).map((lbl) => {
+                        const active = (state.labelIds || []).includes(lbl.id)
+                        const isEditing = editingLabelId === lbl.id
+
+                        return (
+                          <div key={lbl.id} className="group flex items-center gap-1.5">
+                            {isEditing ? (
+                              <div className="flex flex-1 gap-1">
+                                <Input 
+                                  value={editLabelName} 
+                                  onChange={(e) => setEditLabelName(e.target.value)}
+                                  className="h-7 text-xs flex-1 rounded-md"
+                                  autoFocus
+                                />
+                                <Button size="sm" className="h-7 px-2 text-[10px]" onClick={async () => {
+                                  if (editLabelName.trim()) {
+                                    await onUpdateLabel(lbl.id, { name: editLabelName.trim() })
+                                  }
+                                  setEditingLabelId(null)
+                                }}>Simpan</Button>
+                                <Button size="sm" variant="ghost" className="h-7 px-1 text-[10px]" onClick={() => setEditingLabelId(null)}>✕</Button>
+                              </div>
+                            ) : (
+                              <button 
+                                type="button" 
+                                onClick={() => setState((s: any) => {
+                                  const set = new Set<string>(s.labelIds || [])
+                                  active ? set.delete(lbl.id) : set.add(lbl.id)
+                                  return { ...s, labelIds: Array.from(set) }
+                                })} 
+                                className="flex flex-1 items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-opacity hover:opacity-90 font-medium text-white shadow-2xs" 
+                                style={{ backgroundColor: lbl.color }}
+                              >
+                                <span>{lbl.name}</span>
+                                <span className={`h-3.5 w-3.5 rounded flex items-center justify-center text-[10px] font-bold ${active ? 'bg-white/30 text-white' : 'bg-black/10'}`}>
+                                  {active ? "✓" : ""}
+                                </span>
+                              </button>
+                            )}
+
+                            {!isEditing && (
+                              <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setEditingLabelId(lbl.id)
+                                    setEditLabelName(lbl.name)
+                                  }}
+                                >
+                                  <IconPencil className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (confirm(`Hapus label "${lbl.name}"?`)) onDeleteLabel(lbl.id)
+                                  }}
+                                >
+                                  <IconTrash className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+
+                  {/* Create New Label Box */}
+                  <div className="bg-muted/40 rounded-xl p-3 border border-border/50 space-y-2 mt-2">
+                    <span className="text-[11px] font-semibold text-foreground/80">Atau Buat Label Baru</span>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Ketik nama label..." 
+                        className="h-8 text-xs rounded-lg bg-background" 
+                        value={newLabelName}
+                        onChange={(e) => setNewLabelName(e.target.value)}
+                        onKeyDown={async (e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            const name = newLabelName.trim()
+                            if (!name) return
+                            await onCreateLabel({ name, color: randomLabelColor() })
+                            setNewLabelName("")
+                          }
+                        }}
+                      />
+                      <Button 
+                        className="h-8 px-3 text-xs shrink-0 rounded-lg shadow-xs" 
+                        onClick={async () => {
+                          const name = newLabelName.trim()
+                          if (!name) return
+                          await onCreateLabel({ name, color: randomLabelColor() })
+                          setNewLabelName("")
+                        }}
+                      >
+                        Tambah
+                      </Button>
+                    </div>
                   </div>
                 </Dialog.Content>
               </Dialog.Portal>
