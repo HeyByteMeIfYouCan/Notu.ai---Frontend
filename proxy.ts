@@ -4,6 +4,20 @@ import type { NextRequest } from "next/server"
 
 const protectedRoutes = ["/dashboard"]
 
+function getApplicationOrigin(request: NextRequest): string {
+  const configuredAuthUrl = process.env.AUTH_URL
+
+  if (!configuredAuthUrl) {
+    return request.nextUrl.origin
+  }
+
+  try {
+    return new URL(configuredAuthUrl).origin
+  } catch {
+    return request.nextUrl.origin
+  }
+}
+
 export default async function proxy(request: NextRequest) {
   const session = await auth()
   const { pathname } = request.nextUrl
@@ -16,7 +30,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   if (pathname === "/login" && session) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+    return NextResponse.redirect(new URL("/dashboard", getApplicationOrigin(request)))
   }
 
   return NextResponse.next()
