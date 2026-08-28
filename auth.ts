@@ -13,7 +13,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === "google") {
         try {
           // Send user data to backend to create/update user
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`, {
+          const backendUrl = process.env.BACKEND_URL;
+          if (!backendUrl) {
+            console.error('BACKEND_URL is not configured for the authentication callback');
+            return false;
+          }
+
+          const response = await fetch(`${backendUrl}/api/auth/google`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
