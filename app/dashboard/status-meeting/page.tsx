@@ -408,7 +408,6 @@ function StatusMeetingContent() {
 
     const activeMeetings = meetings.filter(m => 
       m.status === 'processing' || 
-      m.status === 'uploading' || 
       m.status === 'pending' || 
       m.status === 'queued' ||
       m.status === 'recording' ||
@@ -837,14 +836,14 @@ function StatusMeetingContent() {
                               )}
 
                               {/* File Info for Processing */}
-                              {(meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued') && meeting.originalFilename && (
+                              {(meeting.status === 'processing' || meeting.status === 'pending' || meeting.status === 'queued') && meeting.originalFilename && (
                                 <p className="text-xs text-muted-foreground">
                                   📁 {meeting.originalFilename}
                                 </p>
                               )}
 
                               {/* Processing Progress - Visual Stage Stepper */}
-                              {(meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued' || meeting.status === 'recording') && (
+                              {(meeting.status === 'processing' || meeting.status === 'pending' || meeting.status === 'queued' || meeting.status === 'recording') && (
                                 <div className="space-y-3 rounded-xl border border-border bg-[color-mix(in_oklch,var(--muted)_46%,var(--card))] p-4">
                                   {/* Stage Stepper - Visual Steps - Dynamic based on meeting type */}
                                   <div className="flex items-center justify-between gap-1">

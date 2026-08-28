@@ -7,7 +7,14 @@
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type MeetingStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type MeetingStatus =
+    | 'pending'
+    | 'queued'
+    | 'bot_joining'
+    | 'recording'
+    | 'processing'
+    | 'completed'
+    | 'failed';
 export type MeetingType = 'upload' | 'online' | 'realtime';
 export type Platform = 'Google Meet' | 'Upload' | 'Zoom' | 'Microsoft Teams';
 export type CollaboratorRole = 'owner' | 'admin' | 'editor' | 'viewer';

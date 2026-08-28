@@ -3,7 +3,15 @@ import { z } from "zod";
 // Base Enums
 export const TaskStatusSchema = z.enum(["todo", "in-progress", "done"]);
 export const TaskPrioritySchema = z.enum(["low", "medium", "high", "urgent"]);
-export const MeetingStatusSchema = z.enum(["pending", "processing", "completed", "failed"]);
+export const MeetingStatusSchema = z.enum([
+    "pending",
+    "queued",
+    "bot_joining",
+    "recording",
+    "processing",
+    "completed",
+    "failed",
+]);
 export const MeetingTypeSchema = z.enum(["upload", "online", "realtime"]);
 export const CollaboratorRoleSchema = z.enum(["owner", "editor", "viewer"]);
 export const BoardSourceSchema = z.enum(["manual", "ai"]);

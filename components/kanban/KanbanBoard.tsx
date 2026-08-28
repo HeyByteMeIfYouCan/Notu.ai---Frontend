@@ -669,6 +669,8 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
   const [isAutoSaving, setIsAutoSaving] = useState(false)
   useEffect(() => {
     if (!editOpen || !editing || !editing._id || !canModify) return;
+
+    const taskId = editing._id;
     
     const original = originalEditingTaskRef.current;
     if (!original) return;
@@ -688,7 +690,7 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
       try {
         const selectedLabels = editing.labelIds?.map(id => labels.find(l => l.id === id)?.name || '').filter(Boolean) || editing.labels;
         
-        await api.updateTask(editing._id, {
+        await api.updateTask(taskId, {
           title: editing.title,
           description: editing.description,
           assignee: editing.assignee,

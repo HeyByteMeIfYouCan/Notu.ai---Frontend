@@ -553,7 +553,7 @@ export default function MeetingDetailPage() {
             summary={meeting.transcription?.summary || ""}
           />
 
-          {meeting.status === 'failed' || meeting.status === 'error' ? (
+          {meeting.status === 'failed' ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-card rounded-2xl mx-6 my-4 border border-destructive/20 shadow-sm relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-destructive/5 to-transparent pointer-events-none" />
               <div className="h-16 w-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-6 ring-8 ring-destructive/5 relative z-10">
@@ -593,7 +593,7 @@ export default function MeetingDetailPage() {
                 </Button>
               </div>
             </div>
-          ) : meeting.status === 'processing' || meeting.status === 'uploading' || meeting.status === 'pending' || meeting.status === 'queued' || meeting.status === 'recording' || meeting.status === 'bot_joining' ? (
+          ) : meeting.status === 'processing' || meeting.status === 'pending' || meeting.status === 'queued' || meeting.status === 'recording' || meeting.status === 'bot_joining' ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-card rounded-2xl mx-6 my-4 border border-primary/20 shadow-sm relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
               <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-6 ring-8 ring-primary/5 relative z-10">
@@ -608,7 +608,6 @@ export default function MeetingDetailPage() {
               <h3 className="text-2xl font-bold tracking-tight text-foreground mb-2 relative z-10">
                 {meeting.status === 'recording' ? 'Bot Sedang Merekam' : 
                  meeting.status === 'bot_joining' ? 'Bot Sedang Bergabung' :
-                 meeting.status === 'uploading' ? 'Mengunggah File' :
                  meeting.status === 'pending' || meeting.status === 'queued' ? 'Menunggu Antrian' :
                  'Sedang Memproses Meeting'}
               </h3>
