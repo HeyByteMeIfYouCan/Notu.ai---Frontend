@@ -333,8 +333,12 @@ export default function MeetingDetailPage() {
         media.pause()
         setIsPlaying(false)
       } else {
-        media.play().catch(err => console.error('Play failed:', err))
-        setIsPlaying(true)
+        media.play()
+          .then(() => setIsPlaying(true))
+          .catch(() => {
+            setIsPlaying(false)
+            toast.error('Rekaman belum dapat diputar. Muat ulang halaman untuk meminta akses media baru.')
+          })
       }
     }
   }
@@ -357,8 +361,12 @@ export default function MeetingDetailPage() {
       }
       
       if (!isPlaying) {
-        media.play().catch(err => console.error('Play failed:', err))
-        setIsPlaying(true)
+        media.play()
+          .then(() => setIsPlaying(true))
+          .catch(() => {
+            setIsPlaying(false)
+            toast.error('Rekaman belum dapat diputar. Muat ulang halaman untuk meminta akses media baru.')
+          })
       }
     }
   }
@@ -696,7 +704,13 @@ export default function MeetingDetailPage() {
           )}
 
           {audioUrl && !videoUrl && (
-            <audio ref={audioRef} src={audioUrl} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
+            <audio
+              ref={audioRef}
+              src={audioUrl}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onError={() => toast.error('Rekaman audio belum dapat dimuat. Muat ulang halaman untuk meminta akses media baru.')}
+            />
           )}
         </div>
       </SidebarInset>

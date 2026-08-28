@@ -162,7 +162,10 @@ export function KanbanBoard({ boardId }: { boardId?: string }) {
 
   const role = board?.userRole ?? 'viewer'
   const permissions = useMemo(() => getPermissions(role), [role])
-  const assignableRoles = useMemo(() => getAssignableRoles(role), [role])
+  const assignableRoles = useMemo(
+    () => getAssignableRoles(role).filter((assignableRole) => assignableRole !== 'admin'),
+    [role],
+  )
 
   const handleCreateLabel = async (newLabel: Omit<BoardLabel, "id">) => {
     if (!boardId || !board) return

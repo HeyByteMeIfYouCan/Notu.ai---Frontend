@@ -107,10 +107,19 @@ export function MeetingTranscript({
   const [popupCurrentTime, setPopupCurrentTime] = useState(0)
   const [subtitlesEnabled, setSubtitlesEnabled] = useState(true)
   const [wasPlayingBeforeTabSwitch, setWasPlayingBeforeTabSwitch] = useState(false)
+  const [mediaError, setMediaError] = useState<string | null>(null)
   const popupSegmentsRef = useRef<HTMLDivElement>(null)
 
   const miniVideoRef = useRef<HTMLVideoElement>(null)
   const fullVideoRef = useRef<HTMLVideoElement>(null)
+
+  const handleVideoError = useCallback(() => {
+    setMediaError('Rekaman video belum dapat dimuat. Muat ulang halaman untuk meminta akses media baru.')
+  }, [])
+
+  useEffect(() => {
+    setMediaError(null)
+  }, [videoUrl])
 
   // Sync ref and state on open/close
   useEffect(() => {
@@ -294,7 +303,14 @@ export function MeetingTranscript({
                     ref={miniVideoRef}
                     src={videoUrl}
                     className="w-full h-full object-contain"
+                    onError={handleVideoError}
                   />
+                )}
+
+                {mediaError && (
+                  <div role="alert" className="absolute inset-x-4 top-4 rounded-lg border border-destructive/30 bg-background/95 px-3 py-2 text-center text-xs text-destructive shadow-sm">
+                    {mediaError}
+                  </div>
                 )}
                 
                 {/* Subtitle Overlay for Mini Player */}
@@ -547,7 +563,14 @@ export function MeetingTranscript({
                   ref={fullVideoRef}
                   src={videoUrl}
                   className="flex-1 w-full object-contain bg-black"
+                  onError={handleVideoError}
                 />
+              )}
+
+              {mediaError && (
+                <div role="alert" className="absolute inset-x-6 top-6 rounded-lg border border-destructive/30 bg-background/95 px-4 py-3 text-center text-sm text-destructive shadow-sm">
+                  {mediaError}
+                </div>
               )}
               
               {/* Subtitle Overlay - Only show if enabled */}

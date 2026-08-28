@@ -171,7 +171,7 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
             </div>
             <h4 className="font-medium mb-2">Tanya AI tentang rapat ini</h4>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Ajukan pertanyaan tentang ringkasan, poin-poin penting, atau action items dari rapat ini.
+              Saya dapat membantu memahami isi rapat ini atau cara menggunakan fitur Notu yang terkait.
             </p>
             <div className="mt-4 flex flex-wrap gap-2 justify-center">
               {[
@@ -267,7 +267,8 @@ export function AskAI({ meetingId, userRole }: AskAIProps) {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ketik pertanyaan..."
+              placeholder="Tanyakan isi rapat atau fitur Notu..."
+              maxLength={2000}
               disabled={isLoading}
               className="flex-1"
               onKeyDown={(e) => {
